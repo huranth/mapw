@@ -1,0 +1,20 @@
+node_modules/
+dist/
+out/
+release/
+*.log
+.DS_Store
+.vite/
+coverage/
+.env
+.env.local
+*.tsbuildinfo
+
+# Local-only research dumps + scratch pads — kept out of source control.
+.zcode/
+Research.md
+DESIGN-*.md
+
+# Dev-side investigative scratch scripts used during build R&D. Only
+# scripts/patch-node-pty.mjs ships with the app (npm postinstall hook).
+scripts/probe-*

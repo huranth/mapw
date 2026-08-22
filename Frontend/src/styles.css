@@ -1,0 +1,1022 @@
+/* paper light — the single shipped theme. Near-white sheet, near-black ink,
+   1px hairlines, blue accent. No drop shadows — whitespace + hairlines carry
+   the hierarchy. The `--bs-*` token namespace is bound from
+   `applyThemeVars(getTheme(...))` so CSS reads `var(--bs-bg)` etc, with the
+   underlying hex coming from `themes/paper.ts`. */
+
+* { box-sizing: border-box; }
+
+:root {
+  color-scheme: light;
+  --bs-font-display: "Inter", Arial, system-ui, sans-serif;
+  --bs-font-body:    "Inter", Arial, system-ui, sans-serif;
+  --bs-font-mono:    ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bs-bg, #FAFAFA);
+  color: var(--bs-fg, #171717);
+  font-family: var(--bs-font-body);
+  font-size: var(--bs-font-size, 13px);
+  line-height: 1.5;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-rows: 44px 1fr 28px;
+  height: 100%;
+  background: var(--bs-bg);
+}
+
+/* — Title bar — 1px hairline bottom; wordmark + codename + theme picker — */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 18px;
+  background: var(--bs-bg);
+  border-bottom: 1px solid var(--bs-border);
+  -webkit-app-region: drag;
+}
+
+.titlebar__brand {
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  color: var(--bs-fg);
+  white-space: nowrap;
+}
+
+.titlebar__sep {
+  color: var(--bs-fg-muted);
+  font-family: var(--bs-font-body);
+  font-size: 14px;
+  font-weight: 400;
+  opacity: 0.4;
+}
+
+.titlebar__codename {
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--bs-fg-muted);
+  white-space: nowrap;
+  padding-left: 12px;
+  border-left: 1px solid var(--bs-border);
+}
+
+.titlebar__themes {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  -webkit-app-region: no-drag;
+}
+
+/* Theme pill — primary recipe: black fill + white ink + 6px square. In a
+   single-theme UI the pill reads as the always-active state — a `[data-active]`
+   override would just fight :hover in source order, so we don't ship one. */
+.titlebar__theme {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.titlebar__theme:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.titlebar__theme:active { background: var(--bs-bg-hover); }
+
+.titlebar__theme:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+/* — Workspace — side rail + terminal canvas — */
+
+.workspace {
+  display: grid;
+  grid-template-columns: 248px 1fr;
+  min-height: 0;
+  background: var(--bs-bg);
+}
+
+/* — Side rail — */
+
+.rail {
+  border-right: 1px solid var(--bs-border);
+  background: var(--bs-bg);
+  padding: 28px 0;
+  overflow-y: auto;
+}
+
+.rail__group + .rail__group { margin-top: 34px; }
+
+.rail__label {
+  margin: 0 0 14px;
+  padding: 0 22px;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bs-fg-muted);
+}
+
+.rail__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rail__row {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 22px;
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  color: var(--bs-fg);
+}
+
+.rail__row--info {
+  grid-template-columns: 1fr auto;
+}
+
+.rail__row__index {
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  color: var(--bs-fg-muted);
+  font-feature-settings: "tnum" 1;
+  font-weight: 500;
+}
+
+.rail__row__name {
+  color: var(--bs-fg);
+  font-weight: 500;
+}
+
+.rail__row__status {
+  font-family: var(--bs-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--bs-fg-muted);
+}
+
+.rail__row--info .rail__row__value {
+  font-family: var(--bs-font-mono);
+  color: var(--bs-fg);
+  text-align: right;
+  font-size: 11px;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Active nav row — accent-blue inset stripe + bolded name; the status line
+   goes accent for the live pane count. */
+.rail__row--active { box-shadow: inset 2px 0 0 var(--bs-accent); }
+.rail__row--active .rail__row__name { font-weight: 600; }
+.rail__row--active .rail__row__status { color: var(--bs-accent); font-weight: 600; }
+
+/* M2 terminal surface — a freeform React Flow canvas. Each terminal is a
+   draggable, closeable node wrapping one <TerminalPane>. The card chrome is a
+   borderless white rectangle on the sheet with a 6px radius; the value step
+   (#FFFFFF over #FAFAFA) + rounded corners carry the edge — no hairline, no
+   drop shadow. The previous 1px hairline border bled through overlay
+   surfaces as a stray light-gray horizontal line, so it (and the header's
+   bottom hairline) was removed. */
+
+.canvas {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background: var(--bs-bg);
+}
+
+/* React Flow nodes get a default drop shadow we strip so cards read as
+   value-step white rectangles on the canvas — no shadow, no hairline. */
+.react-flow__node { box-shadow: none; }
+
+.node-terminal {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bs-bg-elevated);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Header — the drag handle. Holds the 3 gray blinking dots (left), the
+   pane-id label (center, flex-1 so it absorbs slack), and the × close button
+   right-aligned by margin auto isn't needed — gap + flex layout settle it. */
+.node-terminal__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 28px;
+  padding: 0 8px;
+  background: transparent;
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--bs-fg-muted);
+  cursor: grab;
+  user-select: none;
+}
+
+.node-terminal__header:active { cursor: grabbing; }
+
+/* 3 gray blinking dots — pure decoration, non-interactive (aria-hidden in
+   JSX). Subtle staggered heartbeat at idle; the delays ripple a soft "alive"
+   cue without competing with the terminal content below. */
+.node-terminal__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.node-terminal__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bs-fg-muted);
+  opacity: 0.45;
+  animation: dot-blink 1.6s ease-in-out infinite;
+}
+
+.node-terminal__dot:nth-child(2) { animation-delay: 0.18s; }
+.node-terminal__dot:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.85; }
+}
+
+.node-terminal__label {
+  flex: 1 1 auto;
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--bs-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* × close — ghost recipe: transparent at rest, hairline + ink on hover.
+   Plain ASCII glyph; no emojis. */
+.node-terminal__close {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 6px;
+  font-family: var(--bs-font-mono);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 500;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.node-terminal__close:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.node-terminal__close:active { background: var(--bs-bg-hover); }
+
+.node-terminal__close:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* Copy — sibling to × close. One click puts the pane's full active buffer
+   onto the clipboard (whatever the user is currently staring at — primary
+   scrollback OR a full-screen alt-screen TUI). Plain ASCII label. Shares the
+   ghost-button recipe with ×. The `--copied` modifier flashes green for ~1s
+   on a successful clipboard write so the click landed without ambiguity. */
+.node-terminal__copy {
+  appearance: none;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.node-terminal__copy:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.node-terminal__copy:active { background: var(--bs-bg-hover); }
+
+.node-terminal__copy:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+.node-terminal__copy--copied {
+  color: var(--bs-success);
+  border-color: var(--bs-success);
+  background: transparent;
+}
+
+/* The terminal body — `nodrag` stops xterm selection from kicking off a node
+   drag. The pane fills the body's cross-axis height. */
+.node-terminal__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+}
+
+/* Hidden Handles — React Flow requires a source + target Handle per custom
+   node even with `edges={[]}`; keep them visually absent. */
+.node-terminal__handle--hidden {
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: none;
+  background: transparent;
+  border: none;
+}
+
+/* Pane — holds the xterm canvas + the corner exit-code chip. flex:1 1 auto
+   lets it fill the node body's cross axis. */
+.pane {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bs-bg-elevated);
+}
+
+/* Accent-blue inset focus ring on the active pane. */
+.pane:focus-within { box-shadow: inset 0 0 0 2px var(--bs-accent); }
+
+.pane__host {
+  position: absolute;
+  inset: 0;
+  padding: 6px 10px;
+  box-sizing: border-box;
+}
+
+/* `.xterm` is `position: relative; contain: strict; display: inline-block`
+   by default, which collapses inside a flex host — pin it to block + 100%
+   so the terminal fills the pane. DO NOT touch `.xterm-helper-textarea`:
+   xterm relies on that hidden `<textarea>` to capture keyboard focus + IME
+   composition. The default xterm.css already positions it off-screen
+   (`opacity: 0; left: -9999em;`), which keeps it focusable-but-invisible.
+   A `display: none` rule here yanks it out of the focus tree entirely —
+   clicks/typing on the pane never focus the textarea, `terminal.onData`
+   never fires, and keystrokes never reach the PTY (the M2 "I see the prompt
+   but can't type" regression). */
+.pane__host .xterm { display: block; height: 100%; width: 100%; }
+
+/* xterm.css paints the under-canvas `.xterm-viewport` black by default; the
+   renderer canvas on top paints every row white so the viewport is normally
+   full-covered, but during smooth-scroll lag or a full-screen TUI takeover
+   the row boundaries can briefly reveal a dark sliver. Pin the viewport bg
+   to the pane surface so any lag sliver is invisible against the white rows. */
+.pane__host .xterm-viewport { background-color: var(--bs-bg-elevated); }
+
+.pane__host .xterm-viewport::-webkit-scrollbar { width: 8px; height: 8px; }
+.pane__host .xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--bs-border);
+  border-radius: 4px;
+}
+.pane__host .xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--bs-fg-muted);
+}
+.pane__host .xterm-viewport::-webkit-scrollbar-track { background: transparent; }
+
+/* Block chip — bottom-right corner per pane. Shows the last closed block's
+   exit code, READY before any block closes, or EXIT N once the pane dies.
+   Color is inked by outcome: muted ink at rest, ok green for zero, error red
+   for non-zero, deep ink for "dead". */
+.pane__chip {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 2;
+  pointer-events: none;
+  font-family: var(--bs-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 6px 3px;
+  border: 1px solid var(--bs-border);
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg-muted);
+  border-radius: 4px;
+  font-feature-settings: "tnum" 1;
+}
+
+.pane__chip[data-state="ok"]   { border-color: var(--bs-ok);    color: var(--bs-ok); }
+.pane__chip[data-state="err"]  { border-color: var(--bs-error); color: var(--bs-error); }
+.pane__chip[data-state="dead"] {
+  border-color: var(--bs-fg);
+  color: var(--bs-fg);
+  background: var(--bs-bg-alt);
+}
+
+/* `+ New terminal` chip — primary recipe: black fill + white ink + 6px
+   square. Sits in a React Flow bottom-right <Panel>. */
+.canvas__add-chip {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.canvas__add-chip:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.canvas__add-chip:active { background: var(--bs-bg-hover); }
+
+.canvas__add-chip:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+/* Welcome / Returning — boot-time picker surfaces that replace the legacy
+   "first-ever-launch silently pops the native OS picker" with a fuller card
+   surface inside the workspace (TitleBar + StatusBar stay live above +
+   below). Value-step white cards on the sheet, no shadows, ASCII glyphs only
+   — same vocabulary as the live canvas; the primary-CTA recipe matches
+   .canvas__add-chip too, so the picker CTA reads as the same affordance. */
+
+.welcome,
+.returning {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  padding: 96px 32px 48px;
+  background: var(--bs-bg);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.welcome__headline,
+.returning__headline {
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--bs-fg);
+}
+
+.welcome__sub,
+.returning__sub {
+  margin: 0;
+  max-width: 540px;
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bs-fg-muted);
+  text-align: center;
+}
+
+/* Picker card — value-step white rectangle on the sheet (no shadow, no
+   hairline), mirroring the .node-terminal recipe. Flex column, left-aligned
+   content: small uppercase label, mono cwd path (truncated with ellipsis),
+   and a ghost button (Choose folder / Change). The shared-mode card uses
+   `.welcome__card--full` (540px wide); a per-pane grid card is narrower
+   (280px) so the 2x2 layout fits the centered stack. */
+.welcome__card {
+  background: var(--bs-bg-elevated);
+  border-radius: 6px;
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  width: 280px;
+  box-sizing: border-box;
+}
+
+.welcome__card--full { width: 540px; }
+
+.welcome__card__label {
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bs-fg-muted);
+}
+
+.welcome__card__path {
+  font-family: var(--bs-font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bs-fg);
+  font-feature-settings: "tnum" 1;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Per-pane grid — 2x2 layout for the picker slots, centered so the grid
+   never sits flush to the rail edge of the sheet. */
+.welcome__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 280px);
+  gap: 16px;
+  justify-content: center;
+}
+
+/* Folder picker file-chip — ghost recipe: transparent at rest, hairline +
+   --bs-fg ink on hover, 120ms ease. Height matches the canvas__add-chip's
+   vertical reach (~22px). */
+.welcome__filechip {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.welcome__filechip:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.welcome__filechip:active { background: var(--bs-bg-hover); }
+
+.welcome__filechip:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* Per-pane toggle — the "Use a different folder per pane" checkbox row.
+   The checkbox is a native UI control; tinted with `accent-color` so it sits
+   in the palette without drawing a custom marker. */
+.welcome__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  color: var(--bs-fg-muted);
+  user-select: none;
+}
+
+.welcome__toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: var(--bs-accent);
+}
+
+.welcome__toggle__label {
+  color: var(--bs-fg-muted);
+}
+
+/* Primary CTA — primary recipe (.canvas__add-chip + .titlebar__theme). The
+   base pins bg + accent-fg + border to var(--bs-fg); the :disabled state only
+   adds cursor + opacity. */
+.welcome__cta {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.welcome__cta:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.welcome__cta:active { background: var(--bs-bg-hover); }
+
+.welcome__cta:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+.welcome__cta:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* — ReturningScreen — same sheet + headline idiom; the summary block is a
+   single borderless card too (same width 540px as the welcome shared card).
+   Inside it the pane rows are a `36px 1fr` grid (mirrors the .rail__row
+   index gutter for the paneIds) + a mono cwd that text-overflow ellipses
+   long paths. The CTA row is a primary + secondary pair, primary first. */
+
+.returning__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 540px;
+  background: var(--bs-bg-elevated);
+  border-radius: 6px;
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.returning__summary__title {
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--bs-fg);
+}
+
+.returning__rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  width: 100%;
+  padding: 0;
+}
+
+.returning__row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 10px;
+  align-items: baseline;
+  width: 100%;
+}
+
+.returning__row__pane {
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--bs-fg-muted);
+  font-feature-settings: "tnum" 1;
+}
+
+.returning__row__cwd {
+  font-family: var(--bs-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bs-fg);
+  font-feature-settings: "tnum" 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.returning__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.returning__cta--primary {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.returning__cta--primary:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.returning__cta--primary:active { background: var(--bs-bg-hover); }
+
+.returning__cta--primary:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+.returning__cta--secondary {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid var(--bs-border);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.returning__cta--secondary:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.returning__cta--secondary:active { background: var(--bs-bg-hover); }
+
+.returning__cta--secondary:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* — Status bar — 1px hairline top + ready dot — */
+
+.status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  padding: 0 14px;
+  background: var(--bs-bg);
+  border-top: 1px solid var(--bs-border);
+  font-family: var(--bs-font-body);
+  font-size: 11px;
+  color: var(--bs-fg-muted);
+  font-feature-settings: "tnum" 1;
+}
+
+.status__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--bs-accent);
+  flex-shrink: 0;
+}
+
+.status__pill {
+  font-family: var(--bs-font-body);
+  font-weight: 500;
+  color: var(--bs-fg);
+}
+
+.status__sep {
+  color: var(--bs-fg-muted);
+  opacity: 0.4;
+}
+
+.status__text--accent {
+  color: var(--bs-accent);
+  font-weight: 600;
+}
+
+.status__meta {
+  margin-left: auto;
+  font-family: var(--bs-font-mono);
+  color: var(--bs-fg-muted);
+}
+
+/* Status-bar theme chip — small accent-blue label holding the active theme
+   id; carries the active-theme-id testid. */
+.status__code {
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--bs-accent);
+  background: var(--bs-bg-alt);
+  border: 1px solid var(--bs-border);
+  border-radius: 4px;
+  padding: 1px 6px 2px;
+}
+
+/* — Reduced motion: drop the dot heartbeat when the OS prefers no motion. */
+/* — micro-detailing pass — calm hover affordances for the previously static
+   surfaces. Each transition is short (≤160ms ease), restores on mouseout,
+   and carries only a colour / opacity lift, never a shadow — the hairline
+   chrome stays consistent across idle, hover, and focus. */
+.welcome__card {
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.welcome__card:hover {
+  background: var(--bs-bg-alt);
+}
+
+.welcome__toggle {
+  transition: color 140ms ease;
+}
+.welcome__toggle:hover {
+  color: var(--bs-fg);
+}
+.welcome__toggle:hover .welcome__toggle__label {
+  color: var(--bs-fg);
+}
+
+.returning__row {
+  transition: background 140ms ease;
+}
+.returning__row:hover {
+  background: var(--bs-bg-alt);
+}
+
+.rail__row--pending,
+.rail__row--info {
+  transition: background 140ms ease;
+}
+.rail__row--pending:hover,
+.rail__row--info:hover {
+  background: var(--bs-bg-hover);
+}
+
+.status__code {
+  transition: background 140ms ease, color 140ms ease;
+}
+.status__code:hover {
+  background: var(--bs-bg-hover);
+  color: var(--bs-fg);
+}
+
+/* Icon spacing — buttons that gained an inline `<svg>` sit it next to the
+   text with a 5px gap. Declared at the end so it wins against any earlier
+   display values from the original rules without specificity escalation. */
+.canvas__add-chip,
+.titlebar__theme,
+.welcome__cta,
+.welcome__filechip,
+.returning__cta--primary,
+.returning__cta--secondary,
+.node-terminal__close,
+.node-terminal__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.welcome__card__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* — loading phase — the user's `.loader` snippet rendered during the brief
+   loading window (settings.ensureLoaded + the returning / welcome gate). A
+   3×2 CSS grid of muted-ink squares, each with a 6-step blink wave riding
+   the `keyframes-blink` keyframe; offsets stagger so the six squares ripple
+   instead of blinking in lockstep. `.workspace__loader` centers the grid
+   inside the workspace region. */
+.workspace__loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: var(--bs-bg);
+}
+
+.loader {
+  --color: #a5a5b0;
+  --size: 70px;
+  width: var(--size);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 3px;
+}
+
+.loader span {
+  aspect-ratio: 1;
+  background: var(--color);
+  border-radius: 4px;
+  animation: keyframes-blink 1.2s ease-in-out infinite;
+  opacity: 0.3;
+  transform: scale(0.5);
+}
+
+.loader span:nth-child(1) { animation-delay: 0ms; }
+.loader span:nth-child(2) { animation-delay: 200ms; }
+.loader span:nth-child(3) { animation-delay: 300ms; }
+.loader span:nth-child(4) { animation-delay: 400ms; }
+.loader span:nth-child(5) { animation-delay: 500ms; }
+.loader span:nth-child(6) { animation-delay: 600ms; }
+
+@keyframes keyframes-blink {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(0.5) rotate(5deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-terminal__dot,
+  .node-terminal__dot:nth-child(2),
+  .node-terminal__dot:nth-child(3) {
+    animation: none;
+  }
+  .loader span {
+    animation: none;
+    opacity: 0.5;
+    transform: none;
+  }
+}

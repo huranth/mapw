@@ -1,0 +1,22 @@
+{
+  "name": "mapw",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-pane terminal workspace \u2014 a calm desktop shell for running several terminals side by side.",
+  "type": "module",
+  "workspaces": [
+    "Frontend",
+    "Backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace Frontend",
+    "build": "npm run build --workspace Frontend",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "postinstall": "node scripts/patch-node-pty.mjs"
+  },
+  "engines": {
+    "node": ">=20.10"
+  }
+}
