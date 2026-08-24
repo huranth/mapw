@@ -34,7 +34,7 @@ body {
 
 .app-shell {
   display: grid;
-  grid-template-rows: 44px 1fr 28px;
+  grid-template-rows: 44px 1fr;
   height: 100%;
   background: var(--bs-bg);
 }
@@ -51,6 +51,30 @@ body {
   border-bottom: 1px solid var(--bs-border);
   -webkit-app-region: drag;
 }
+
+/* Cluster 7c — per-platform titlebar inset for the OS chrome clusters that
+   only appear once `titleBarStyle: "hidden"` activates WCO (win32) or the
+   frameless darwin traffic lights. `main.tsx` stamps
+   `document.documentElement.dataset.platform` at bootstrap
+   (`darwin` / `win32` / `linux`) via navigator.userAgent regex; these
+   rules gate the inset per platform so the OS controls never overlap the
+   brandmark/wordmark (darwin) or the Layouts button cluster (win32).
+   - darwin — the 3 traffic-light buttons anchor top-left; reserve 80px
+     (lights occupy ~70px from the left edge at 44px bar height, +10px
+     breathing room before the brandmark).
+   - win32 — WCO paints min/max/close at top-right; reserve 160px so the
+     Layouts button cluster (.titlebar__actions, margin-left:auto) keeps
+     its right edge clear of the controls.
+   - linux — default framed titlebar (no WCO); the 18px symmetric padding
+     stays as-is.
+   Specificity `(0,2,1)` on the platform-prefixed selector (the `html` type
+   selector contributes one element slot, and `[data-platform=…]` + `.titlebar`
+   together contribute two class slots) beats `(0,1,0)` on `.titlebar`, so
+   each `padding-left` / `padding-right` longhand cleanly overrides the
+   matching side of the shorthand `padding: 0 18px` above without needing
+   `!important`. */
+html[data-platform="darwin"] .titlebar { padding-left: 80px; }
+html[data-platform="win32"] .titlebar { padding-right: 160px; }
 
 .titlebar__brand {
   font-family: var(--bs-font-body);
@@ -80,138 +104,89 @@ body {
   border-left: 1px solid var(--bs-border);
 }
 
-.titlebar__themes {
-  display: flex;
-  gap: 4px;
+/* — Titlebar actions — a cluster on the right of the bar (currently just the
+   Layouts button; future settings/theme buttons will live here too).
+   -webkit-app-region: no-drag is load-bearing: `.titlebar` carries
+   `-webkit-app-region: drag` (the whole bar is a window-drag handle), so
+   without this override OS-level drag would swallow button clicks. The
+   Layouts button is the titlebar's first non-brand interactive element;
+   clicking it opens the panel (useUiState.openLayouts) — Workspace's render
+   branch produces the panel surface (LayoutsScreen) once the flag is true. */
+
+.titlebar__actions {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   -webkit-app-region: no-drag;
 }
 
-/* Theme pill — primary recipe: black fill + white ink + 6px square. In a
-   single-theme UI the pill reads as the always-active state — a `[data-active]`
-   override would just fight :hover in source order, so we don't ship one. */
-.titlebar__theme {
+/* Ghost button recipe — mirrors .welcome__filechip / .node-terminal__chip's
+   vocab: transparent at rest, hairline on hover, 120ms ease. Mono tiny font +
+   22px tall matches the label-adjacent chip idiom without inviting misclicks
+   on the bar's drag region. The Layouts button is hidden outside `ready`
+   (TitleBar gates visibility on `useUiState.activePhase === "ready"`). */
+.titlebar__button {
   appearance: none;
-  font-family: var(--bs-font-body);
-  font-weight: 600;
-  font-size: 12px;
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
   letter-spacing: 0;
-  padding: 6px 12px;
+  height: 22px;
+  padding: 0 10px;
   border-radius: 6px;
-  color: var(--bs-accent-fg);
-  background: var(--bs-fg);
-  border: 1px solid var(--bs-fg);
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
-.titlebar__theme:hover {
-  background: var(--bs-bg-elevated);
+.titlebar__button:hover {
   color: var(--bs-fg);
-  border-color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
 }
 
-.titlebar__theme:active { background: var(--bs-bg-hover); }
+.titlebar__button:active { background: var(--bs-bg-hover); }
 
-.titlebar__theme:focus-visible {
+.titlebar__button:focus-visible {
   outline: 2px solid var(--bs-accent);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
-/* — Workspace — side rail + terminal canvas — */
+
+/* — Workspace — the terminal canvas — */
 
 .workspace {
+  position: relative;
   display: grid;
-  grid-template-columns: 248px 1fr;
+  grid-template-columns: 1fr;
   min-height: 0;
   background: var(--bs-bg);
 }
 
-/* — Side rail — */
-
-.rail {
-  border-right: 1px solid var(--bs-border);
-  background: var(--bs-bg);
-  padding: 28px 0;
-  overflow-y: auto;
+/* Welcome / Returning / Layouts surfaces span the full workspace row. With the
+   single-column grid any phase child already fills the sheet; the explicit
+   span is kept so a future second column slot can't auto-place a phase screen
+   into the wrong track. The loading overlay (`.workspace__loader`) is
+   absolute-positioned and exits grid flow, so it isn't part of this rule. */
+.workspace > .welcome,
+.workspace > .returning,
+.workspace > .layouts {
+  grid-column: 1 / -1;
 }
-
-.rail__group + .rail__group { margin-top: 34px; }
-
-.rail__label {
-  margin: 0 0 14px;
-  padding: 0 22px;
-  font-family: var(--bs-font-body);
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--bs-fg-muted);
-}
-
-.rail__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.rail__row {
-  display: grid;
-  grid-template-columns: 22px 1fr auto;
-  align-items: baseline;
-  gap: 12px;
-  padding: 8px 22px;
-  font-family: var(--bs-font-body);
-  font-size: 13px;
-  color: var(--bs-fg);
-}
-
-.rail__row--info {
-  grid-template-columns: 1fr auto;
-}
-
-.rail__row__index {
-  font-family: var(--bs-font-mono);
-  font-size: 11px;
-  color: var(--bs-fg-muted);
-  font-feature-settings: "tnum" 1;
-  font-weight: 500;
-}
-
-.rail__row__name {
-  color: var(--bs-fg);
-  font-weight: 500;
-}
-
-.rail__row__status {
-  font-family: var(--bs-font-mono);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--bs-fg-muted);
-}
-
-.rail__row--info .rail__row__value {
-  font-family: var(--bs-font-mono);
-  color: var(--bs-fg);
-  text-align: right;
-  font-size: 11px;
-  font-feature-settings: "tnum" 1;
-}
-
-/* Active nav row — accent-blue inset stripe + bolded name; the status line
-   goes accent for the live pane count. */
-.rail__row--active { box-shadow: inset 2px 0 0 var(--bs-accent); }
-.rail__row--active .rail__row__name { font-weight: 600; }
-.rail__row--active .rail__row__status { color: var(--bs-accent); font-weight: 600; }
 
 /* M2 terminal surface — a freeform React Flow canvas. Each terminal is a
-   draggable, closeable node wrapping one <TerminalPane>. The card chrome is a
-   borderless white rectangle on the sheet with a 6px radius; the value step
-   (#FFFFFF over #FAFAFA) + rounded corners carry the edge — no hairline, no
-   drop shadow. The previous 1px hairline border bled through overlay
-   surfaces as a stray light-gray horizontal line, so it (and the header's
-   bottom hairline) was removed. */
+   draggable, closeable, RESIZABLE node wrapping one <TerminalPane>. The card
+   chrome is a borderless white rectangle on the sheet with a 6px radius; the
+   value step (#FFFFFF over #FAFAFA) + rounded corners carry the edge — no
+   hairline, no drop shadow. The previous 1px hairline border bled through
+   overlay surfaces as a stray light-gray horizontal line, so it (and the
+   header's bottom hairline) was removed. Per-node resize handles (NodeResizer)
+   are invisible at rest and reveal on hover so the card stays clean — see
+   the `.node-terminal-wrap` + `.react-flow__resize-control` rules below. */
 
 .canvas {
   position: relative;
@@ -224,6 +199,21 @@ body {
 /* React Flow nodes get a default drop shadow we strip so cards read as
    value-step white rectangles on the canvas — no shadow, no hairline. */
 .react-flow__node { box-shadow: none; }
+
+/* Cluster 9d — selected-outline. React Flow 12 stamps `.selected` on every
+   node the canvas considers selected; without an explicit outline the only
+   selection cue was the resize-handle lines (Cluster 9 above), which only
+   render on hover. This outline stays visible at rest so a keyboard or
+   edge-click selection reads as "selected" even without the pointer over the
+   card. --bs-accent (with the #0070F3 fallback) ties it to the rest of the
+   accent chrome; the -1px offset keeps the ring inside the card border-radius
+   so adjacent cards don't visually overlap. The custom terminal node type
+   receives the `react-flow__node-terminal` class (React Flow 12 derives the
+   node-wrapper class from `type`), hence this scoped selector. */
+.react-flow__node-terminal.selectable.selected {
+  outline: 1px solid var(--bs-accent, #0070F3);
+  outline-offset: -1px;
+}
 
 .node-terminal {
   position: relative;
@@ -238,13 +228,24 @@ body {
 
 /* Header — the drag handle. Holds the 3 gray blinking dots (left), the
    pane-id label (center, flex-1 so it absorbs slack), and the × close button
-   right-aligned by margin auto isn't needed — gap + flex layout settle it. */
+   right-aligned by margin auto isn't needed — gap + flex layout settle it.
+   Cluster 9f/9g — `position: relative; z-index: 6` lifts the header ABOVE the
+   resize-control line layer (which sits at z-index 5, see `.react-flow__
+   -resize-control { z-index: 5 }`). Without this, the top edge's hover bar
+   paints OVER the header's label row whenever the pointer enters the top
+   dead-zone — the "↕" glyph (Cluster 9b, top: 20px below) and the blinking
+   dots collided visually whenever a top-edge resize gesture was even
+   hinted. Taller 32px header (was 28px) + 4px vertical padding (was 0)
+   gives the dots/label/close-button more breathing room proportional to
+   the rest of the cluster's M3 sizing tweaks. */
 .node-terminal__header {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 0 0 28px;
-  padding: 0 8px;
+  position: relative;
+  z-index: 6;
+  flex: 0 0 32px;
+  padding: 4px 8px;
   background: transparent;
   font-family: var(--bs-font-mono);
   font-size: 11px;
@@ -294,6 +295,51 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Focus tag — small pill that lights up in the node header when THIS pane
+   is focused. Replaces the previous `inset 2 px` accent box-shadow on
+   `.pane:focus-within` (which ringed codex's content while the TUI
+   churned and flickered against each repaint). Triggered by
+   `.node-terminal:focus-within` — clicks focus xterm's helper textarea
+   inside `.pane`; the focus signal propagates up the tree, so the wrapper
+   that owns the header + the body fires the pseudo at the same time. The
+   pill sits right after the pane label, before the chip strip; the chip
+   strip may hide itself while a TUI runs, but the focus tag stays put
+   (you still see which pane is focused while typing into codex). Default-
+   hidden via `display: none`; shown only when the wrapper has
+   focus-within. Accent-pill background with a small inner dot for the
+   cue's at-a-glance visibility — even without reading the tag's text. */
+
+.node-terminal__focus-tag {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  height: 18px;
+  padding: 0 8px;
+  border-radius: 9px;
+  background: var(--bs-accent);
+  color: var(--bs-bg-elevated);
+  font-family: var(--bs-font-mono);
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.node-terminal__focus-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--bs-bg-elevated);
+}
+
+.node-terminal:focus-within .node-terminal__focus-tag {
+  display: inline-flex;
 }
 
 /* × close — ghost recipe: transparent at rest, hairline + ink on hover.
@@ -369,9 +415,84 @@ body {
 }
 
 .node-terminal__copy--copied {
-  color: var(--bs-success);
-  border-color: var(--bs-success);
+  color: var(--bs-ok);
+  border-color: var(--bs-ok);
   background: transparent;
+}
+
+/* Famous-CLI chip strip — populates each pane header. Mirrors the ghost
+   recipe of `.node-terminal__copy` / `.node-terminal__close` (same 22px
+   height, 120ms color/opacity transitions, hairline + ink on hover, no
+   shadow). Hidden wholesale via the HTML5 `hidden` attribute on
+   `.node-terminal__chips` while a TUI is running in the pane — see
+   TerminalNode.tsx + the `tuiRunning` per-pane latch in the terminals
+   store. Plain ASCII label; no emoji. */
+.node-terminal__chip {
+  appearance: none;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-family: var(--bs-font-mono);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 500;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.node-terminal__chip:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.node-terminal__chip:active { background: var(--bs-bg-hover); }
+
+.node-terminal__chip:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* Chip-strip container — flex row hugging the right edge of the pane
+   header (sits between the pane label and Copy/Close). Gap of 4px keeps
+   adjacent chips readable. The HTML5 `hidden` attribute (set by
+   TerminalNode when `tuiRunning === true`) toggles the strip out of view
+   via UA-default `display: none` — no class toggle needed. */
+.node-terminal__chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* Cluster 10a — allow the chips container to SHRINK inside the header
+     flex row when space runs short. The previous `flex: 0 0 auto` made the
+     chips NON-SHRINKABLE, so on a 320px-wide card with installed-CLI
+     pressure (3+ chips at rest — opencode+claude+gemini ≈ 184px — exceeds
+     the available slop by ~24px and pushes Copy/Close past `.node-terminal
+     { overflow: hidden }`'s clip line → Close ungraspable). Allowing shrink
+     + `overflow: hidden` + `min-width: 0` lets the chips clip INTERNALLY
+     rather than push the action cluster off-canvas. Copy (62-px min) +
+     Close (22-px min) stay grabbable via the separate sibling-`<button>`
+     cluster that remains `flex: 0 0 auto` (no shrink). */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+/* Cluster 10b — the JSX uses HTML5 `hidden={tuiRunning}` on the chips div
+   to hide the strip while a TUI runs in the pane (so the user can't fire
+   `${cli}\r` into the running TUI's stdin by accident). The author
+   `.node-terminal__chips { display: inline-flex }` above overrides the
+   UA-level `[hidden] { display: none }` (cascade: author origin >
+   UA origin; specificity aside), so the auto-hide silently no-ops. The
+   `&[hidden]` selector above is specificity (0,2,0) > base ".node-
+   terminal__chips" (0,1,0), so `[hidden]` resolves to `display: none`
+   again — actual hide while a TUI runs. */
+.node-terminal__chips[hidden] {
+  display: none;
 }
 
 /* The terminal body — `nodrag` stops xterm selection from kicking off a node
@@ -397,6 +518,177 @@ body {
   border: none;
 }
 
+/* — Per-node resize handles (React Flow <NodeResizer>) —
+   React Flow's .react-flow__resize-control already sets the arrow-resize
+   cursors (ew / ns / nwse / nesw) on hover, so "the cursor transforms into
+   the arrow" is satisfied out of the box. The card chrome must stay clean at
+   rest, so the default line border is reset; the edges are DISCOVERED on
+   hover. `.node-terminal-wrap` (TerminalNode's outer element) is the
+   positioned containing block for the absolutely-positioned controls and
+   sits OUTSIDE `.node-terminal`'s `overflow: hidden`, so the edge handles
+   that straddle the card via translate(-50%) aren't clipped. The handles
+   render AFTER the card in the DOM (NodeResizer is last in TerminalNode) so
+   they paint on top without a z-index fight; a small z-index is kept as a
+   safety net. */
+.node-terminal-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.react-flow__resize-control { z-index: 5; }
+
+/* Strip React Flow's default line border/bg so the borderless card stays
+   clean everywhere except where the hover states below paint accent. The
+   !important beats React Flow's dist style.css line variant; the hover rules
+   are MORE specific AND carry !important so they still win when active. */
+.react-flow__resize-control.line {
+  border: 0 !important;
+  background: transparent !important;
+  /* Cluster 9b — transition lives on the BASE rule (covers the opacity-OUT
+     fade when hover ends) AND on the hover rule (covers the
+     opacity/width/height-IN step from 0 -> 0.3 / 0px -> 2px). Putting the
+     transition here is load-bearing: when the card stops being hovered, the
+     hover rule stops applying and the base rule's `background: transparent
+     !important` + `opacity 0` re-engage — IF the transition lived only on
+     the hover rule, hover-loss would snap the line back to invisible
+     (no transition on the rest path); keeping it on the base rule makes
+     the rest-path fade animate smoothly. The two transition declarations
+     are identical so no mutation hazard when the hover rule re-engages. */
+  transition: opacity 120ms ease, width 120ms ease, height 120ms ease;
+}
+
+/* Discover the four edges on card hover: faint accent hairlines that thicken
+   + brighten when the pointer lands on a specific edge. Card-hover gives a
+   2px hint at every edge; edge-hover makes it a 4px solid accent bar —
+   the "border" the user grabs. */
+.node-terminal-wrap:hover .react-flow__resize-control.line {
+  background: var(--bs-accent, #0070F3) !important;
+  opacity: 0.3;
+  /* Cluster 9b — transition lives on the base `.react-flow__resize-control
+     .line` rule above (no duplicate here); see the comment there for the
+     rest-path-fade rationale. The `, #0070F3` fallback keeps the bar
+     accent-blue even if a future theme omits `--bs-accent` (without the
+     fallback, `var(--bs-accent)` resolves invalid-at-computed-value-time
+     and the declaration drops — the bar would inherit `background:
+     transparent !important` from the base rule, i.e. invisible). */
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line.left,
+.node-terminal-wrap:hover .react-flow__resize-control.line.right {
+  width: 2px;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line.top,
+.node-terminal-wrap:hover .react-flow__resize-control.line.bottom {
+  height: 2px;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line:hover {
+  opacity: 1;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line.left:hover,
+.node-terminal-wrap:hover .react-flow__resize-control.line.right:hover {
+  width: 4px;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line.top:hover,
+.node-terminal-wrap:hover .react-flow__resize-control.line.bottom:hover {
+  height: 4px;
+}
+
+/* Direction arrow ON the hovered border — the cursor already flips to the
+   matching resize arrow; this surfaces the arrow on the border itself so the
+   user sees which way the resize will go. The glyph floats just inside the
+   card edge (React Flow translates each line -50% onto the edge, so 6–8px
+   lands in the card's padding margin, clear of the xterm content). */
+.react-flow__resize-control.line::after {
+  content: "";
+  position: absolute;
+  font-family: var(--bs-font-mono);
+  font-size: 12px;
+  line-height: 1;
+  color: var(--bs-accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  white-space: nowrap;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.line:hover::after {
+  opacity: 1;
+}
+.react-flow__resize-control.line.top::after {
+  content: "↕";
+  /* Cluster 9b — push the top-edge arrow down past the taller 32px header
+     (was `top: 6px` which landed INSIDE the header's label row, colliding
+     with the pane-id text). 20px clears the taller header (header
+     z-index:6 lifts it over the resize line so the glyph reads against the
+     xterm surface, not the header strip). */
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.react-flow__resize-control.line.bottom::after {
+  content: "↕";
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.react-flow__resize-control.line.left::after {
+  content: "↔";
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.react-flow__resize-control.line.right::after {
+  content: "↔";
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Corner dots — accent squares that appear on card hover so all four corners
+   are grabbable for diagonal resize (their cursors are the nwse/nesw arrows). */
+.react-flow__resize-control.handle {
+  /* Cluster 9b — both tokens carry fallbacks (`#0070F3` accent /
+     `#171717` ink) so the corner dots stay visible even if a future theme
+     omits the tokens entirely (a bare `var(--bs-accent)` with no fallback
+     resolves invalid-at-computed-value-time -> declaration dropped on such
+     a theme, leaving the element borderless/transparent -> the dots pop
+     to invisible on a per-row click). The border flip from
+     --bs-bg-elevated (paper-white, invisible against a paper card) to
+     --bs-fg (ink-on-paper, reads against any card bg) is the same
+     visibility fix at the dot's outer edge that the accent background
+     gives the dot's fill. */
+  background-color: var(--bs-accent, #0070F3) !important;
+  border: 1px solid var(--bs-fg, #171717) !important;
+  border-radius: 2px !important;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.handle {
+  opacity: 0.7;
+}
+.node-terminal-wrap:hover .react-flow__resize-control.handle:hover {
+  opacity: 1;
+}
+
+/* Cluster 14 (partial — CSS-only safe subset). React Flow's <NodeResizer>
+   renders the handle (corner dots) + line (edge bars) as focusable elements
+   a keyboard user Tab/arrow-keys into. The default `opacity: 0` above makes
+   KB focus completely invisible — a keyboard-only user can't tell which
+   handle has focus. `:focus-visible` pins a visible accent outline + forces
+   `opacity: 1` ONLY when the focus arrives via keyboard (mouse-drag focus
+   never trips `:focus-visible`, so pointer-based resize stays visually
+   unchanged — no opacity jank on hover click). The full keyboard-a11y
+   rewrite (Cluster 14's client-side arrow-key delta + Shift-micro-mode
+   handler) is deferred as too risky for this pass; this CSS portion is the
+   safe subset that gives the focus cue without touching the resizer's
+   pointer-event dispatch. `!important` is needed to beat the inline-style
+   opacity React Flow sets on the elements + the rule precedence above. */
+.react-flow__resize-control.handle:focus-visible,
+.react-flow__resize-control.line:focus-visible {
+  opacity: 1 !important;
+  outline: 2px solid var(--bs-accent, #0070F3) !important;
+  outline-offset: 1px;
+}
+
 /* Pane — holds the xterm canvas + the corner exit-code chip. flex:1 1 auto
    lets it fill the node body's cross axis. */
 .pane {
@@ -407,13 +699,33 @@ body {
   background: var(--bs-bg-elevated);
 }
 
-/* Accent-blue inset focus ring on the active pane. */
-.pane:focus-within { box-shadow: inset 0 0 0 2px var(--bs-accent); }
+/* Focus cue: RETIRED the inset-accent box-shadow on `.pane:focus-within`
+   because the 2 px ring sat just inside the pane body's edge — and when
+   codex's TUI ran, every codex repaint made the ring flicker against the
+   churn. The visual focus cue is now a header-attached pill tag — see
+   `.node-terminal__focus-tag` near the label rules below, gated on
+   `.node-terminal:focus-within` (xterm's helper textarea inside `.pane`
+   propagates focus to the whole `.node-terminal` wrapper, so the same
+   `:focus-within` pseudo fires on the wrapper that used to fire on the
+   pane). Click-to-focus + xterm focus flow are unchanged; only the cue
+   swapped from "body ring" to "header tag." */
 
 .pane__host {
   position: absolute;
   inset: 0;
-  padding: 6px 10px;
+  /* Cluster 8 — moved the `padding: 6px 10px` OFF `.pane__host` onto the
+     `.pane__host .xterm` child below. FitAddon reads the host's border-box
+     width/height and subtracts ONLY the child `.xterm`'s own
+     padding/gutter (it does NOT subtract the host's own padding from the
+     host's border-box). With the host's `padding: 6px 10px` + the global
+     `* { box-sizing: border-box }` (line 7), the host's border-box
+     INCLUDED the 20px / 12px gutters → FitAddon counted cols/rows TOO
+     LARGE by ~2 cols and ~1 row → rightmost cols + bottom row clipped
+     past `.xterm`'s right/bottom edges into the 10px / 6px host padding
+     → visibly chopped off AND the ConPTY resize dispatched oversized
+     dims to the shell/TUI. Moving the padding onto the CHILD `.xterm`
+     makes FitAddon's existing child-padding-subtraction cover the inset
+     → col/row math aligns with the visible pane. */
   box-sizing: border-box;
 }
 
@@ -426,15 +738,45 @@ body {
    A `display: none` rule here yanks it out of the focus tree entirely —
    clicks/typing on the pane never focus the textarea, `terminal.onData`
    never fires, and keystrokes never reach the PTY (the M2 "I see the prompt
-   but can't type" regression). */
-.pane__host .xterm { display: block; height: 100%; width: 100%; }
+   but can't type" regression).
+   
+   Cluster 8 — this rule ALSO carries the `padding: 6px 10px` + `box-sizing:
+   border-box` that used to live on `.pane__host` (see the comment block on
+   `.pane__host` above for the FitAddon child-padding-subtraction
+   rationale). FitAddon.proposeDimensions measures `.xterm`'s own
+   border-box and subtracts `.xterm`'s OWN padding to derive cols/rows, so
+   the inset has to live HERE for the geometry math to count it. */
+.pane__host .xterm {
+  display: block;
+  height: 100%;
+  width: 100%;
+  padding: 6px 10px;
+  box-sizing: border-box;
+}
 
-/* xterm.css paints the under-canvas `.xterm-viewport` black by default; the
-   renderer canvas on top paints every row white so the viewport is normally
-   full-covered, but during smooth-scroll lag or a full-screen TUI takeover
-   the row boundaries can briefly reveal a dark sliver. Pin the viewport bg
-   to the pane surface so any lag sliver is invisible against the white rows. */
-.pane__host .xterm-viewport { background-color: var(--bs-bg-elevated); }
+/* xterm.css paints the under-canvas `.xterm-viewport` black by default.
+   Our override below targets `.pane__host .xterm-viewport` — specificity
+   (0,2,0) — which is the SAME specificity as xterm.css's `.xterm .xterm-
+   viewport { background-color: #000; }`. main.tsx imports xterm.css AFTER
+   styles.css (line 3 styles, line 6 xterm), so on equal specificity xterm's
+   #000 wins the cascade.
+
+   Before Cluster 8 the 6×10px gutter lived on `.pane__host`; FitAddon measured
+   the host's full border-box and read `.xterm`'s padding as 0 → cols/rows
+   were oversized by ~2 cols / ~1 row → the renderer's canvas overflowed past
+   `.xterm`'s content area into the host's padding strip, hiding the #000
+   viewport by repainting that strip white as part of the in-canvas
+   theme.background fill. No rim was visible.
+   
+   Cluster 8 moved the gutter onto `.xterm` (so FitAddon's child-padding
+   subtraction aligns cols/rows with the actual canvas size) → the canvas no
+   longer overflows → the #000 viewport was permanently exposed around the
+   canvas content as a black rim. The `!important` beats the same-
+   specificity #000 from xterm.css regardless of cascade order, pinning the
+   viewport to the pane-surface tone; any per-frame sliver the renderer ever
+   fails to repaint (high scroll velocity, full-screen TUI repaint churn)
+   now blends with the row background → invisible. */
+.pane__host .xterm-viewport { background-color: var(--bs-bg-elevated) !important; }
 
 .pane__host .xterm-viewport::-webkit-scrollbar { width: 8px; height: 8px; }
 .pane__host .xterm-viewport::-webkit-scrollbar-thumb {
@@ -659,7 +1001,7 @@ body {
   color: var(--bs-fg-muted);
 }
 
-/* Primary CTA — primary recipe (.canvas__add-chip + .titlebar__theme). The
+/* Primary CTA — primary recipe (.canvas__add-chip). The
    base pins bg + accent-fg + border to var(--bs-fg); the :disabled state only
    adds cursor + opacity. */
 .welcome__cta {
@@ -697,6 +1039,387 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* — LayoutsScreen — the titlebar-launched panel for picking/applying/saving
+   named pane layouts. Same idiom as the .welcome / .returning surfaces:
+   centered column over the workspace sheet, value-step white cards, primary
+   CTA reads as the same affordance as the canvas's "+ New terminal" chip. */
+
+/* OVERLAY (not swap-replace). Workspace.tsx renders LayoutsScreen ON TOP
+   of whatever phase fragment is mounted (welcome / returning / ready) rather
+   than swapping it in via a sibling ternary — the previous ternary unmounted
+   TerminalCanvas whenever the panel opened, firing every TerminalPane's
+   cleanup (ptyKill + terminal.dispose) and wiping every PTY session + its
+   scrollback. Absolute-positioning over the `.workspace` (the row's
+   `position: relative` → positioning context) keeps the live canvas mounted
+   underneath while the opaque `.layouts` background covers it visually; the
+   canvas's PTYs survive the panel's open window. The grid-column span rule
+   above is now inert (out-of-flow), but kept harmless for any future re-wiring. */
+.layouts {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  padding: 96px 32px 48px;
+  background: var(--bs-bg);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.layouts__close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--bs-fg-muted);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.layouts__close:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.layouts__close:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+.layouts__headline {
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--bs-fg);
+}
+
+.layouts__sub {
+  margin: 0;
+  max-width: 540px;
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bs-fg-muted);
+  text-align: center;
+}
+
+.layouts__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+}
+
+.layouts__heading {
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bs-fg-muted);
+}
+
+.layouts__hint {
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bs-fg-muted);
+}
+
+/* Built-in presets — 2-col card grid sized to fit the centered stack. */
+.layouts__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.layouts__card {
+  background: var(--bs-bg-elevated);
+  border-radius: 6px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.layouts__card--full { width: 100%; }
+
+.layouts__card-name {
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--bs-fg);
+}
+
+.layouts__summary {
+  margin: 0;
+  font-family: var(--bs-font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bs-fg-muted);
+  font-feature-settings: "tnum" 1;
+}
+
+.layouts__summary--inline {
+  /* Inline (saved-row) variant: shrinks so it sits next to the name in a row,
+     not stacked below. */
+  font-size: 11px;
+}
+
+/* Missing-CLI badge — accent-hairline warning chip rendered next to the
+   summary. Mirrors the .welcome__filechip vocab but tinted with the accent
+   hairline so it reads as a "heads up" without shouting. */
+.layouts__missing-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--bs-accent);
+  color: var(--bs-accent);
+  font-family: var(--bs-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+/* Apply chip (built-in card) — primary recipe mirrored from .welcome__cta so
+   the affordance reads as the same "this commits" action as the welcome-
+   flow's primary CTA. */
+.layouts__apply {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.layouts__apply:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.layouts__apply:active { background: var(--bs-bg-hover); }
+
+.layouts__apply:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+/* Saved layouts list — unstyled list of rows. Each row is a single flex strip
+   carrying the inline name (button → input on rename), the summary chip, and
+   the row-actions cluster. */
+.layouts__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.layouts__row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--bs-bg-elevated);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.layouts__row-name {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 0;
+  margin: 0;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--bs-fg);
+  cursor: text;
+  border-radius: 4px;
+  transition: border-color 120ms ease;
+}
+
+.layouts__row-name:hover { border-bottom: 1px dashed var(--bs-border); }
+
+.layouts__row-name:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* Text input — the codebase's first styled text control. Vocabulary: a
+   --bs-bg-elevated surface, 1px --bs-border hairline, 6px radius, accent
+   focus outline. Used standalone (.layouts__input) inside the save-current-
+   canvas form AND inline (.layouts__input--inline) inside a saved-row when
+   the user clicks to rename. */
+.layouts__input {
+  appearance: none;
+  width: 100%;
+  flex: 1 1 auto;
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--bs-border);
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  font-family: var(--bs-font-body);
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.layouts__input::placeholder { color: var(--bs-fg-muted); opacity: 0.7; }
+
+.layouts__input:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+  border-color: var(--bs-accent);
+}
+
+/* Inline input — sized to fit a row (auto width with bounds); the standalone
+   version uses width:100% to fill the save-current-canvas form's row. */
+.layouts__input--inline {
+  width: auto;
+  min-width: 180px;
+  max-width: 280px;
+  flex: 0 1 auto;
+}
+
+/* Chip (Apply/Rename/Delete in a saved-row) — ghost recipe (transparent at
+   rest, hairline on hover) — mirrors .node-terminal__chip /
+   .welcome__filechip. */
+.layouts__chip {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--bs-fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.layouts__chip:hover {
+  color: var(--bs-fg);
+  background: var(--bs-bg-hover);
+  border-color: var(--bs-border);
+}
+
+.layouts__chip:active { background: var(--bs-bg-hover); }
+
+.layouts__chip:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 1px;
+}
+
+/* Danger chip (Delete) — same shape but red-tinted border + foreground on
+   hover so the destructive intent reads at a glance. */
+.layouts__chip--danger:hover {
+  color: #c0392b;
+  border-color: #c0392b;
+  background: transparent;
+}
+
+.layouts__row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+/* Save-current-canvas form — single .layouts__card with the explanation +
+   the input + button row beneath. */
+.layouts__save-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.layouts__save-btn {
+  appearance: none;
+  font-family: var(--bs-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  border-radius: 6px;
+  color: var(--bs-accent-fg);
+  background: var(--bs-fg);
+  border: 1px solid var(--bs-fg);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.layouts__save-btn:hover {
+  background: var(--bs-bg-elevated);
+  color: var(--bs-fg);
+  border-color: var(--bs-fg);
+}
+
+.layouts__save-btn:active { background: var(--bs-bg-hover); }
+
+.layouts__save-btn:focus-visible {
+  outline: 2px solid var(--bs-accent);
+  outline-offset: 2px;
+}
+
+.layouts__save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 
 /* — ReturningScreen — same sheet + headline idiom; the summary block is a
    single borderless card too (same width 540px as the welcome shared card).
@@ -828,66 +1551,6 @@ body {
   outline-offset: 1px;
 }
 
-/* — Status bar — 1px hairline top + ready dot — */
-
-.status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 28px;
-  padding: 0 14px;
-  background: var(--bs-bg);
-  border-top: 1px solid var(--bs-border);
-  font-family: var(--bs-font-body);
-  font-size: 11px;
-  color: var(--bs-fg-muted);
-  font-feature-settings: "tnum" 1;
-}
-
-.status__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--bs-accent);
-  flex-shrink: 0;
-}
-
-.status__pill {
-  font-family: var(--bs-font-body);
-  font-weight: 500;
-  color: var(--bs-fg);
-}
-
-.status__sep {
-  color: var(--bs-fg-muted);
-  opacity: 0.4;
-}
-
-.status__text--accent {
-  color: var(--bs-accent);
-  font-weight: 600;
-}
-
-.status__meta {
-  margin-left: auto;
-  font-family: var(--bs-font-mono);
-  color: var(--bs-fg-muted);
-}
-
-/* Status-bar theme chip — small accent-blue label holding the active theme
-   id; carries the active-theme-id testid. */
-.status__code {
-  font-family: var(--bs-font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0;
-  color: var(--bs-accent);
-  background: var(--bs-bg-alt);
-  border: 1px solid var(--bs-border);
-  border-radius: 4px;
-  padding: 1px 6px 2px;
-}
-
 /* — Reduced motion: drop the dot heartbeat when the OS prefers no motion. */
 /* — micro-detailing pass — calm hover affordances for the previously static
    surfaces. Each transition is short (≤160ms ease), restores on mouseout,
@@ -917,28 +1580,10 @@ body {
   background: var(--bs-bg-alt);
 }
 
-.rail__row--pending,
-.rail__row--info {
-  transition: background 140ms ease;
-}
-.rail__row--pending:hover,
-.rail__row--info:hover {
-  background: var(--bs-bg-hover);
-}
-
-.status__code {
-  transition: background 140ms ease, color 140ms ease;
-}
-.status__code:hover {
-  background: var(--bs-bg-hover);
-  color: var(--bs-fg);
-}
-
 /* Icon spacing — buttons that gained an inline `<svg>` sit it next to the
    text with a 5px gap. Declared at the end so it wins against any earlier
    display values from the original rules without specificity escalation. */
 .canvas__add-chip,
-.titlebar__theme,
 .welcome__cta,
 .welcome__filechip,
 .returning__cta--primary,
@@ -957,54 +1602,69 @@ body {
   gap: 6px;
 }
 
-/* — loading phase — the user's `.loader` snippet rendered during the brief
-   loading window (settings.ensureLoaded + the returning / welcome gate). A
-   3×2 CSS grid of muted-ink squares, each with a 6-step blink wave riding
-   the `keyframes-blink` keyframe; offsets stagger so the six squares ripple
-   instead of blinking in lockstep. `.workspace__loader` centers the grid
-   inside the workspace region. */
+/* — loading overlay — the infinity loader is `position:absolute; inset:0`
+   anchored to `.workspace` (which is `position:relative`). Two roles:
+   cover the empty workspace during the brief loading balcony (cold-boot
+   read + IPC commit window), AND cover SideRail + TerminalCanvas during
+   the ready-wait window, until every spawned pane reports its opencode
+   TUI has launched (markOpencodeLaunched per pane → allPanesReady in
+   Workspace). The overlap is paint-only — with no z-index, later DOM
+   children render above earlier siblings in the same stacking context,
+   so the overlay sits on top without z-index gymnastics. */
 .workspace__loader {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   background: var(--bs-bg);
 }
 
-.loader {
-  --color: #a5a5b0;
-  --size: 70px;
-  width: var(--size);
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 1fr;
-  gap: 3px;
+.container {
+  width: 100px;
+  height: 100px;
+  overflow: hidden;
 }
 
-.loader span {
-  aspect-ratio: 1;
-  background: var(--color);
-  border-radius: 4px;
-  animation: keyframes-blink 1.2s ease-in-out infinite;
-  opacity: 0.3;
-  transform: scale(0.5);
+.container svg {
+  --spin-duration: 2000ms;
+  --infinity-duration: 2000ms;
+  --hsl-base-h: 5deg;
+  --hsl-base-s: 70%;
+  --hsl-base-l: 50%;
+  animation: spin81213 var(--spin-duration) linear infinite;
 }
 
-.loader span:nth-child(1) { animation-delay: 0ms; }
-.loader span:nth-child(2) { animation-delay: 200ms; }
-.loader span:nth-child(3) { animation-delay: 300ms; }
-.loader span:nth-child(4) { animation-delay: 400ms; }
-.loader span:nth-child(5) { animation-delay: 500ms; }
-.loader span:nth-child(6) { animation-delay: 600ms; }
+.eight {
+  --eight-length-px: 60.84563446044922px;
+ /* As seen on getTotalLength */
+  --offset: calc(var(--order) * 5px);
+  animation: infinity8123 var(--infinity-duration) linear infinite;
+  d: path("m5 5a1 1 0 0110 0c0 4-10 6-10 10a1 1 0 0010 0c0-4-10-6-10-10");
+  fill: none;
+  stroke: hsl(calc(var(--hsl-base-h) * var(--order)) var(--hsl-base-s) var(--hsl-base-l));
+  stroke-dasharray: 6px calc(var(--eight-length-px) - 6px);
+  stroke-linecap: round;
+  stroke-width: calc(1 - var(--order) / 10);
+}
 
-@keyframes keyframes-blink {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(0.5) rotate(5deg);
+@keyframes infinity8123 {
+  0% {
+    stroke-dashoffset: calc(var(--eight-length-px) + var(--offset));
   }
-  50% {
-    opacity: 1;
-    transform: scale(1);
+
+  100% {
+    stroke-dashoffset: var(--offset);
+  }
+}
+
+@keyframes spin81213 {
+  0% {
+    transform: rotate(0)
+  }
+
+  100% {
+    transform: rotate(360deg)
   }
 }
 
@@ -1014,9 +1674,8 @@ body {
   .node-terminal__dot:nth-child(3) {
     animation: none;
   }
-  .loader span {
+  .container svg,
+  .eight {
     animation: none;
-    opacity: 0.5;
-    transform: none;
   }
 }
