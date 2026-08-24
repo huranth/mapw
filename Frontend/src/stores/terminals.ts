@@ -2,9 +2,9 @@ import { create } from "zustand";
 import type { BlockModelState } from "@/terminals/blockModel";
 
 // Per-pane runtime state. The store mirrors just enough to drive the
-// StatusBar + SideRail meta + future block-meta decorations; the xterm
-// canvas + heavy data path stay inside TerminalPane (the store is not in
-// the streaming hot path).
+// node-header focus tag + exit-code chip + future block-meta decorations; the
+// xterm canvas + heavy data path stay inside TerminalPane (the store is not
+// in the streaming hot path).
 
 export interface PaneRuntime {
   readonly paneId: string;
@@ -13,6 +13,15 @@ export interface PaneRuntime {
   cwd: string | null;
   hostname: string | null;
   exitCode: number | null;
+  /** True whenever a TUI is currently running in this pane — latched on the
+   *  first PTY chunk emitting Bubble Tea's "enter alternate screen" escape
+   *  (`ESC [ ? 1049 h`) and unlatched on the inverse "leave alt screen"
+   *  (`ESC [ ? 1049 l`). Drives TerminalNode's chip-strip auto-hide: when a
+   *  TUI takes the pane over the famous-CLI chips disappear (so the user
+   *  can't fire `${cli}\r` into a running TUI's stdin by accident); they
+   *  reappear when the user exits the TUI back to the raw shell. Written by
+   *  TerminalPane (both transitions) + read by TerminalNode (hide on true). */
+  tuiRunning: boolean;
   blockModel: BlockModelState;
 }
 
@@ -23,6 +32,8 @@ interface TerminalState {
   unregister: (paneId: string) => void;
   markSpawned: (paneId: string, shell: string, cwd: string) => void;
   markExited: (paneId: string, exitCode: number) => void;
+  markTuiEntered: (paneId: string) => void;
+  markTuiExited: (paneId: string) => void;
   setBlockModel: (
     paneId: string,
     mutator: (m: BlockModelState) => BlockModelState,
@@ -46,6 +57,7 @@ export const useTerminalsStore = create<TerminalState>((set) => ({
         cwd: null,
         hostname: null,
         exitCode: null,
+        tuiRunning: false,
         blockModel: emptyBlockModel(),
       };
       return { panes: { ...s.panes, [paneId]: pane } };
@@ -73,6 +85,28 @@ export const useTerminalsStore = create<TerminalState>((set) => ({
         panes: {
           ...s.panes,
           [paneId]: { ...pane, alive: false, exitCode },
+        },
+      };
+    }),
+  markTuiEntered: (paneId) =>
+    set((s) => {
+      const pane = s.panes[paneId];
+      if (!pane || pane.tuiRunning) return s;
+      return {
+        panes: {
+          ...s.panes,
+          [paneId]: { ...pane, tuiRunning: true },
+        },
+      };
+    }),
+  markTuiExited: (paneId) =>
+    set((s) => {
+      const pane = s.panes[paneId];
+      if (!pane || !pane.tuiRunning) return s;
+      return {
+        panes: {
+          ...s.panes,
+          [paneId]: { ...pane, tuiRunning: false },
         },
       };
     }),

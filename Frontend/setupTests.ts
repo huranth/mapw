@@ -137,6 +137,12 @@ export function makeTestBridge(overrides: Partial<Bridge> = {}): Bridge {
       // the 4 boot seeds, not on the New Terminal flow. Tests that want the
       // picker to "pick" a folder override this with a non-canceled result.
       (async () => ({ canceled: true, filePaths: [] })),
+    detectCliTools:
+      overrides.detectCliTools ??
+      // Default: empty curated list — a test that doesn't opt-in is asserting
+      // on the raw-pane boot path, not on the chip strip's CLI list. Tests
+      // that exercise the chip strip override this with a non-empty result.
+      (async () => ({ tools: [] })),
     ptySpawn:
       overrides.ptySpawn ??
       (async (opts: PtySpawnOptions): Promise<PtySpawnResponse> => ({
