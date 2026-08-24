@@ -16,7 +16,7 @@
 // skeleton. lastCwd is the welcome-flow "primary folder" + TerminalPane
 // null-cwd fallback (see Workspace.tsx's commitWelcome) — we don't touch it.
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Panel,
   ReactFlow,
@@ -48,6 +48,16 @@ export function TerminalCanvas() {
   const addTerminal = useCanvasStore((s) => s.addTerminal);
   const updateSettings = useSettingsStore((s) => s.update);
 
+  // Ref mirror of the latest serialized skeleton, populated on every
+  // debounce-effect fire below. The SEPARATE unmount-flush useEffect further
+  // down reads this ref in its cleanup so the skeleton that was in-flight when
+  // the canvas unmounts (apply-layout swap, returning -> ready phase
+  // transition, app quit) is re-emitted on teardown instead of being dropped
+  // with the clearTimeout. React 18 runs cleanups sync, so we can't truly
+  // await the IPC round-trip — but the fire-and-forget `void updateSettings`
+  // still beats losing the entire pending debounce window on teardown.
+  const latestSkeletonRef = useRef<PaneNodePersist[]>([]);
+
   // Mirror live canvas nodes back to Settings.workspace so "Continue"
   // restores the user's most recent layout after a restart. Persist
   // `{nodes: []}` deliberately — that empty skeleton collapses to "no
@@ -57,16 +67,64 @@ export function TerminalCanvas() {
   // returns a new array), so the effect dep fires on every change; the
   // debounce collapses the burst into one disk write.
   useEffect(() => {
+    // Mirror the cliId bound to each pane (from a saved layout — see
+    // PaneNodePersist.cliId) so the apply-time auto-launch survives an app
+    // restart: without this, a pane bound to e.g. `claude` by a layout would
+    // lose the binding the next time TerminalCanvas persisted the skeleton
+    // (the previous version omitted cliId, and on rehydrate TerminalPane would
+    // boot a raw shell with no auto-launch). The cast mirrors the cwd pattern
+    // above (`NodeProps.types.data` is `Record<string, unknown>`); the
+    // `?? null` coerces missing values to the persist shape.
     const skeleton: PaneNodePersist[] = nodes.map((n) => ({
       paneId: n.id,
       cwd: (n.data?.cwd as string | null) ?? null,
+      cliId: (n.data?.cliId as string | null | undefined) ?? null,
       position: { x: n.position.x, y: n.position.y },
+      // Persist the live node size so a resized pane restores at its last
+      // dragged footprint after a restart. React Flow populates
+      // `node.width` / `node.height` on a NodeResizer drag via applyNodeChanges
+      // (the `dimensions` change); on the boot seeds (never dragged) these
+      // are the canonical NODE_W/NODE_H from canvas.nodesFromPersist, so the
+      // skeleton round-trips verbatim. `size` is optional on PaneNodePersist;
+      // old settings.json files simply gain the field after the next write.
+      size:
+        n.width != null && n.height != null
+          ? { width: n.width, height: n.height }
+          : null,
     }));
+    // Cluster 12b — mirror the freshly serialized skeleton into the ref so the
+    // unmount-flush useEffect below can re-emit it on teardown. Updated on
+    // every effect fire (every onNodesChange burst coalesces via the 400ms
+    // debounce; we land the fresh snapshot here before the timer fires).
+    latestSkeletonRef.current = skeleton;
     const timer = setTimeout(() => {
       void updateSettings({ workspace: { nodes: skeleton } });
     }, SKELETON_WRITE_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [nodes, updateSettings]);
+
+  // Cluster 12b — synchronous unmount-flush. The skeleton above rides a 400ms
+  // debounce; if the canvas unmounts before the timer fires (apply-layout
+  // swap, returning -> ready phase transition, app quit), the debounce
+  // effect's cleanup runs clearTimeout(timer) and the pending write is LOST.
+  // This unmount-only useEffect's cleanup reads latestSkeletonRef and
+  // re-emits the write so the user's most recent add/drag/resize survives the
+  // teardown. The `length > 0` guard avoids emitting an empty skeleton on the
+  // FIRST render-before-any-change unmount (which would erase a populated
+  // persisted workspace down to "no skeleton" and re-trigger the Welcome
+  // gate); the empty case is left to the debounce effect's deliberate empty
+  // write when the user explicitly clears the canvas. The dep is just
+  // [updateSettings] (stable from zustand) so this mounts once per canvas
+  // lifecycle; only its cleanup does any work, while the canvas is alive the
+  // debounce effect carries the live write traffic.
+  useEffect(() => {
+    return () => {
+      const skeleton = latestSkeletonRef.current;
+      if (skeleton.length > 0) {
+        void updateSettings({ workspace: { nodes: skeleton } });
+      }
+    };
+  }, [updateSettings]);
 
   // The "+ New terminal" chip always opens the native folder picker first
   // (per spec). The picked folder is THIS pane's cwd (written into
@@ -110,7 +168,7 @@ export function TerminalCanvas() {
             className="canvas__add-chip"
             onClick={onNewTerminal}
           >
-            <PlusIcon /> + New terminal
+            <PlusIcon /> New terminal
           </button>
         </Panel>
       </ReactFlow>

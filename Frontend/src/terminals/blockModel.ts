@@ -42,7 +42,7 @@ export interface BlockModelState {
   /** The currently open block — set by promptStart, cleared by commandEnd.
    *  Null in the gap between D and the next A (a transient no-prompt state). */
   current: Block | null;
-  /** Last observed cwd/hostname, lifted for the StatusBar display. */
+  /** Last observed cwd/hostname, lifted for the pane's exit-code chip. */
   cwd: string | null;
   hostname: string | null;
 }
