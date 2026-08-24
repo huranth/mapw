@@ -3,7 +3,7 @@ import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SettingsStore } from "../src/store/SettingsStore.js";
-import { DEFAULT_SETTINGS } from "../src/types.js";
+import { DEFAULT_SETTINGS, type SavedLayout } from "../src/types.js";
 
 async function freshStorePath(): Promise<string> {
   const dir = join(
@@ -86,5 +86,80 @@ describe("SettingsStore", () => {
     const store = new SettingsStore({ path, overrides: { theme: "storm" } });
     await store.ensureLoaded();
     expect(store.get("theme")).toBe("storm");
+  });
+
+  it("savedLayouts round-trips through update() + reload, preserving array-splice semantics + the per-node cliId field", async () => {
+    const path = await freshStorePath();
+    cleanup.push(path);
+    const store = new SettingsStore({ path });
+    await store.ensureLoaded();
+
+    // First save — one user-saved layout with a CLI binding on its pane.
+    const layoutA: SavedLayout = {
+      id: "usr-a",
+      name: "Layout A",
+      nodes: [
+        {
+          paneId: "p1",
+          cwd: "/proj",
+          position: { x: 0, y: 0 },
+          cliId: "codex",
+        },
+      ],
+    };
+    await store.update({ savedLayouts: [layoutA] });
+    expect(store.get("savedLayouts")).toEqual([layoutA]);
+
+    // Second save — the read-modify-write path layouts.ts uses: thread the
+    // prior array through + append. SettingsStore's shallow top-level merge
+    // REPLACES arrays (doesn't deep-merge), so the caller is the splice
+    // authority; assert that the array order survives the write intact.
+    const layoutB: SavedLayout = {
+      id: "usr-b",
+      name: "Layout B",
+      nodes: [
+        {
+          paneId: "p2",
+          cwd: null,
+          position: { x: 1, y: 0 },
+          cliId: "claude",
+        },
+      ],
+    };
+    const prior = store.get("savedLayouts") ?? [];
+    await store.update({ savedLayouts: [...prior, layoutB] });
+    expect(store.get("savedLayouts")).toEqual([layoutA, layoutB]);
+
+    // A fresh instance over the same file should see both saved layouts (the
+    // atomic temp-file-then-rename write + JSON round-trip preserves the
+    // cliId field on every node — the field layouts.apply + TerminalPane's
+    // auto-launch primitive both rely on).
+    const reloaded = new SettingsStore({ path });
+    await reloaded.ensureLoaded();
+    const reloadedLayouts = reloaded.get("savedLayouts") ?? [];
+    expect(reloadedLayouts).toEqual([layoutA, layoutB]);
+    expect(reloadedLayouts[0]?.nodes[0]?.cliId).toBe("codex");
+    expect(reloadedLayouts[1]?.nodes[0]?.cliId).toBe("claude");
+
+    // A save AFTER reload splices into the freshly-loaded array correctly.
+    const layoutC: SavedLayout = {
+      id: "usr-c",
+      name: "Layout C",
+      nodes: [
+        {
+          paneId: "p3",
+          cwd: null,
+          position: { x: 2, y: 0 },
+          cliId: "opencode",
+        },
+      ],
+    };
+    const priorAfterReload = reloaded.get("savedLayouts") ?? [];
+    await reloaded.update({ savedLayouts: [...priorAfterReload, layoutC] });
+    expect(reloaded.get("savedLayouts")).toEqual([layoutA, layoutB, layoutC]);
+
+    // Untouched fields stay at their DEFAULT_SETTINGS values (the spread-on-
+    // read keeps new top-level fields upgrade-safe for pre-feature files).
+    expect(reloaded.get("theme")).toBe(DEFAULT_SETTINGS.theme);
   });
 });
