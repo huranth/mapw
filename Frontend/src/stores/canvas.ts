@@ -42,23 +42,55 @@ function seedSlots(): Array<{ x: number; y: number }> {
   ];
 }
 
+// Grid slot generator for non-2×2 built-in layouts (the Six-pane AI grid uses
+// 2×3; future layouts can request taller/wider grids). Same convention as
+// seedSlots — positive X right, positive Y down — at the canvas's NODE_W +
+// NODE_H + GRID_GAP cell pitch. Built-ins consume the result directly so the
+// layout's pane positions never drift from what a Welcome-commit 2×2 looks
+// like on the live canvas (positions are pure data: x = col * (NODE_W +
+// GRID_GAP), y = row * (NODE_H + GRID_GAP)).
+export function seedGridSlots(
+  rows: number,
+  cols: number,
+): Array<{ x: number; y: number }> {
+  const out: Array<{ x: number; y: number }> = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      out.push({
+        x: c * (NODE_W + GRID_GAP),
+        y: r * (NODE_H + GRID_GAP),
+      });
+    }
+  }
+  return out;
+}
+
 // Build the persisted `Settings.workspace.nodes` skeleton for the Welcome
 // flow's commit payload (or Returning's legacy migration). Returns a
 // 4-element PaneNodePersist[] with the default 2×2 slot positions — the cwds
 // array may carry nulls (degraded pane state); hydrate() restores them as
 // `data.cwd = null` and TerminalPane's resolved-cwd chain falls back through
-// Settings.lastCwd to os.homedir().
-export function seedNodes(cwds: (string | null)[]): PaneNodePersist[] {
+// Settings.lastCwd to os.homedir(). The optional parallel `cliIds` array
+// (one entry per pane, null/omit = raw-shell pane) carries the saved-layout
+// CLI binding — built-in pair/trio layouts seed with `codex`/`claude`/
+// `opencode` ids; the default Welcome commit leaves it absent so the boot-
+// default 4-pane boot stays raw-shell (the existing first-run behavior,
+// preserved through the `cliId !== undefined` opt-in here).
+export function seedNodes(
+  cwds: (string | null)[],
+  cliIds?: (string | null)[],
+): PaneNodePersist[] {
   const slots = seedSlots();
-  // `slots[i]` / `cwds[i]` carry the `| undefined` from
-  // `noUncheckedIndexedAccess`; `?? null` (cwd) and `?? {0,0}` (position)
-  // coerce the hole case back to a finite seed shape. We only ever build a
-  // 4-pane skeleton here, so the hole branch is unreachable in practice but
-  // typecheck-clean only with the coalesce.
+  // `slots[i]` / `cwds[i]` / `cliIds?.[i]` carry the `| undefined` from
+  // `noUncheckedIndexedAccess`; `?? null` (cwd / cliId) and `?? {0,0}`
+  // (position) coerce the hole case back to a finite seed shape. We only
+  // ever build a 4-pane skeleton here, so the hole branch is unreachable in
+  // practice but typecheck-clean only with the coalesce.
   return [0, 1, 2, 3].map((i) => ({
     paneId: `p${i + 1}`,
     cwd: cwds[i] ?? null,
     position: slots[i] ?? { x: 0, y: 0 },
+    cliId: cliIds?.[i] ?? null,
   }));
 }
 
@@ -78,9 +110,9 @@ function nodesFromPersist(persisted: PaneNodePersist[]): Node[] {
     id: p.paneId,
     type: "terminal",
     position: p.position,
-    data: { cwd: p.cwd },
-    width: NODE_W,
-    height: NODE_H,
+    data: { cwd: p.cwd, cliId: p.cliId ?? null },
+    width: p.size?.width ?? NODE_W,
+    height: p.size?.height ?? NODE_H,
   }));
 }
 
@@ -95,9 +127,16 @@ function defaultSeedNodes(): Node[] {
 interface CanvasState {
   nodes: Node[];
   onNodesChange: OnNodesChange;
-  addTerminal: (cwd: string | null) => void;
+  addTerminal: (cwd: string | null, cliId?: string | null) => void;
   removeNode: (id: string) => void;
   hydrate: (persisted: PaneNodePersist[]) => void;
+  // Mint a fresh paneId from the module-scope counter — used by `applyLayout`
+  // (Frontend/src/stores/layouts.ts) to re-key every pane in a layout being
+  // applied, so React Flow reconciles them as MOUNTS (not prop-changes on
+  // same-id nodes from the prior canvas, which would leave the old PTY
+  // sessions running under the new layout's positions). Bumps nextPaneId per
+  // call.
+  freshPaneId: () => string;
 }
 
 // Next paneId counter for `addTerminal` beyond the initial seed. Lives at
@@ -119,7 +158,12 @@ export const useCanvasStore = create<CanvasState>((set) => ({
   // taking priority over Settings.lastCwd for THIS one pane. The debounced
   // useEffect in TerminalCanvas serializes the new node and round-trips
   // Settings.workspace so the panel survives a restart.
-  addTerminal: (cwd) =>
+  // The optional `cliId` (a curated CLI id, when bound by a saved layout)
+  // seeds the new node's `data.cliId`. The default "+ New terminal" picker
+  // path leaves it undefined → `null` here → no auto-launch (raw shell boot,
+  // chip strip remains the runtime CLI-choice surface). Only saved layouts
+  // ever produce a runtime-auto-launch pane.
+  addTerminal: (cwd, cliId) =>
     set((s) => {
       const id = `p${nextPaneId++}`;
       // Cascade each new node down-right of the last so it doesn't sit on top
@@ -131,12 +175,18 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         id,
         type: "terminal",
         position: { x: baseX, y: baseY },
-        data: { cwd },
+        data: { cwd, cliId: cliId ?? null },
         width: NODE_W,
         height: NODE_H,
       };
       return { nodes: [...s.nodes, node] };
     }),
+  // See CanvasState.freshPaneId doc — applyLayout re-keys every pane via
+  // this primitive so application of a layout unmounts every old pane (React
+  // Flow reconciles fresh ids as MOUNTS) + spawns the new layout's panes
+  // fresh + auto-launches their cliId. NOT keyed to React render state — the
+  // counter is module-scoped at canvas.ts:108.
+  freshPaneId: () => `p${nextPaneId++}`,
   removeNode: (id) =>
     set((s) => ({ nodes: s.nodes.filter((n) => n.id !== id) })),
   // Restore the live Node[] from a persisted skeleton. Bumps nextPaneId past
@@ -153,7 +203,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           if (n >= maxId) maxId = n;
         }
       }
-      nextPaneId = maxId + 1;
+      nextPaneId = Math.max(nextPaneId, maxId + 1);
       return { nodes: nodesFromPersist(persisted) };
     }),
   // NOTE: we do NOT recycle deleted ids. The TerminalPane that mounted under
