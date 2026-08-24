@@ -268,6 +268,10 @@ describe("PtyService shell resolution + rc filing", () => {
       const fileIdx = fake.args.indexOf("-File");
       expect(fileIdx, "powershell args should pass -File <tempRc>").toBeGreaterThan(-1);
       expect(fake.args[fileIdx + 1]).toBe(join(tmpBase, rcFile!));
+      // Lever 2: the Windows console default-color pin (codex Console-API
+      // light-bg lever — see ShellIntegration.test.ts for the focused suite).
+      expect(rc).toContain("[Console]::BackgroundColor = 'White'");
+      expect(rc).toContain("OSPlatform]::Windows");
     } finally {
       await fs.rm(tmpBase, { recursive: true, force: true });
     }
