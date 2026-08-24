@@ -1,7 +1,7 @@
 // ReturningScreen — the returning-launch surface. Fires whenever Workspace's
 // gate resolves to `phase === "returning"` (Settings has either a persisted
-// workspace skeleton OR a pre-feature lastCwd). TitleBar + StatusBar stay live
-// above + below so the user recognises they're still in the app.
+// workspace skeleton OR a pre-feature lastCwd). The TitleBar stays live above
+// so the user recognises they're still in the app.
 //
 // The summary has two shapes:
 //   - Skeleton present: lists each pane id + last cwd so the user can see

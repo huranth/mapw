@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { StatusBar } from "@/components/StatusBar";
 import { TitleBar } from "@/components/TitleBar";
 import { Workspace } from "@/components/Workspace";
 import { ThemeProvider } from "@/themes";
@@ -28,7 +27,6 @@ export function App() {
       <div className="app-shell">
         <TitleBar />
         <Workspace />
-        <StatusBar />
       </div>
     </ThemeProvider>
   );

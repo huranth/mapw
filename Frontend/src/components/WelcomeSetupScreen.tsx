@@ -1,8 +1,7 @@
 // WelcomeSetupScreen — first-ever-launch + "Choose a new folder" picker
 // surface. Replaces the legacy silent native-picker auto-pop at first boot
-// (which read as "did a virus just pop up?") with a calm in-app card. TitleBar
-// + StatusBar stay live above + below so the user sees they never left the
-// app.
+// (which read as "did a virus just pop up?") with a calm in-app card. The
+// TitleBar stays live above so the user sees they never left the app.
 //
 // Two modes:
 //   - Shared (default): one picker card; the picked folder seeds all 4 panes.
