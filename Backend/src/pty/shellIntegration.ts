@@ -382,6 +382,32 @@ function powerShellRc(profilePath: string | null): string {
   if (profilePath) {
     lines.push(`if (Test-Path -LiteralPath "${profilePath}") { . "${profilePath}" }`);
   }
+  // Pin the Windows console's DEFAULT screen colors to dark ink on paper so a
+  // TUI that reads the host background via the Windows Console API (codex's
+  // GetConsoleScreenBufferInfoEx path on Windows — see Frontend/electron/
+  // codexThemeSeeder.ts' header for the full lever split) observes a LIGHT bg
+  // and renders its light palette, matching the paper-light chrome around the
+  // pane. ConPTY emits SGR-reset for default-attribute cells it diffs out, so
+  // xterm's theme still owns the visuals (white sheet, near-black ink): this
+  // flips ONLY what the Console-API probe reads; it does not repaint the pane.
+  // Guarded to Windows (the only platform with a Console API). On Unix codex /
+  // termenv probe via OSC 11 instead (a deferred cross-platform lever) — and
+  // setting [Console] colors on Unix would emit ANSI bg codes that WOULD paint
+  // rendered cells directly, so the Windows guard matters. The whole block is
+  // wrapped in try/catch so a missing RuntimeInformation type (pre-4.7.1
+  // .NET Framework) or a redirected console degrades to the dark default
+  // quietly instead of erroring into the pane at boot.
+  lines.push(
+    "",
+    "# mapw-init: console default colors -> dark ink on paper (see rc header).",
+    "try {",
+    "  if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(",
+    "        [System.Runtime.InteropServices.OSPlatform]::Windows)) {",
+    "    [Console]::BackgroundColor = 'White'",
+    "    [Console]::ForegroundColor = 'Black'",
+    "  }",
+    "} catch {}",
+  );
   lines.push(
     "",
     "# Snapshot the existing prompt body BEFORE we override it, so we can",
