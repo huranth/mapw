@@ -9,6 +9,8 @@ export type {
   PtyServiceOptions,
 } from "./pty/PtyService.js";
 export type { PtyEvent, PtySpawnOptions, PtySpawnResponse } from "./pty/types.js";
+export { CliToolDetector } from "./cli/detector.js";
+export type { DetectedCliTool, DetectCliToolsResult } from "./cli/types.js";
 export {
   detectShell,
   detectProfilePath,

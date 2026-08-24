@@ -1,5 +1,6 @@
 import type { Settings } from "@bridgespace/backend";
 import type {
+  DetectCliToolsResult,
   PtyEvent,
   PtySpawnOptions,
   PtySpawnResponse,
@@ -20,6 +21,12 @@ export interface Bridge {
   updateSettings: (partial: Partial<Settings>) => Promise<GetSettingsResponse>;
   // Native folder picker — "+ New terminal" + first-ever-launch Workspace gate.
   openDirectoryDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
+  // Detected-installed-CLI scan — drives the chip strip on every TerminalNode
+  // header. The curated table lives in Backend/src/cli/types.ts; main memoizes
+  // the scan result in a CliToolDetector singleton (one PATH walk per app
+  // lifetime). Returns the subset of the curated table actually present on
+  // PATH — empty array if none detected.
+  detectCliTools: () => Promise<DetectCliToolsResult>;
   // PTY — invoke pairs (request/response).
   ptySpawn: (opts: PtySpawnOptions) => Promise<PtySpawnResponse>;
   ptyWrite: (paneId: string, data: string) => Promise<void>;
