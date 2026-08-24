@@ -18,6 +18,8 @@ const api: Bridge = {
     ipcRenderer.invoke("settings:update", partial),
   // Native folder picker — drives "+ New terminal" + first-ever-launch gate.
   openDirectoryDialog: () => ipcRenderer.invoke("dialog:openDirectory"),
+  // Detected-installed-CLI scan — fills the chip strip on each pane header.
+  detectCliTools: () => ipcRenderer.invoke("cli:detect"),
   ptySpawn: (opts: PtySpawnOptions) => ipcRenderer.invoke("pty:spawn", opts),
   ptyWrite: (paneId: string, data: string) =>
     ipcRenderer.invoke("pty:write", paneId, data),
