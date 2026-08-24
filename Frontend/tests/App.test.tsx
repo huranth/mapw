@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { DEFAULT_SETTINGS, type Settings } from "@bridgespace/backend/renderer";
-import type { Bridge, GetSettingsResponse } from "@/bridge/types";
+import { DEFAULT_SETTINGS } from "@bridgespace/backend/renderer";
+import type { Bridge } from "@/bridge/types";
 import { App } from "@/App";
 import { makeTestBridge } from "../setupTests";
 
@@ -30,36 +30,16 @@ describe("App", () => {
     expect(screen.getByText(/^MAPW$/)).toBeInTheDocument();
   });
 
-  it("renders exactly one theme button (single-theme UI)", () => {
+  it("applies the active theme id to the document root", () => {
     installBridge({});
     render(<App />);
-    // The Paper pill in the title bar is the only theme-affordance button
-    // that names itself "Paper". React Flow injects per-node close buttons +
-    // the canvas's "+ New terminal" chip — all of which are role="button"
-    // too, so a raw getAllByRole would over-count. Scope to the named pill.
-    expect(screen.getAllByRole("button", { name: /Paper/i })).toHaveLength(1);
-  });
-
-  it("renders the active theme id in the workspace placeholder", () => {
-    installBridge({});
-    render(<App />);
-    expect(screen.getByTestId("active-theme-id").textContent).toBe(
+    // ThemeProvider's applyThemeVars writes `theme.id` (e.g. "paper") onto
+    // <html data-bs-theme>. The StatusBar that previously surfaced the
+    // `active-theme-id` testid was removed, so the root attribute is now the
+    // canonical theme cue.
+    expect(document.documentElement.dataset.bsTheme).toBe(
       DEFAULT_SETTINGS.theme,
     );
   });
 
-  it("clicking the theme pill calls bridge.updateSettings with the theme id", async () => {
-    const updateSettings = vi.fn(
-      async (partial: Partial<Settings>): Promise<GetSettingsResponse> => ({
-        settings: { ...DEFAULT_SETTINGS, ...partial },
-      }),
-    );
-    installBridge({ updateSettings });
-    render(<App />);
-    // The single shipped theme is `paper` (display name "Paper"). Clicking
-    // the pill still persists the *id* ("paper") through the bridge.
-    const paperButton = screen.getByRole("button", { name: /Paper/i });
-    paperButton.click();
-    expect(updateSettings).toHaveBeenCalledWith({ theme: "paper" });
-  });
 });

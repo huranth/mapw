@@ -109,7 +109,11 @@ describe("TerminalCanvas", () => {
       </ThemeProvider>,
     );
     await waitFor(() => expect(spawn).toHaveBeenCalledTimes(4));
-    const add = screen.getByRole("button", { name: /\+ New terminal/i });
+    // The chip's accessible name is "New terminal" — the PlusIcon glyph is a
+    // pure SVG with no <title>/aria-label, so it contributes nothing to the
+    // role-name; a previous literal "+ " prefix was dropped to dedupe the
+    // visible "+ + New terminal" double-plus.
+    const add = screen.getByRole("button", { name: /New terminal/i });
     fireEvent.click(add);
     await waitFor(() =>
       expect(openDirectoryDialog).toHaveBeenCalledTimes(1),
