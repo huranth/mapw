@@ -9,8 +9,8 @@ Most "accelerate your dev workflow" desktop apps this year ship with Fifty Thing
 There is no `.exe` yet — you run it from source. You need Node 20+ on a Windows machine (the ConPTY spawn + resize paths are tuned to Windows shells; Linux/macOS build in theory but no one's tried).
 
 ```bash
-git clone https://github.com/<you>/mapw.git
-cd mapw
+git clone https://github.com/huranth/mapw.git
+cd mapw/software
 npm install        # postinstalls electron + esbuild — firewalls stall here
 npm run dev        # electron-vite dev: spawns the window + HMR
 ```
