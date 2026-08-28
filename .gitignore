@@ -14,7 +14,3 @@ coverage/
 .zcode/
 Research.md
 DESIGN-*.md
-
-# Dev-side investigative scratch scripts used during build R&D. Only
-# scripts/patch-node-pty.mjs ships with the app (npm postinstall hook).
-scripts/probe-*
