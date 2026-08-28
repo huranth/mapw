@@ -108,8 +108,8 @@ export function LayoutsScreen({ onApply, onClose }: LayoutsScreenProps) {
       </button>
       <h1 className="layouts__headline">Layouts</h1>
       <p className="layouts__sub">
-        Pick a built-in preset, save the current canvas as a layout, or apply a
-        layout you saved earlier. Saved layouts are global — available in
+        Pick the built-in preset, save the current canvas as a layout, or apply
+        a layout you saved earlier. Saved layouts are global — available in
         every workspace.
       </p>
 

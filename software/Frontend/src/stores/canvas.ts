@@ -42,8 +42,8 @@ function seedSlots(): Array<{ x: number; y: number }> {
   ];
 }
 
-// Grid slot generator for non-2×2 built-in layouts (the Six-pane AI grid uses
-// 2×3; future layouts can request taller/wider grids). Same convention as
+// Grid slot generator used by the built-in Split 2×2 preset (and available
+// to future layouts that want taller/wider grids). Same convention as
 // seedSlots — positive X right, positive Y down — at the canvas's NODE_W +
 // NODE_H + GRID_GAP cell pitch. Built-ins consume the result directly so the
 // layout's pane positions never drift from what a Welcome-commit 2×2 looks

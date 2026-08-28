@@ -43,53 +43,16 @@ beforeEach(() => {
 });
 
 describe("BUILTIN_LAYOUTS", () => {
-  it("ships exactly the four curated built-ins in spec order with stable ids", () => {
-    expect(BUILTIN_LAYOUTS).toHaveLength(4);
-    const ids = BUILTIN_LAYOUTS.map((b) => b.id);
-    expect(ids).toEqual([
-      "builtin:split-2x2-raw",
-      "builtin:pair-codex-claude",
-      "builtin:trio-codex-claude-opencode",
-      "builtin:grid-6-2x3",
-    ]);
+  it("ships the single raw 2×2 built-in with a stable id — no CLI-branded presets", () => {
+    expect(BUILTIN_LAYOUTS).toHaveLength(1);
+    expect(BUILTIN_LAYOUTS.map((b) => b.id)).toEqual(["builtin:split-2x2-raw"]);
   });
 
-  it("every built-in carries builtin: true + the expected pane/cli mix", () => {
-    for (const b of BUILTIN_LAYOUTS) {
-      expect(b.builtin).toBe(true);
-    }
-
-    // Split 2×2 raw — 4 panes, all cliId null.
+  it("the built-in carries builtin: true + 4 unbound panes", () => {
     const split = BUILTIN_LAYOUTS[0]!;
+    expect(split.builtin).toBe(true);
     expect(split.nodes).toHaveLength(4);
     expect(split.nodes.every((n) => n.cliId == null)).toBe(true);
-
-    // AI pair — 2 panes: codex + claude.
-    const pair = BUILTIN_LAYOUTS[1]!;
-    expect(pair.nodes).toHaveLength(2);
-    expect(pair.nodes[0]?.cliId).toBe("codex");
-    expect(pair.nodes[1]?.cliId).toBe("claude");
-
-    // AI trio — 3 panes: codex + claude + opencode.
-    const trio = BUILTIN_LAYOUTS[2]!;
-    expect(trio.nodes).toHaveLength(3);
-    expect(trio.nodes[0]?.cliId).toBe("codex");
-    expect(trio.nodes[1]?.cliId).toBe("claude");
-    expect(trio.nodes[2]?.cliId).toBe("opencode");
-
-    // Six-pane AI grid — 6 panes, two each of codex/claude/opencode, matching
-    // the user's "layout X" example (two terminals with X, two with Y, two
-    // with Z) verbatim.
-    const grid = BUILTIN_LAYOUTS[3]!;
-    expect(grid.nodes).toHaveLength(6);
-    expect(grid.nodes.map((n) => n.cliId)).toEqual([
-      "codex",
-      "claude",
-      "opencode",
-      "codex",
-      "claude",
-      "opencode",
-    ]);
   });
 });
 
@@ -101,13 +64,37 @@ describe("summarizeLayout", () => {
   });
 
   it("renders distinct names when every pane has a distinct cliId", () => {
-    expect(summarizeLayout(BUILTIN_LAYOUTS[2]!)).toBe(
-      "3 panes — codex · claude · opencode",
-    );
+    const trio: SavedLayout = {
+      id: "test-trio",
+      name: "Trio",
+      nodes: [
+        { paneId: "p1", cwd: null, position: { x: 0, y: 0 }, cliId: "codex" },
+        { paneId: "p2", cwd: null, position: { x: 100, y: 0 }, cliId: "claude" },
+        {
+          paneId: "p3",
+          cwd: null,
+          position: { x: 200, y: 0 },
+          cliId: "opencode",
+        },
+      ],
+    };
+    expect(summarizeLayout(trio)).toBe("3 panes — codex · claude · opencode");
   });
 
-  it("collapses duplicates into a count form (the user's layout-X example: 2×codex + 2×claude + 2×opencode)", () => {
-    expect(summarizeLayout(BUILTIN_LAYOUTS[3]!)).toBe(
+  it("collapses duplicates into a count form (2×codex + 2×claude + 2×opencode)", () => {
+    const grid: SavedLayout = {
+      id: "test-grid",
+      name: "Grid",
+      nodes: ["codex", "claude", "opencode", "codex", "claude", "opencode"].map(
+        (cliId, i) => ({
+          paneId: `p${i + 1}`,
+          cwd: null,
+          position: { x: i, y: 0 },
+          cliId,
+        }),
+      ),
+    };
+    expect(summarizeLayout(grid)).toBe(
       "6 panes — 2×codex · 2×claude · 2×opencode",
     );
   });
@@ -160,7 +147,15 @@ describe("seedLayoutNodes", () => {
 describe("applyLayout", () => {
   it("wholesale-replaces the canvas store with the layout's panes re-keyed via freshPaneId (so React Flow reconciles them as mounts)", () => {
     // Reset bumps nextPaneId to 5 — past the 4 boot seeds.
-    applyLayout(BUILTIN_LAYOUTS[1]!); // AI pair (2 panes)
+    const pair: SavedLayout = {
+      id: "test-pair",
+      name: "Pair",
+      nodes: [
+        { paneId: "p1", cwd: null, position: { x: 0, y: 0 }, cliId: "codex" },
+        { paneId: "p2", cwd: null, position: { x: 100, y: 0 }, cliId: "claude" },
+      ],
+    };
+    applyLayout(pair); // 2 panes
     const nodes = useCanvasStore.getState().nodes;
     expect(nodes).toHaveLength(2);
     // PaneIds are fresh (p5, p6) — never reused from the 4 boot seeds, so

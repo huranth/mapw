@@ -1,9 +1,9 @@
 // BUILTIN_LAYOUTS — built-in layouts the Layouts panel ships ready-to-apply.
 // User-saved layouts live separately on `Settings.savedLayouts` (with no
 // `builtin` flag); this module's `BUILTIN_LAYOUTS` constant is the curated set
-// the panel renders first (Split 2×2 raw + AI pair/trio presets + the
-// Six-pane AI grid). All four ship so the user can one-click a multi-CLI
-// arrangement instead of manually configuring four+ panes per CLI.
+// the panel renders first: a single raw Split 2×2 (the boot-default shape).
+// No CLI-branded presets ship — binding a CLI to a pane is the user's call
+// from the pane itself, so built-ins stay tool-agnostic.
 //
 // `applyLayout` re-keys every pane with a fresh counter so React Flow
 // reconciles them as MOUNTS (not prop-changes on same-id nodes from the prior
@@ -31,7 +31,7 @@ import { useSettingsStore } from "@/stores/settings";
 // 6 curated CLIs in Backend/src/cli/types.ts — layouts reference them by the
 // stable curated id; apply-time TerminalPane looks up the installed CLI to
 // resolve the `launchCommand`. Missing-CLIs apply through cleanly (auto-launch
-// warns + pane stays raw shell) so a built-in doesn't 404 the user just
+// warns + pane stays raw shell) so a layout doesn't 404 the user just
 // because they're missing one CLI.
 
 function builtin(
@@ -58,48 +58,21 @@ function builtin(
   };
 }
 
-// 2×2 slot positions for the Split/pair/trio built-ins. `seedSlots` is
-// module-private in canvas.ts; `seedGridSlots(2, 2)` is the public helper
-// and produces the identical 2×2 in row-major order (top-left first), so the
-// pair/trio built-ins reusing SLOTS_2X2[0..N-1] get the same first-row-then-
-// second-row order a Welcome-commit 4-pane would have produced.
+// 2×2 slot positions for the Split built-in. `seedGridSlots(2, 2)` is the
+// public helper over canvas.ts's module-private `seedSlots`; it produces the
+// 2×2 in row-major order (top-left first) — the same order a Welcome-commit
+// 4-pane would have produced.
 const SLOTS_2X2 = seedGridSlots(2, 2);
 
-// All four presets, in the order the Layouts panel renders them. The first
-// (Split 2×2 raw) mirrors the Welcome flow's commit shape so a user who
-// applies it from any other layout gets the boot-default 4-pane raw shell
-// back. The AI pair + AI trio use the first N slots of the 2×2 (panes only
-// land where cliIds assign slots). The Six-pane AI grid interleaves
-// codex/claude/opencode across a 2×3 to match the user's "two terminals with
-// X, two with Y, two with Z" example.
+// The one built-in preset: the boot-default 4-pane raw shell. It mirrors the
+// Welcome flow's commit shape so a user who applies it from any other layout
+// gets that default back.
 export const BUILTIN_LAYOUTS: readonly SavedLayout[] = [
   builtin(
     "builtin:split-2x2-raw",
     "Split 2×2 raw",
     [null, null, null, null],
     SLOTS_2X2,
-  ),
-  builtin(
-    "builtin:pair-codex-claude",
-    "AI pair: codex + claude",
-    ["codex", "claude"],
-    [SLOTS_2X2[0] ?? { x: 0, y: 0 }, SLOTS_2X2[1] ?? { x: 0, y: 0 }],
-  ),
-  builtin(
-    "builtin:trio-codex-claude-opencode",
-    "AI trio: codex + claude + opencode",
-    ["codex", "claude", "opencode"],
-    [
-      SLOTS_2X2[0] ?? { x: 0, y: 0 },
-      SLOTS_2X2[1] ?? { x: 0, y: 0 },
-      SLOTS_2X2[2] ?? { x: 0, y: 0 },
-    ],
-  ),
-  builtin(
-    "builtin:grid-6-2x3",
-    "Six-pane AI grid 2+2+2",
-    ["codex", "claude", "opencode", "codex", "claude", "opencode"],
-    seedGridSlots(2, 3),
   ),
 ];
 

@@ -1,6 +1,6 @@
 // canvas store — exercises the cliId-threading additions: seedNodes now
 // carries parallel cliIds into PaneNodePersist; seedGridSlots produces
-// non-2×2 layouts (the Six-pane AI grid uses 2×3); addTerminal stamps cliId
+// grids of any row/col shape on request; addTerminal stamps cliId
 // onto the new node's data so a saved layout's panes survive a save cycle;
 // nodesFromPersist (the inverse of TerminalCanvas's debounced serialize)
 // round-trips cliId; freshPaneId mints the unique sequential counter

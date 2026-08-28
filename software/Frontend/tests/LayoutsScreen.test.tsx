@@ -68,57 +68,56 @@ afterEach(() => {
 });
 
 describe("LayoutsScreen — built-in section", () => {
-  it("renders all four built-in presets with names + summaries", () => {
-    useCliToolsStore.setState({ cliTools: sampleDetected, loaded: true });
+  it("renders the single built-in preset with its name + summary", () => {
     render(<LayoutsScreen onApply={vi.fn()} onClose={vi.fn()} />);
-    // All 4 built-in cards present.
-    expect(
-      screen.getByTestId("layouts-builtin-builtin:split-2x2-raw"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("layouts-builtin-builtin:pair-codex-claude"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("layouts-builtin-builtin:trio-codex-claude-opencode"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("layouts-builtin-builtin:grid-6-2x3"),
-    ).toBeInTheDocument();
-    // The Six-pane AI grid card carries the expected summary text.
-    const gridCard = screen.getByTestId("layouts-builtin-builtin:grid-6-2x3");
-    expect(gridCard).toHaveTextContent(
-      "6 panes — 2×codex · 2×claude · 2×opencode",
-    );
+    const card = screen.getByTestId("layouts-builtin-builtin:split-2x2-raw");
+    expect(card).toBeInTheDocument();
+    expect(card).toHaveTextContent("Split 2×2 raw");
+    expect(card).toHaveTextContent("4 panes — raw shell");
   });
 
-  it("shows the missing-CLI badge when a built-in references CLIs that aren't installed", () => {
+  it("shows the missing-CLI badge on a saved layout referencing CLIs that aren't installed", () => {
     // Only codex installed — claude + opencode missing.
     useCliToolsStore.setState({
       cliTools: [sampleDetected[0]!],
       loaded: true,
     });
+    const saved: SavedLayout = {
+      id: "usr-missing",
+      name: "Missing",
+      nodes: [
+        { paneId: "p1", cwd: null, position: { x: 0, y: 0 }, cliId: "codex" },
+        { paneId: "p2", cwd: null, position: { x: 100, y: 0 }, cliId: "claude" },
+        {
+          paneId: "p3",
+          cwd: null,
+          position: { x: 200, y: 0 },
+          cliId: "opencode",
+        },
+      ],
+    };
+    useSettingsStore.setState({
+      settings: { ...DEFAULT_SETTINGS, savedLayouts: [saved] },
+      loaded: true,
+    });
     render(<LayoutsScreen onApply={vi.fn()} onClose={vi.fn()} />);
-    const trioCard = screen.getByTestId(
-      "layouts-builtin-builtin:trio-codex-claude-opencode",
-    );
-    // The trio references codex + claude + opencode; only codex is installed
+    const row = screen.getByTestId("layouts-saved-usr-missing");
+    // The row references codex + claude + opencode; only codex is installed
     // here → badge shows the missing pair in insertion order, dedup'd.
-    expect(trioCard).toHaveTextContent(/missing: claude, opencode/);
+    expect(row).toHaveTextContent(/missing: claude, opencode/);
   });
 
-  it("Apply on a built-in card fires onApply with that built-in layout", () => {
-    useCliToolsStore.setState({ cliTools: sampleDetected, loaded: true });
+  it("Apply on the built-in card fires onApply with that built-in layout", () => {
     const onApply = vi.fn();
     render(<LayoutsScreen onApply={onApply} onClose={vi.fn()} />);
     fireEvent.click(
-      screen.getByTestId("layouts-apply-builtin-builtin:pair-codex-claude"),
+      screen.getByTestId("layouts-apply-builtin-builtin:split-2x2-raw"),
     );
     expect(onApply).toHaveBeenCalledTimes(1);
     const layout = onApply.mock.calls[0]?.[0] as SavedLayout;
-    expect(layout.id).toBe("builtin:pair-codex-claude");
-    expect(layout.nodes).toHaveLength(2);
-    expect(layout.nodes[0]?.cliId).toBe("codex");
-    expect(layout.nodes[1]?.cliId).toBe("claude");
+    expect(layout.id).toBe("builtin:split-2x2-raw");
+    expect(layout.nodes).toHaveLength(4);
+    expect(layout.nodes.every((n) => n.cliId == null)).toBe(true);
   });
 });
 
