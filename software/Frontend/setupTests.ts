@@ -143,6 +143,13 @@ export function makeTestBridge(overrides: Partial<Bridge> = {}): Bridge {
       // on the raw-pane boot path, not on the chip strip's CLI list. Tests
       // that exercise the chip strip override this with a non-empty result.
       (async () => ({ tools: [] })),
+    whoami: overrides.whoami ?? (async () => "tester"),
+    checkForUpdates: overrides.checkForUpdates ?? (async () => undefined),
+    onUpdateStatus:
+      overrides.onUpdateStatus ??
+      (() => {
+        return () => undefined;
+      }),
     ptySpawn:
       overrides.ptySpawn ??
       (async (opts: PtySpawnOptions): Promise<PtySpawnResponse> => ({

@@ -21,4 +21,10 @@ export {
   type ShellKind,
 } from "./pty/shellIntegration.js";
 export { DEFAULT_SETTINGS } from "./types.js";
-export type { PaneNodePersist, Settings, ThemeId, WorkspacePersist } from "./types.js";
+export type {
+  PaneNodePersist,
+  Settings,
+  ThemeId,
+  UpdateProgress,
+  WorkspacePersist,
+} from "./types.js";

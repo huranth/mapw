@@ -1,9 +1,3 @@
-// Renderer-safe surface: constants + types + pure-logic helpers only.
-// Zero Node-API imports so the renderer bundle (browser target) can include
-// this without pulling in node:fs or node-pty. Heavy services (SettingsStore,
-// PtyService) live on the package root subpath and are only imported from the
-// Electron main process.
-
 export { DEFAULT_SETTINGS } from "./types.js";
 export type {
   PaneNodePersist,
