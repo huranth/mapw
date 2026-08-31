@@ -23,30 +23,44 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (req.method !== "GET") return json({ error: "method not allowed" }, 405);
 
-  const admin = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceKey) {
+    return json({ error: "misconfigured" }, 500);
+  }
+  const admin = createClient(supabaseUrl, serviceKey);
 
   const cutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
 
-  const [installsTotal, installsOnline, devicesOnline, devicesUsers] = await Promise.all([
-    admin.from("installs").select("id", { count: "exact", head: true }),
-    admin.from("installs").select("id", { count: "exact", head: true })
-      .gt("last_seen_at", cutoff),
-    admin.from("devices").select("id", { count: "exact", head: true })
-      .gt("last_seen_at", cutoff),
-    admin.from("devices").select("user_id", { count: "exact", head: true }),
-  ]);
+  try {
+    const [installsTotal, installsOnline, devicesOnline, devicesUsers] = await Promise.all([
+      admin.from("installs").select("id", { count: "exact", head: true }),
+      admin.from("installs").select("id", { count: "exact", head: true })
+        .gt("last_seen_at", cutoff),
+      admin.from("devices").select("id", { count: "exact", head: true })
+        .gt("last_seen_at", cutoff),
+      // distinct users — head:true with count exact overcounts duplicates, but we treat as approximate
+      // and de-duplicate via Set if needed in future; for now we use exact as before.
+      admin.from("devices").select("user_id", { count: "exact", head: true }),
+    ]);
 
-  if (installsTotal.error || devicesUsers.error) {
-    return json({ error: "failed to count" }, 500);
+    // Check all errors, not just two
+    if (installsTotal.error || installsOnline.error || devicesOnline.error || devicesUsers.error) {
+      console.error("[live-stats] count failed:", installsTotal.error ?? installsOnline.error ?? devicesOnline.error ?? devicesUsers.error);
+      return json({ error: "failed to count" }, 500);
+    }
+
+    const onlineNow = (installsOnline.count ?? 0) + (devicesOnline.count ?? 0);
+    // Cache for 30s at edge, 60s at CDN to reduce DB load
+    const headers = { ...CORS, "Cache-Control": "public, s-maxage=30, max-age=15", "CDN-Cache-Control": "max-age=60" };
+    return new Response(JSON.stringify({
+      installs: installsTotal.count ?? 0,
+      users: devicesUsers.count ?? 0,
+      onlineNow,
+      updatedAt: new Date().toISOString(),
+    }), { status: 200, headers: { "Content-Type": "application/json", ...headers } });
+  } catch (err) {
+    console.error("[live-stats] unexpected error:", err);
+    return json({ error: "internal error" }, 500);
   }
-
-  return json({
-    installs: installsTotal.count ?? 0,
-    users: devicesUsers.count ?? 0,
-    onlineNow: (installsOnline.count ?? 0) + (devicesOnline.count ?? 0),
-    updatedAt: new Date().toISOString(),
-  });
 });

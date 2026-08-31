@@ -106,23 +106,34 @@ async function checkForUpdates(): Promise<void> {
 
 /** Anonymous install heartbeat — powers the website's live counter. */
 async function sendHeartbeat(): Promise<void> {
-  try {
-    if (!HEARTBEAT_URL) return;
-    const installId = getStore().getAll().installId;
-    if (!installId) return;
-    await fetch(HEARTBEAT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        installId,
-        label: anonymizedLabel(os.hostname(), installId),
-        platform: process.platform,
-        appVersion: app.getVersion(),
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-  } catch {
-    // Telemetry must never break the app; connectivity is optional.
+  if (!HEARTBEAT_URL) return;
+  const installId = getStore().getAll().installId;
+  if (!installId) return;
+  const payload = JSON.stringify({
+    installId,
+    label: anonymizedLabel(os.hostname(), installId),
+    platform: process.platform,
+    appVersion: app.getVersion(),
+  });
+  // Retry with exponential backoff + jitter for transient network failures.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(HEARTBEAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) throw new Error(`heartbeat ${res.status}`);
+      return;
+    } catch (err) {
+      if (attempt === 2) {
+        console.debug("[heartbeat] failed after 3 attempts:", err);
+        return;
+      }
+      const backoff = 500 * Math.pow(2, attempt) + Math.random() * 300;
+      await new Promise((r) => setTimeout(r, backoff));
+    }
   }
 }
 
@@ -138,47 +149,72 @@ async function ensureInstallId(): Promise<string> {
 
 function registerIpc(): void {
   ipcMain.handle("settings:get", async () => {
-    const s = getStore();
-    await s.ensureLoaded();
-    return { settings: s.getAll() };
+    try {
+      const s = getStore();
+      await s.ensureLoaded();
+      return { settings: s.getAll() };
+    } catch (err) {
+      console.error("[ipc] settings:get failed:", err);
+      throw err;
+    }
   });
 
   ipcMain.handle(
     "settings:update",
     async (_event: IpcMainInvokeEvent, partial: Partial<Settings>) => {
-      const s = getStore();
-      const settings = await s.update(partial);
-      return { settings };
+      try {
+        const s = getStore();
+        const settings = await s.update(partial);
+        return { settings };
+      } catch (err) {
+        console.error("[ipc] settings:update failed:", err);
+        throw err;
+      }
     },
   );
 
   ipcMain.handle(
     "dialog:openDirectory",
     async (event: IpcMainInvokeEvent) => {
-      const parent = BrowserWindow.fromWebContents(event.sender);
-      if (parent) {
-        return dialog.showOpenDialog(parent, {
+      try {
+        const parent = BrowserWindow.fromWebContents(event.sender);
+        if (parent) {
+          return await dialog.showOpenDialog(parent, {
+            title: "Pick working directory",
+            properties: ["openDirectory", "createDirectory", "promptToCreate"],
+          });
+        }
+        return await dialog.showOpenDialog({
           title: "Pick working directory",
           properties: ["openDirectory", "createDirectory", "promptToCreate"],
         });
+      } catch (err) {
+        console.error("[ipc] dialog:openDirectory failed:", err);
+        return { canceled: true, filePaths: [] as string[] };
       }
-      return dialog.showOpenDialog({
-        title: "Pick working directory",
-        properties: ["openDirectory", "createDirectory", "promptToCreate"],
-      });
     },
   );
 
   ipcMain.handle(
     "pty:spawn",
     async (_event: IpcMainInvokeEvent, opts: PtySpawnOptions) => {
-      return getPtys().spawn(opts);
+      try {
+        return await getPtys().spawn(opts);
+      } catch (err) {
+        console.error("[ipc] pty:spawn failed:", err);
+        throw err;
+      }
     },
   );
   ipcMain.handle(
     "pty:write",
     async (_event: IpcMainInvokeEvent, paneId: string, data: string) => {
-      return getPtys().write(paneId, data);
+      try {
+        return await getPtys().write(paneId, data);
+      } catch (err) {
+        console.error("[ipc] pty:write failed:", err);
+        throw err;
+      }
     },
   );
   ipcMain.handle(
@@ -189,18 +225,34 @@ function registerIpc(): void {
       cols: number,
       rows: number,
     ) => {
-      return getPtys().resize(paneId, cols, rows);
+      try {
+        return await getPtys().resize(paneId, cols, rows);
+      } catch (err) {
+        console.error("[ipc] pty:resize failed:", err);
+        throw err;
+      }
     },
   );
   ipcMain.handle(
     "pty:kill",
     async (_event: IpcMainInvokeEvent, paneId: string) => {
-      return getPtys().kill(paneId);
+      try {
+        return await getPtys().kill(paneId);
+      } catch (err) {
+        console.error("[ipc] pty:kill failed:", err);
+        // kill is idempotent — don't throw
+        return;
+      }
     },
   );
 
   ipcMain.handle("cli:detect", async () => {
-    return getCliDetector().detect();
+    try {
+      return await getCliDetector().detect();
+    } catch (err) {
+      console.error("[ipc] cli:detect failed:", err);
+      return { tools: [] };
+    }
   });
 
   ipcMain.handle("system:whoami", async () => {
@@ -212,7 +264,11 @@ function registerIpc(): void {
   });
 
   ipcMain.handle("update:check", async () => {
-    void checkForUpdates();
+    try {
+      void checkForUpdates();
+    } catch (err) {
+      console.error("[ipc] update:check failed:", err);
+    }
   });
 }
 

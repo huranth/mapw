@@ -110,13 +110,37 @@ export function wireCopy(root) {
 // ---- real data ------------------------------------------------------------
 
 function isTrustedReleaseUrl(url) {
-  try { const u = new URL(url); return u.protocol === "https:" && u.hostname.endsWith(".supabase.co"); } catch { return false; }
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/");
+  } catch { return false; }
 }
+
+async function fetchWithRetry(url, opts, retries = 2) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, opts);
+      if (!res.ok) {
+        if (res.status >= 500 && i < retries) {
+          await new Promise((r) => setTimeout(r, 300 * Math.pow(2, i)));
+          continue;
+        }
+        return null;
+      }
+      return res;
+    } catch (err) {
+      if (i === retries) return null;
+      await new Promise((r) => setTimeout(r, 300 * Math.pow(2, i) + Math.random() * 200));
+    }
+  }
+  return null;
+}
+
 export async function fetchLatestRelease() {
   if (!RELEASES_INDEX_URL) return null;
+  const res = await fetchWithRetry(RELEASES_INDEX_URL, { signal: AbortSignal.timeout(8000) });
+  if (!res) return null;
   try {
-    const res = await fetch(RELEASES_INDEX_URL, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
     const data = await res.json();
     if (typeof data.version !== "string" || typeof data.url !== "string") return null;
     if (!isTrustedReleaseUrl(data.url)) return null;
@@ -128,9 +152,9 @@ export async function fetchLatestRelease() {
 
 export async function fetchLiveStats() {
   if (!LIVE_STATS_URL) return null;
+  const res = await fetchWithRetry(LIVE_STATS_URL, { signal: AbortSignal.timeout(8000) });
+  if (!res) return null;
   try {
-    const res = await fetch(LIVE_STATS_URL, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
     return await res.json();
   } catch {
     return null;

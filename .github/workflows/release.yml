@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (e.g. 0.1.0)"
+        required: false
+      notes:
+        description: "Release notes"
+        required: false
+
+jobs:
+  build-and-publish:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: software/package-lock.json
+      - name: Install software
+        working-directory: software
+        run: npm ci
+      - name: Build exe
+        working-directory: software
+        run: npm run dist
+      - name: Publish to Supabase releases
+        working-directory: software
+        env:
+          SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
+        run: |
+          $version = "${{ inputs.version }}"
+          if (-not $version) { $version = (Get-Content Frontend/package.json | ConvertFrom-Json).version }
+          $notes = "${{ inputs.notes }}"
+          Write-Host "Publishing $version"
+          node scripts/publish-release.mjs --version $version --notes "$notes"
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: software/Frontend/release/mapw.exe
+          generate_release_notes: true
