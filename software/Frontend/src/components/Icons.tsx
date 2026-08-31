@@ -29,7 +29,6 @@ export function TerminalIcon(p: IconProps) { return <Svg {...p}><path d="M4 17l6
 export function CopyIcon(p: IconProps) { return <Svg {...p}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h8" /></Svg>; }
 
 export function CheckIcon(p: IconProps) { return <Svg {...p}><path d="M5 13l4 4L19 7" /></Svg>; }
-export function CheckCircleIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M8 12l2.5 2.5L16 9" /></Svg>; }
 export function SparklesIcon(p: IconProps) { return <Svg {...p}><path d="M12 3l1.2 3.8L17 8l-3.8 1.2L12 13l-1.2-3.8L7 8l3.8-1.2z" /><path d="M19 11l.9 2.1L22 14l-2.1.9L19 17l-.9-2.1L16 14l2.1-.9z" /><path d="M5 14l.9 2.1L8 17l-2.1.9L5 20l-.9-2.1L2 17l2.1-.9z" /></Svg>; }
 export function LayersIcon(p: IconProps) { return <Svg {...p}><path d="M12 2L2 7l10 5 10-5z" /><path d="M2 12l10 5 10-5" /><path d="M2 17l10 5 10-5" /></Svg>; }
 export function GridIcon(p: IconProps) { return <Svg {...p}><rect x="3" y="3" width="7" height="7" rx="1.2" /><rect x="14" y="3" width="7" height="7" rx="1.2" /><rect x="3" y="14" width="7" height="7" rx="1.2" /><rect x="14" y="14" width="7" height="7" rx="1.2" /></Svg>; }
@@ -41,38 +40,11 @@ export function SaveIcon(p: IconProps) { return <Svg {...p}><path d="M6 3h10l3 3
 export function TrashIcon(p: IconProps) { return <Svg {...p}><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M7 6l1 14h8l1-14" /><path d="M10 11v6M14 11v6" /></Svg>; }
 export function PencilIcon(p: IconProps) { return <Svg {...p}><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></Svg>; }
 export function InboxIcon(p: IconProps) { return <Svg {...p}><rect x="3" y="7" width="18" height="11" rx="2" /><path d="M3 7l3-3h12l3 3" /><path d="M12 12v6" /><path d="M9 15l3 3 3-3" /></Svg>; }
-export function SearchIcon(p: IconProps) { return <Svg {...p}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.2-4.2" /></Svg>; }
 export function InfoIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" /></Svg>; }
-export function WindowIcon(p: IconProps) { return <Svg {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M7 6h.01M11 6h.01" /></Svg>; }
-export function CommandIcon(p: IconProps) { return <Svg {...p}><rect x="7" y="7" width="10" height="10" rx="2" /><path d="M9 7V5M15 7V5M9 17v2M15 17v2M7 9H5M7 15H5M17 9h2M17 15h2" /></Svg>; }
-export function ZapIcon(p: IconProps) { return <Svg {...p}><path d="M13 2L3 14h7l-1 8 10-12h-7z" /></Svg>; }
-export function CodeIcon(p: IconProps) { return <Svg {...p}><path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" /><path d="M13 3l-2 18" /></Svg>; }
 export function CompassIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M16.1 7.9l-2.7 6.5-6.5 2.7 2.7-6.5z" /><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none" /></Svg>; }
-export function MicIcon(p: IconProps) { return <Svg {...p}><rect x="9" y="2" width="6" height="11" rx="3" /><path d="M19 10a7 7 0 0 1-14 0" /><path d="M12 17v4M8 21h8" /></Svg>; }
-export function RecordDotIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></Svg>; }
-export function BarChartIcon(p: IconProps) { return <Svg {...p}><path d="M4 20V10M10 20V4M16 20v14" /><path d="M4 20h16" /></Svg>; }
+export function CodeIcon(p: IconProps) { return <Svg {...p}><path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" /><path d="M13 3l-2 18" /></Svg>; }
 export function BarChart3Icon(p: IconProps) { return <Svg {...p}><path d="M6 20V12M12 20V4M18 20V8" /><path d="M3 20h18" /></Svg>; }
-export function BookIcon(p: IconProps) { return <Svg {...p}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H18a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 0 4 5.5z" /><path d="M8 9h6M8 13h5" /></Svg>; }
-export function ScissorsIcon(p: IconProps) { return <Svg {...p}><circle cx="6" cy="6" r="3" /><circle cx="6" cy="18" r="3" /><path d="M8.1 8.1l7 7M8.1 15.9l7-7" /></Svg>; }
-export function StyleIcon(p: IconProps) { return <Svg {...p}><path d="M4 6h16M9 6v12M11 9v6M15 9v6M4 18h16" /></Svg>; }
-export function WandIcon(p: IconProps) { return <Svg {...p}><path d="M15 4l-1 2 2 1-2 1 1 2-1-2-2-1 2-1z" /><path d="M4 20l5-5 4 4-5 5z" /><path d="M9 15l2 2M14 8l2 2" /></Svg>; }
-export function NoteIcon(p: IconProps) { return <Svg {...p}><path d="M6 3h9l5 5v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" /><path d="M15 3v5h5" /><path d="M9 13h6M9 17h4" /></Svg>; }
-export function UserIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="8" r="4" /><path d="M4 20a8 8 0 0 1 16 0" /></Svg>; }
-export function UsersIcon(p: IconProps) { return <Svg {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M15 7a4 4 0 0 1 4 4v2M19 11h3M19 11v3" /></Svg>; }
-export function GiftIcon(p: IconProps) { return <Svg {...p}><rect x="3" y="8" width="18" height="12" rx="1" /><path d="M12 8v12M3 12h18" /><path d="M7.5 8a3.5 3.5 0 0 1 3.5-3.5A3.5 3.5 0 0 1 12 8a3.5 3.5 0 0 1 4.5-3.5 3.5 3.5 0 0 1-3.5 3.5H7.5z" /></Svg>; }
-export function SettingsIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="3" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></Svg>; }
-export function HelpCircleIcon(p: IconProps) { return <Svg {...p}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 2-2 2-2 4" /><path d="M12 17h.01" /></Svg>; }
-export function BellIcon(p: IconProps) { return <Svg {...p}><path d="M6 8a6 6 0 0 1 12 0c0 7-6 5-6 9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></Svg>; }
-export function PanelIcon(p: IconProps) { return <Svg {...p}><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></Svg>; }
 export function ShareIcon(p: IconProps) { return <Svg {...p}><path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8" /><path d="M12 16V3" /><path d="M8 7l4-4 4 4" /></Svg>; }
-export function AppMarkIcon({ size = 20, style, className }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style} className={className} aria-hidden="true" focusable="false">
-      <rect x="2.5" y="2.5" width="19" height="19" rx="4.5" stroke="currentColor" strokeWidth={1.4} />
-      <path d="M7 7h5.2v5.2H7zM11.8 7H17v5.2h-5.2zM7 11.8H12.2V17H7zM11.8 11.8H17V17h-5.2z" fill="currentColor" opacity={0.95} />
-    </svg>
-  );
-}
 export function MapwLogo({ size = 22, style, className }: IconProps) {
   const id = `mapw-g-${size}`;
   return (
