@@ -59,7 +59,7 @@ describe("BUILTIN_LAYOUTS", () => {
 describe("summarizeLayout", () => {
   it("renders 'raw shell' summary for a layout with no bound CLIs", () => {
     expect(summarizeLayout(BUILTIN_LAYOUTS[0]!)).toMatch(
-      /4 panes — raw shell/,
+      /4 panes raw/,
     );
   });
 
@@ -78,7 +78,7 @@ describe("summarizeLayout", () => {
         },
       ],
     };
-    expect(summarizeLayout(trio)).toBe("3 panes — codex · claude · opencode");
+    expect(summarizeLayout(trio)).toBe("3 panes codex, claude, opencode");
   });
 
   it("collapses duplicates into a count form (2×codex + 2×claude + 2×opencode)", () => {
@@ -95,7 +95,7 @@ describe("summarizeLayout", () => {
       ),
     };
     expect(summarizeLayout(grid)).toBe(
-      "6 panes — 2×codex · 2×claude · 2×opencode",
+      "6 panes 2×codex, 2×claude, 2×opencode",
     );
   });
 });

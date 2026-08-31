@@ -73,7 +73,7 @@ describe("LayoutsScreen — built-in section", () => {
     const card = screen.getByTestId("layouts-builtin-builtin:split-2x2-raw");
     expect(card).toBeInTheDocument();
     expect(card).toHaveTextContent("Split 2×2 raw");
-    expect(card).toHaveTextContent("4 panes — raw shell");
+    expect(card).toHaveTextContent("4 panes raw");
   });
 
   it("shows the missing-CLI badge on a saved layout referencing CLIs that aren't installed", () => {

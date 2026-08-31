@@ -82,8 +82,8 @@ describe("WelcomeSetupScreen", () => {
     ];
     expect(primaryCwdArg).toBe("/dir");
     expect(nodesArg).toHaveLength(4);
-    // The 2x2 default slot geometry (NODE_W=560 + GRID_GAP=36 = 596 across,
-    // NODE_H=320 + GRID_GAP=36 = 356 down). seedNodes lays panes in this exact
+    // The 2x2 default slot geometry (NODE_W=420 + GRID_GAP=28 = 448 across,
+    // NODE_H=260 + GRID_GAP=28 = 288 down). seedNodes lays panes in this exact
     // shape so a Continue restore after a fresh-app launch lands each pane
     // where the Welcome flow left it.
     expect(nodesArg).toEqual(
@@ -96,17 +96,17 @@ describe("WelcomeSetupScreen", () => {
         expect.objectContaining({
           paneId: "p2",
           cwd: "/dir",
-          position: { x: 596, y: 0 },
+          position: { x: 448, y: 0 },
         }),
         expect.objectContaining({
           paneId: "p3",
           cwd: "/dir",
-          position: { x: 0, y: 356 },
+          position: { x: 0, y: 288 },
         }),
         expect.objectContaining({
           paneId: "p4",
           cwd: "/dir",
-          position: { x: 596, y: 356 },
+          position: { x: 448, y: 288 },
         }),
       ]),
     );

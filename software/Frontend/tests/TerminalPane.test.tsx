@@ -541,7 +541,7 @@ describe("TerminalPane", () => {
 
   it("(3b) split-stream teleporter — body painted in chunk N at a row that mismatches the outside anchor, close arrives ALONE in chunk N+1 (chunkHadCup=false this call) → anchor to STABLE outside (NOT bodyLast) so no interim body-lastCup paint (the actual teleporter fix)", async () => {
     // The SPLIT-cycle teleporter fix — the user's "blinker while not a
-    // FUCKING TELEPORTER" ask. codex (per `__codex_probe.log`) often splits a
+    // teleporter" request. codex (per `__codex_probe.log`) often splits a
     // sync frame across TWO onData chunks when ConPTY chops at a `?25h`
     // boundary: chunk N OPENS `?2026h` and paints the body's CUPs through the
     // footer / response / working-banner row (body-lastCup scanned at row
