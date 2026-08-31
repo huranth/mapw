@@ -2,6 +2,7 @@ node_modules/
 dist/
 out/
 release/
+.next/
 *.log
 .DS_Store
 .vite/
@@ -9,6 +10,13 @@ coverage/
 .env
 .env.local
 *.tsbuildinfo
+__effort_capture.bin
+
+# Supabase — local secrets and CLI state (schema lives in migrations, tracked)
+supabase/.db-password
+supabase/.env
+supabase/.temp/
+supabase/.branches/
 
 # Local-only research dumps + scratch pads — kept out of source control.
 .zcode/
