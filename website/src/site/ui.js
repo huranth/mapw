@@ -34,6 +34,7 @@ export function initSite() {
           <p data-reveal data-reveal-delay="2">Four panes on a calm sheet. Drag to move. Resize to fit. Pin a CLI to each.</p>
           <div class="actions" data-reveal data-reveal-delay="3">
             <a class="btn solid" href="#download" data-download><span data-download-label>Download for Windows</span></a>
+            <a class="btn" href="#download" data-download-gz style="display:none">.gz</a>
             <a class="btn" href="#under-the-hood">How it works</a>
           </div>
           <div class="hero-endpoint" data-reveal data-reveal-delay="4">

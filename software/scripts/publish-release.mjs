@@ -64,13 +64,30 @@ await upload(
   "application/vnd.microsoft.portable-executable",
 );
 
+// Also upload .gz if present (for users who prefer gz)
+let gzUrl = null;
+const gzPath = `${exePath}.gz`;
+const gzInfo = await stat(gzPath).catch(() => null);
+if (gzInfo?.isFile()) {
+  const gz = await readFile(gzPath);
+  console.log(`Uploading mapw-${version}.exe.gz (${(gz.length / 1024 / 1024).toFixed(1)} MB)…`);
+  await upload(
+    `mapw-${version}.exe.gz`,
+    new Uint8Array(gz),
+    "application/gzip",
+  );
+  gzUrl = `${objectBase}/mapw-${version}.exe.gz`;
+}
+
 const latest = {
   version,
   url: `${objectBase}/mapw-${version}.exe`,
+  ...(gzUrl ? { gzUrl } : {}),
   notes,
   publishedAt: new Date().toISOString(),
 };
 await upload("latest.json", JSON.stringify(latest, null, 2), "application/json");
 
 console.log(`Published ${version}: ${latest.url}`);
+if (gzUrl) console.log(`Also published gz: ${gzUrl}`);
 console.log("The app's updater and the website download button will pick it up automatically.");

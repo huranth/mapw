@@ -21,7 +21,7 @@ export function topbarHTML(active) {
   };
   return `
     <header class="topbar">
-      <div class="brand"><a href="index.html"><b>mapw</b></a></div>
+      <div class="brand"><a href="index.html"><img src="/logo.svg" alt="" width="28" height="28" style="vertical-align:middle;margin-right:8px"/><b>mapw</b></a></div>
       <nav class="nav">
         ${link("index.html#chips", "Chips", "chips")}
         ${link("index.html#under-the-hood", "Under the hood", "hood")}
@@ -179,6 +179,14 @@ export async function wireDownloadControls() {
       el.style.pointerEvents = "none";
       const label = el.querySelector("[data-download-label]");
       if (label) label.textContent = "Download — first release coming soon";
+    }
+  });
+  document.querySelectorAll("[data-download-gz]").forEach(function (el) {
+    if (release && release.gzUrl && isTrustedReleaseUrl(release.gzUrl)) {
+      el.setAttribute("href", release.gzUrl);
+      el.style.display = "";
+    } else {
+      el.style.display = "none";
     }
   });
   document.querySelectorAll("[data-release-version]").forEach(function (el) {
