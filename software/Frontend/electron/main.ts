@@ -278,11 +278,13 @@ function registerIpc(): void {
 }
 
 function createWindow(): void {
+  const iconPath = join(thisDir, "../../build/icon.png");
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 720,
     minHeight: 480,
+    icon: iconPath,
 
     backgroundColor: "#FAFAFA",
 
