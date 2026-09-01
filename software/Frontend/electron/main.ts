@@ -24,9 +24,14 @@ import { seedCodexTheme } from "./codexThemeSeeder";
 import { isSelfUpdatePossible, runUpdateCycle } from "./updater";
 
 function supabaseOrigin(): string {
+  // Vite inlines import.meta.env at build time; main process falls back to process.env at runtime.
+  // Hardcode prod as last resort so heartbeat/update never silently disables if env is missing
+  // (the URL is public by design; anon key remains client-safe via RLS).
+  const fromMeta = (import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_SUPABASE_URL;
+  if (typeof fromMeta === "string" && fromMeta.trim()) return fromMeta.trim().replace(/\/+$/, "");
   const fromEnv = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
   if (typeof fromEnv === "string" && fromEnv.trim()) return fromEnv.trim().replace(/\/+$/, "");
-  return "";
+  return "https://pdynfowdtiulrllqetbl.supabase.co";
 }
 const HEARTBEAT_URL = (() => {
   const o = supabaseOrigin();

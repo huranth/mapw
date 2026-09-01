@@ -26,9 +26,11 @@ export type { LatestRelease } from "./updateMeta";
 export { buildSwapScript, isNewerVersion, parseLatestJson } from "./updateMeta";
 
 function supabaseOrigin(): string {
+  const fromMeta = (import.meta as unknown as { env?: Record<string, unknown> }).env?.VITE_SUPABASE_URL;
+  if (typeof fromMeta === "string" && fromMeta.trim()) return fromMeta.trim().replace(/\/+$/, "");
   const fromEnv = process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"];
   if (typeof fromEnv === "string" && fromEnv.trim()) return fromEnv.trim().replace(/\/+$/, "");
-  return "";
+  return "https://pdynfowdtiulrllqetbl.supabase.co";
 }
 export const RELEASES_INDEX_URL = (() => {
   const o = supabaseOrigin();
