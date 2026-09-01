@@ -37,32 +37,24 @@ export function initSite() {
             <a class="btn" href="#download" data-download-gz style="display:none">.gz</a>
             <a class="btn" href="#under-the-hood">How it works</a>
           </div>
-          <div class="hero-meta" data-reveal data-reveal-delay="4">
-            <div class="meta-edition">
-              <span class="meta-label">Edition</span>
-              <code data-release-version>checking…</code>
+          <div class="hero-ledger" data-reveal data-reveal-delay="4">
+            <div class="ledger-head">
+              <span class="ledger-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ledger-title">fleet</span>
+              <span class="ledger-edition">Edition <code data-release-version>checking…</code></span>
             </div>
-            <div class="fleet" data-live hidden aria-live="polite">
-              <div class="fleet-card fleet-online">
-                <div class="fleet-icon" aria-hidden="true">
-                  <span class="live-pulse"></span>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="3.6" stroke="currentColor" stroke-width="1.15"/><path d="M7 4.2V7l2.1 1.26" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </div>
-                <div class="fleet-body">
-                  <b data-live-online>0</b>
-                  <span>live</span>
-                </div>
+            <div class="ledger-body" data-live hidden aria-live="polite">
+              <div class="ledger-stat is-live">
+                <div class="ledger-stat-head"><span class="ledger-live-dot" aria-hidden="true"></span> live now</div>
+                <b data-live-online>0</b>
               </div>
-              <div class="fleet-card fleet-installs">
-                <div class="fleet-icon" aria-hidden="true">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2.8v8.4M2.8 7h8.4" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/><circle cx="7" cy="7" r="4.7" stroke="currentColor" stroke-width="1.15"/></svg>
-                </div>
-                <div class="fleet-body">
-                  <b data-live-installs>0</b>
-                  <span>installs</span>
-                </div>
+              <div class="ledger-rule" aria-hidden="true"></div>
+              <div class="ledger-stat">
+                <div class="ledger-stat-head">installs</div>
+                <b data-live-installs>0</b>
               </div>
             </div>
+            <div class="ledger-foot">No mocks. Counts are live from <code>live-stats</code>.</div>
           </div>
         </div>
       </section>

@@ -224,80 +224,84 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .btn.ghost:hover { color: var(--ink); }
 .mt { margin-top: 22px; }
 
-/* Hero ledger — edition + fleet. Not a ticker, a drafting-table pin board: edition as a typeset
-   stamp, fleet as two small paper cards (live + installs). Numbers in Fraunces, labels in mono,
-   teal spine on each card like the app's own panes. Feels printed, not generated. */
-.hero-meta {
-	margin-top: 36px; padding-top: 18px;
-	border-top: 1px solid var(--line);
-	display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center;
+/* Hero ledger — a proper drafting-table card, not a ticker. Header is the
+   terminal bar (dots + fleet label + edition pill), body is a 2-up stat grid
+   like the app's own Usage stats. Feels typeset and built, not generated. */
+.hero-ledger {
+	margin-top: 28px;
+	max-width: 420px;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0 1px 0 rgba(24,23,18,0.04), 0 16px 32px -20px rgba(24,23,18,0.18);
 }
-.meta-edition {
-	display: inline-flex; align-items: center; gap: 10px;
-	font-family: var(--mono); font-size: 11px; letter-spacing: 0.11em; text-transform: uppercase;
+.ledger-head {
+	display: flex; align-items: center; gap: 10px;
+	padding: 10px 14px;
+	background: var(--paper-2);
+	border-bottom: 1px solid var(--line);
+}
+.ledger-dots { display: inline-flex; align-items: center; gap: 5px; flex: none; }
+.ledger-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
+.ledger-dots i:first-child { background: var(--teal); }
+.ledger-title {
+	font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+	color: var(--ink-3); margin-left: 2px;
+}
+.ledger-edition {
+	margin-left: auto;
+	display: inline-flex; align-items: center; gap: 6px;
+	font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
 	color: var(--ink-3);
-	background: var(--surface);
-	border: 1px solid var(--line); border-radius: 999px;
-	padding: 6px 6px 6px 14px;
-	box-shadow: 0 1px 0 rgba(24,23,18,0.04);
 }
-.meta-edition code {
-	font-family: var(--mono); font-size: 13px; font-weight: 600; letter-spacing: 0;
-	text-transform: none; color: var(--ink);
-	background: var(--paper-2); border: 1px solid var(--line);
-	padding: 4px 8px; border-radius: 999px;
+.ledger-edition code {
+	font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: 0;
+	text-transform: none; color: var(--paper);
+	background: var(--ink); border: 1px solid var(--ink);
+	padding: 3px 7px; border-radius: 5px;
 }
-.meta-label { position: relative; padding-right: 11px; }
-.meta-label::after {
-	content: ""; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-	width: 1px; height: 14px; background: var(--line-2);
+.ledger-body {
+	display: grid; grid-template-columns: 1fr 1px 1fr;
+	align-items: stretch;
 }
-
-.fleet { display: flex; gap: 10px; justify-self: end; align-items: center; }
-.fleet[hidden] { display: none !important; }
-.fleet-card {
-	display: flex; align-items: center; gap: 11px;
-	background: var(--surface);
-	border: 1px solid var(--line); border-radius: 10px;
-	padding: 9px 14px 9px 11px; min-width: 122px;
-	box-shadow: 0 1px 0 rgba(24,23,18,0.05), 0 8px 18px -14px rgba(24,23,18,0.18);
-	position: relative; overflow: hidden;
-	transition: transform .2s var(--ease), box-shadow .2s var(--ease), border-color .2s var(--ease);
+.ledger-body[hidden] { display: none !important; }
+.ledger-stat {
+	padding: 16px 18px 14px;
+	display: flex; flex-direction: column; gap: 4px;
+	position: relative;
+	transition: background .2s var(--ease);
 }
-.fleet-card::before {
-	content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 2.5px;
-	background: var(--teal); border-radius: 0 2px 2px 0; opacity: 0.92;
+.ledger-stat:hover { background: var(--paper-2); }
+.ledger-stat-head {
+	font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+	color: var(--ink-3); display: inline-flex; align-items: center; gap: 6px;
 }
-.fleet-card:hover { transform: translateY(-1px); border-color: var(--line-2); box-shadow: 0 10px 22px -14px rgba(24,23,18,0.20); }
-.fleet-card.fleet-online::after {
-	content: ""; position: absolute; right: 10px; top: 10px; width: 5px; height: 5px;
-	background: var(--live); border-radius: 50%; box-shadow: 0 0 0 3px rgba(47,158,68,0.14);
+.ledger-live-dot {
+	width: 6px; height: 6px; border-radius: 50%; background: var(--live);
+	box-shadow: 0 0 0 3px rgba(47,158,68,0.14);
+	animation: ledgerPulse 2.4s ease-out infinite;
 }
-.fleet-icon {
-	width: 28px; height: 28px; display: grid; place-items: center; flex: none;
-	background: var(--paper-2); border: 1px solid var(--line); border-radius: 7px;
-	color: var(--teal); position: relative;
+@keyframes ledgerPulse { 0% { box-shadow: 0 0 0 3px rgba(47,158,68,0.14); } 50% { box-shadow: 0 0 0 5px rgba(47,158,68,0.08); } 100% { box-shadow: 0 0 0 3px rgba(47,158,68,0.14); } }
+.ledger-stat b {
+	font-family: var(--display); font-size: 32px; line-height: 1;
+	letter-spacing: -0.03em; color: var(--ink); font-weight: 650;
+	font-variant-numeric: tabular-nums; display: block;
 }
-.live-pulse {
-	position: absolute; width: 6px; height: 6px; background: var(--live); border-radius: 50%;
-	top: -3px; right: -3px; box-shadow: 0 0 0 0 rgba(47,158,68,0.42);
-	animation: livePulse 2.4s ease-out infinite;
+.ledger-rule { background: var(--line); }
+.ledger-foot {
+	padding: 9px 14px;
+	background: var(--paper-2);
+	border-top: 1px solid var(--line);
+	font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
 }
-@keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(47,158,68,0.42); } 70% { box-shadow: 0 0 0 6px rgba(47,158,68,0); } 100% { box-shadow: 0 0 0 0 rgba(47,158,68,0); } }
-.fleet-body b {
-	font-family: var(--display); font-size: 18.5px; line-height: 1; letter-spacing: -0.02em;
-	color: var(--ink); font-weight: 650; display: block; font-variant-numeric: tabular-nums;
+.ledger-foot code { font-family: var(--mono); font-size: 10.5px; color: var(--teal); }
+@media (max-width: 520px) {
+	.hero-ledger { max-width: none; }
+	.ledger-stat { padding: 14px 14px 12px; }
+	.ledger-stat b { font-size: 26px; }
 }
-.fleet-body span {
-	font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase;
-	color: var(--ink-3); display: block; margin-top: 2px;
-}
-@media (max-width: 720px) {
-	.hero-meta { grid-template-columns: 1fr; gap: 12px; }
-	.fleet { justify-self: start; }
-	.fleet-card { min-width: 0; flex: 1; }
-}
-@media (prefers-reduced-motion: reduce) { .live-pulse { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ledger-live-dot { animation: none; } }
 .copy-btn {
 	position: relative;
 	font-family: var(--mono); font-size: 12px; color: var(--ink-2);
