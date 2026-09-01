@@ -278,13 +278,15 @@ function registerIpc(): void {
 }
 
 function createWindow(): void {
-  const iconPath = join(thisDir, "../../build/icon.png");
+  // Use exe's embedded icon on Windows (taskbar/desktop) — don't override with a
+  // file path that may not exist in the packaged asar. The exe icon is baked from
+  // build/icon.ico (transparent panes). Letting Electron pick the exe icon avoids
+  // the default atom fallback when the PNG path is wrong in production.
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 720,
     minHeight: 480,
-    icon: iconPath,
 
     backgroundColor: "#FAFAFA",
 
