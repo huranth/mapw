@@ -37,10 +37,32 @@ export function initSite() {
             <a class="btn" href="#download" data-download-gz style="display:none">.gz</a>
             <a class="btn" href="#under-the-hood">How it works</a>
           </div>
-          <div class="hero-endpoint" data-reveal data-reveal-delay="4">
-            <span class="k">latest</span>
-            <code data-release-version>checking…</code>
-            <span data-live hidden><span class="live-dot" aria-hidden="true"></span><span data-live-online>0</span> online · <span data-live-installs>0</span> installs</span>
+          <div class="hero-meta" data-reveal data-reveal-delay="4">
+            <div class="meta-edition">
+              <span class="meta-label">Edition</span>
+              <code data-release-version>checking…</code>
+            </div>
+            <div class="fleet" data-live hidden aria-live="polite">
+              <div class="fleet-card fleet-online">
+                <div class="fleet-icon" aria-hidden="true">
+                  <span class="live-pulse"></span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="3.6" stroke="currentColor" stroke-width="1.15"/><path d="M7 4.2V7l2.1 1.26" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="fleet-body">
+                  <b data-live-online>0</b>
+                  <span>live</span>
+                </div>
+              </div>
+              <div class="fleet-card fleet-installs">
+                <div class="fleet-icon" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 2.8v8.4M2.8 7h8.4" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/><circle cx="7" cy="7" r="4.7" stroke="currentColor" stroke-width="1.15"/></svg>
+                </div>
+                <div class="fleet-body">
+                  <b data-live-installs>0</b>
+                  <span>installs</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
