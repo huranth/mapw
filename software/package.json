@@ -1,6 +1,6 @@
 {
   "name": "mapw",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Multi-pane terminal workspace \u2014 a calm desktop shell for running several terminals side by side.",
   "type": "module",
