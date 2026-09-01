@@ -275,27 +275,14 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .ledger-stat:hover { background: var(--paper-2); }
 .ledger-stat-head {
 	font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-	color: var(--ink-3); display: inline-flex; align-items: center; gap: 6px;
+	color: var(--ink-3);
 }
-.ledger-live-dot {
-	width: 6px; height: 6px; border-radius: 50%; background: var(--live);
-	box-shadow: 0 0 0 3px rgba(47,158,68,0.14);
-	animation: ledgerPulse 2.4s ease-out infinite;
-}
-@keyframes ledgerPulse { 0% { box-shadow: 0 0 0 3px rgba(47,158,68,0.14); } 50% { box-shadow: 0 0 0 5px rgba(47,158,68,0.08); } 100% { box-shadow: 0 0 0 3px rgba(47,158,68,0.14); } }
 .ledger-stat b {
 	font-family: var(--display); font-size: 32px; line-height: 1;
 	letter-spacing: -0.03em; color: var(--ink); font-weight: 650;
 	font-variant-numeric: tabular-nums; display: block;
 }
 .ledger-rule { background: var(--line); }
-.ledger-foot {
-	padding: 9px 14px;
-	background: var(--paper-2);
-	border-top: 1px solid var(--line);
-	font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
-}
-.ledger-foot code { font-family: var(--mono); font-size: 10.5px; color: var(--teal); }
 @media (max-width: 520px) {
 	.hero-ledger { max-width: none; }
 	.ledger-stat { padding: 14px 14px 12px; }

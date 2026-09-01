@@ -45,7 +45,7 @@ export function initSite() {
             </div>
             <div class="ledger-body" data-live hidden aria-live="polite">
               <div class="ledger-stat is-live">
-                <div class="ledger-stat-head"><span class="ledger-live-dot" aria-hidden="true"></span> live now</div>
+                <div class="ledger-stat-head">live now</div>
                 <b data-live-online>0</b>
               </div>
               <div class="ledger-rule" aria-hidden="true"></div>
@@ -54,7 +54,6 @@ export function initSite() {
                 <b data-live-installs>0</b>
               </div>
             </div>
-            <div class="ledger-foot">No mocks. Counts are live from <code>live-stats</code>.</div>
           </div>
         </div>
       </section>
