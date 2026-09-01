@@ -142,7 +142,8 @@ async function fetchWithRetry(url, opts, retries = 2) {
 
 export async function fetchLatestRelease() {
   if (!RELEASES_INDEX_URL) return null;
-  const res = await fetchWithRetry(RELEASES_INDEX_URL, { signal: AbortSignal.timeout(8000) });
+  const busted = `${RELEASES_INDEX_URL}${RELEASES_INDEX_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  const res = await fetchWithRetry(busted, { signal: AbortSignal.timeout(8000), cache: "no-store" });
   if (!res) return null;
   try {
     const data = await res.json();
