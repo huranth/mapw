@@ -19,7 +19,8 @@ async function testLatest() {
     console.error("  FAIL: latest.json missing version/url", data);
     return false;
   }
-  if (!data.url.startsWith("https://") || !data.url.includes(".supabase.co")) {
+  const trusted = data.url.startsWith("https://") && (data.url.includes(".supabase.co/storage/v1/object/public/releases/") || data.url.startsWith("https://github.com/huranth/mapw"));
+  if (!trusted) {
     console.error("  FAIL: url not trusted", data.url);
     return false;
   }

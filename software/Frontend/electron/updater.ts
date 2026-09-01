@@ -53,8 +53,7 @@ async function fetchLatestRelease(): Promise<LatestRelease | null> {
       const text = await res.text();
       const parsed = parseLatestJson(text);
       if (!parsed) return null;
-      // Extra guard: url must be https + supabase storage releases path
-      if (!isAllowedReleaseUrl(parsed.url) || !parsed.url.includes("/storage/v1/object/public/releases/")) return null;
+      if (!isAllowedReleaseUrl(parsed.url)) return null;
       return parsed;
     } catch (err) {
       if (attempt === 2) {
@@ -70,7 +69,11 @@ async function fetchLatestRelease(): Promise<LatestRelease | null> {
 function isAllowedReleaseUrl(url: string): boolean {
   try {
     const u = new URL(url);
-    return u.protocol === "https:" && u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/");
+    if (u.protocol !== "https:") return false;
+    if (u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/")) return true;
+    if (u.hostname === "github.com" && u.pathname.startsWith("/huranth/mapw")) return true;
+    if (u.hostname.endsWith("githubusercontent.com") || u.hostname.endsWith("github-releases.githubusercontent.com")) return true;
+    return false;
   } catch { return false; }
 }
 

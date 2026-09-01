@@ -112,7 +112,11 @@ export function wireCopy(root) {
 function isTrustedReleaseUrl(url) {
   try {
     const u = new URL(url);
-    return u.protocol === "https:" && u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/");
+    if (u.protocol !== "https:") return false;
+    if (u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/")) return true;
+    if (u.hostname === "github.com" && u.pathname.startsWith("/huranth/mapw")) return true;
+    if (u.hostname.endsWith("githubusercontent.com") || u.hostname.endsWith("github-releases.githubusercontent.com")) return true;
+    return false;
   } catch { return false; }
 }
 
