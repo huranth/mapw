@@ -121,6 +121,8 @@ Deno.serve(async (req) => {
         console.error("[device-heartbeat] devices upsert failed:", error);
         return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
       }
+      // Best-effort realtime push — makes fleet live in ~1s for 1000s without polling storm
+      try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
       return Response.json({ ok: true, kind: "device" }, { headers: CORS_HEADERS });
     } catch (err) {
       console.error("[device-heartbeat] auth path error:", err);
@@ -146,6 +148,7 @@ Deno.serve(async (req) => {
         console.error("[device-heartbeat] offline update failed:", error);
         return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
       }
+      try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
       return Response.json({ ok: true, kind: "install", offline: true }, { headers: CORS_HEADERS });
     } catch (err) {
       console.error("[device-heartbeat] offline path error:", err);
@@ -168,6 +171,7 @@ Deno.serve(async (req) => {
       console.error("[device-heartbeat] installs upsert failed:", error);
       return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
     }
+    try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
     return Response.json({ ok: true, kind: "install" }, { headers: CORS_HEADERS });
   } catch (err) {
     console.error("[device-heartbeat] anon path error:", err);

@@ -1,10 +1,11 @@
 // live-stats — public aggregate counts for the website's live user counter.
 // Returns counts only, never rows: nothing here is personal data. The app
-// heartbeats every 15 min, so "online" = seen in the last 20 minutes.
+// heartbeats every 45s, so "online" = seen in the last 2 minutes — fast enough
+// to feel live for 1000s, cheap enough for free tier (with DB index on last_seen).
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const ONLINE_WINDOW_MS = 20 * 60 * 1000;
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -51,8 +52,8 @@ Deno.serve(async (req) => {
     }
 
     const onlineNow = (installsOnline.count ?? 0) + (devicesOnline.count ?? 0);
-    // Cache for 30s at edge, 60s at CDN to reduce DB load
-    const headers = { ...CORS, "Cache-Control": "public, s-maxage=30, max-age=15", "CDN-Cache-Control": "max-age=60" };
+    // Cache 5s at edge, 10s at CDN — feels live for fleet without hammering DB (30s before was sluggish).
+    const headers = { ...CORS, "Cache-Control": "public, s-maxage=5, max-age=3", "CDN-Cache-Control": "max-age=10" };
     return new Response(JSON.stringify({
       installs: installsTotal.count ?? 0,
       users: devicesUsers.count ?? 0,

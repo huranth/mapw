@@ -1,6 +1,7 @@
 // Shared page furniture + behaviours, carried over from the LingLing site and
 // rebranded for mapw. Same motion, same copy flashes, same CTA glow.
 // Real-data endpoints live here so both pages read identical values.
+import { createClient } from "@supabase/supabase-js";
 
 function supabaseOrigin() {
   try {
@@ -14,6 +15,18 @@ function supabaseOrigin() {
 const SUPABASE_URL = supabaseOrigin();
 export const RELEASES_INDEX_URL = SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json` : "";
 export const LIVE_STATS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/live-stats` : "";
+
+// Realtime — anon key is public by design (RLS is the gate). Hardcoded fallback so
+// fleet is live even if Vercel env misses VITE_SUPABASE_ANON_KEY.
+const SUPABASE_ANON_KEY = (() => {
+  try {
+    const e = typeof import.meta !== "undefined" ? import.meta.env : null;
+    const k = e?.VITE_SUPABASE_ANON_KEY;
+    if (typeof k === "string" && k.trim()) return k.trim();
+  } catch {}
+  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeW5mb3dkdGl1bHJsbHFldGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODEzNzAsImV4cCI6MjEwMzU1NzM3MH0.ZtPaxuiFHhGoZhgpD5wfr0kabHKC0G0lIS16BX27yLA";
+})();
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
 export function topbarHTML(active) {
   const link = function (href, label, id) {
@@ -200,8 +213,8 @@ export async function wireDownloadControls() {
 }
 
 // Live install/online counts from our edge function. Renders nothing until the
-// server answers — the site never shows fake numbers. Polls every 30s so
-// closing the app is visible without a refresh (offline beacon makes it ~seconds).
+// server answers — the site never shows fake numbers. Realtime broadcast makes it
+// lighting fast (fleet_update from device-heartbeat), polling is the fallback.
 export async function wireLiveCounters() {
   async function render() {
     const stats = await fetchLiveStats();
@@ -215,10 +228,23 @@ export async function wireLiveCounters() {
     });
   }
   await render();
-  // Poll for live fleet — cheap (cached 30s at edge), keeps 1000s view fresh.
-  setInterval(() => { void render(); }, 30_000);
-  // Also refresh when tab becomes visible again
+
+  // Poll every 10s as fallback (cached 5s at edge) — cheap for 1000s, feels live
+  const poll = setInterval(() => { void render(); }, 10_000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") void render();
   });
+
+  // Realtime — lighting fast: device-heartbeat broadcasts fleet_update after each upsert/offline
+  if (supabase) {
+    try {
+      const ch = supabase.channel("fleet:live", { config: { broadcast: { ack: false } } });
+      ch.on("broadcast", { event: "fleet_update" }, () => { void render(); });
+      // Also listen to postgres changes as hard fallback (if broadcast missed)
+      ch.on("postgres_changes", { event: "*", schema: "public", table: "installs" }, () => { void render(); });
+      await ch.subscribe();
+      // Cleanup on unload to avoid ghost listeners
+      window.addEventListener("beforeunload", () => { try { supabase.removeChannel(ch); } catch {} clearInterval(poll); });
+    } catch {}
+  }
 }
