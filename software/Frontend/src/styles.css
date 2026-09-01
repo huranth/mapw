@@ -1933,7 +1933,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   font-family: var(--bs-font-body); font-weight: 700; font-size: 16px; line-height: 1;
   letter-spacing: -0.028em; color: #1C1C1C; display: inline-flex; align-items: center;
 }
-.sidebar__brand-name::before { content: "MAPW"; }
+.sidebar__brand-name::before { content: "mapw"; }
 .sidebar__pill {
   font-family: var(--bs-font-body); font-size: 11px; font-weight: 600; line-height: 1; letter-spacing: 0.02em;
   padding: 3px 8px; border-radius: 999px; background: #F0E6FF; color: #6B21A8; border: 1px solid #E8D5FF;

@@ -46,18 +46,21 @@ export function CodeIcon(p: IconProps) { return <Svg {...p}><path d="M9 7l-5 5 5
 export function BarChart3Icon(p: IconProps) { return <Svg {...p}><path d="M6 20V12M12 20V4M18 20V8" /><path d="M3 20h18" /></Svg>; }
 export function ShareIcon(p: IconProps) { return <Svg {...p}><path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8" /><path d="M12 16V3" /><path d="M8 7l4-4 4 4" /></Svg>; }
 export function MapwLogo({ size = 22, style, className }: IconProps) {
-  const id = `mapw-g-${size}`;
+  // Stacked terminal panes — line art from the official lockup (Terminals, like paper.)
+  // Stroke #2E2E2E on white, 3 panes with the front carrying >_ . Matches website/logo.svg
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" style={style} className={className} aria-hidden="true" focusable="false">
-      <defs>
-        <linearGradient id={id} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#134E4A" />
-          <stop offset="100%" stopColor="#0F3D3B" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="22" height="22" rx="6" fill={`url(#${id})`} />
-      <path d="M7 7h5.2v5.2H7zM11.8 7H17v5.2h-5.2zM7 11.8H12.2V17H7zM11.8 11.8H17V17h-5.2z" fill="white" opacity={0.96} />
-      <circle cx="18.2" cy="5.6" r="2.1" fill="#FFA726" stroke="white" strokeWidth={0.9} />
+    <svg width={size} height={size} viewBox="0 0 32 32" style={style} className={className} aria-hidden="true" focusable="false">
+      {/* back */}
+      <path d="M5 8.5 L10 3.5 L26 3.5 L26 18.5 L7.5 18.5 L5 15.2 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.55} strokeLinejoin="round" strokeLinecap="round" />
+      {/* middle-right */}
+      <path d="M15 7 L20 3.5 L28.5 3.5 L28.5 19 L17 19 L15 16 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.15} strokeLinejoin="round" strokeLinecap="round" opacity={0.95} />
+      {/* front — the hero */}
+      <path d="M7 13.5 L12 8.2 L27.5 8.2 L27.5 24.2 L9.5 24.2 L7 21 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.65} strokeLinejoin="round" strokeLinecap="round" />
+      {/* bottom peek */}
+      <path d="M8 24.2 L9.5 27.8 L22 28.5 L25 25.5" fill="none" stroke="#2E2E2E" strokeWidth={1.15} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
+      {/* >_ */}
+      <path d="M13.2 14.2 L17 17 L13.2 19.8" fill="none" stroke="#2E2E2E" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16.8 20.2 H22.4" stroke="#2E2E2E" strokeWidth={1.7} strokeLinecap="round" />
     </svg>
   );
 }

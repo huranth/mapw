@@ -47,7 +47,8 @@
     "appId": "com.mapw.app",
     "productName": "mapw",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "out/**/*"
@@ -58,6 +59,7 @@
     "npmRebuild": false,
     "compression": "normal",
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "portable",

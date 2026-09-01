@@ -21,7 +21,7 @@ export function topbarHTML(active) {
   };
   return `
     <header class="topbar">
-      <div class="brand"><a href="index.html"><img src="/logo.svg" alt="" width="28" height="28" style="vertical-align:middle;margin-right:8px"/><b>mapw</b></a></div>
+      <div class="brand"><a href="index.html" aria-label="mapw — Terminals, like paper."><img src="/logo-header.svg" alt="mapw" height="28" width="122" style="display:block"/></a></div>
       <nav class="nav">
         ${link("index.html#chips", "Chips", "chips")}
         ${link("index.html#under-the-hood", "Under the hood", "hood")}
