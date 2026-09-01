@@ -57,6 +57,7 @@ interface HeartbeatBody {
   label?: unknown;
   platform?: unknown;
   appVersion?: unknown;
+  offline?: unknown;
 }
 
 const CORS_HEADERS = {
@@ -133,6 +134,23 @@ Deno.serve(async (req) => {
   }
   if (isRateLimited(`anon:${body.installId}`)) {
     return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
+  }
+  // Offline beacon — mark as not online without deleting the row (preserves installs count)
+  if (body.offline === true) {
+    try {
+      const { error } = await admin.from("installs").update({
+        last_seen_at: new Date(0).toISOString(), // 1970 — falls out of 20m window
+        last_ip: clientIp(req),
+      }).eq("id", body.installId);
+      if (error) {
+        console.error("[device-heartbeat] offline update failed:", error);
+        return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
+      }
+      return Response.json({ ok: true, kind: "install", offline: true }, { headers: CORS_HEADERS });
+    } catch (err) {
+      console.error("[device-heartbeat] offline path error:", err);
+      return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
+    }
   }
   try {
     const { error } = await admin.from("installs").upsert(

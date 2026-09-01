@@ -110,7 +110,7 @@ async function checkForUpdates(): Promise<void> {
 }
 
 /** Anonymous install heartbeat — powers the website's live counter. */
-async function sendHeartbeat(): Promise<void> {
+async function sendHeartbeat(offline = false): Promise<void> {
   if (!HEARTBEAT_URL) return;
   const installId = getStore().getAll().installId;
   if (!installId) return;
@@ -119,6 +119,7 @@ async function sendHeartbeat(): Promise<void> {
     label: anonymizedLabel(os.hostname(), installId),
     platform: process.platform,
     appVersion: app.getVersion(),
+    ...(offline ? { offline: true } : {}),
   });
   // Retry with exponential backoff + jitter for transient network failures.
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -391,6 +392,19 @@ void app
     app.on("will-quit", () => {
       clearInterval(heartbeatTimer);
       clearInterval(updateTimer);
+      // Best-effort offline beacon — makes "live now" drop within seconds, not 20m.
+      // Use keepalive so it survives the quit; fire-and-forget.
+      try {
+        const installId = getStore().getAll().installId;
+        if (installId && HEARTBEAT_URL) {
+          void fetch(HEARTBEAT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ installId, offline: true }),
+            keepalive: true,
+          } as RequestInit).catch(() => {});
+        }
+      } catch {}
       if (applyUpdateOnQuit) applyUpdateOnQuit();
     });
   });

@@ -200,15 +200,25 @@ export async function wireDownloadControls() {
 }
 
 // Live install/online counts from our edge function. Renders nothing until the
-// server answers — the site never shows fake numbers.
+// server answers — the site never shows fake numbers. Polls every 30s so
+// closing the app is visible without a refresh (offline beacon makes it ~seconds).
 export async function wireLiveCounters() {
-  const stats = await fetchLiveStats();
-  if (!stats) return;
-  document.querySelectorAll("[data-live]").forEach(function (el) {
-    el.hidden = false;
-    const online = el.querySelector("[data-live-online]");
-    const installs = el.querySelector("[data-live-installs]");
-    if (online) online.textContent = stats.onlineNow;
-    if (installs) installs.textContent = stats.installs;
+  async function render() {
+    const stats = await fetchLiveStats();
+    if (!stats) return;
+    document.querySelectorAll("[data-live]").forEach(function (el) {
+      el.hidden = false;
+      const online = el.querySelector("[data-live-online]");
+      const installs = el.querySelector("[data-live-installs]");
+      if (online) online.textContent = stats.onlineNow;
+      if (installs) installs.textContent = stats.installs;
+    });
+  }
+  await render();
+  // Poll for live fleet — cheap (cached 30s at edge), keeps 1000s view fresh.
+  setInterval(() => { void render(); }, 30_000);
+  // Also refresh when tab becomes visible again
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void render();
   });
 }
