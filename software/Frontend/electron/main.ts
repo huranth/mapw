@@ -4,6 +4,7 @@ import {
   dialog,
   ipcMain,
   Menu,
+  nativeImage,
   shell,
   type IpcMainInvokeEvent,
 } from "electron";
@@ -278,12 +279,22 @@ function registerIpc(): void {
   });
 }
 
+function resolveWindowIcon(): Electron.NativeImage | undefined {
+  if (process.platform !== "win32") return undefined;
+  try {
+    const candidate = app.isPackaged
+      ? join(process.resourcesPath, "icon.png")
+      : join(thisDir, "..", "..", "build", "icon.png");
+    const img = nativeImage.createFromPath(candidate);
+    return img.isEmpty() ? undefined : img;
+  } catch {
+    return undefined;
+  }
+}
+
 function createWindow(): void {
-  // Use exe's embedded icon on Windows (taskbar/desktop) — don't override with a
-  // file path that may not exist in the packaged asar. The exe icon is baked from
-  // build/icon.ico (transparent panes). Letting Electron pick the exe icon avoids
-  // the default atom fallback when the PNG path is wrong in production.
   const win = new BrowserWindow({
+    icon: resolveWindowIcon(),
     width: 1200,
     height: 800,
     minWidth: 720,
