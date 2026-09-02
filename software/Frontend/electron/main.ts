@@ -305,11 +305,7 @@ function createWindow(): void {
       preload: join(thisDir, "..", "preload", "index.mjs"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
-      webSecurity: true,
-      allowRunningInsecureContent: false,
-      experimentalFeatures: false,
-      enableWebSQL: false,
+      sandbox: false,
 
       devTools: false,
     },
