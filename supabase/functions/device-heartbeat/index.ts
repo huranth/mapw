@@ -60,13 +60,26 @@ interface HeartbeatBody {
   offline?: unknown;
 }
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, apikey",
-} as const;
+const ALLOWED_ORIGINS = new Set([
+  "https://mapw.vercel.app",
+  "https://www.mapw.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+]);
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  // Electron has no Origin — allow it (no browser to enforce CORS anyway)
+  const allow = !origin ? "*" : ALLOWED_ORIGINS.has(origin) ? origin : "https://mapw.vercel.app";
+  return {
+    "Access-Control-Allow-Origin": allow,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, content-type, apikey",
+    "Vary": "Origin",
+  };
+}
 
 Deno.serve(async (req) => {
+  const CORS_HEADERS = corsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }

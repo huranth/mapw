@@ -16,15 +16,15 @@ const SUPABASE_URL = supabaseOrigin();
 export const RELEASES_INDEX_URL = SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json` : "";
 export const LIVE_STATS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/live-stats` : "";
 
-// Realtime — anon key is public by design (RLS is the gate). Hardcoded fallback so
-// fleet is live even if Vercel env misses VITE_SUPABASE_ANON_KEY.
+// Realtime — anon key is public by design (RLS is the gate). No hardcoded fallback;
+// Vercel must provide VITE_SUPABASE_ANON_KEY. If missing, fleet falls back to polling.
 const SUPABASE_ANON_KEY = (() => {
   try {
     const e = typeof import.meta !== "undefined" ? import.meta.env : null;
     const k = e?.VITE_SUPABASE_ANON_KEY;
     if (typeof k === "string" && k.trim()) return k.trim();
   } catch {}
-  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeW5mb3dkdGl1bHJsbHFldGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODEzNzAsImV4cCI6MjEwMzU1NzM3MH0.ZtPaxuiFHhGoZhgpD5wfr0kabHKC0G0lIS16BX27yLA";
+  return "";
 })();
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
@@ -126,9 +126,10 @@ function isTrustedReleaseUrl(url) {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
-    if (u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/")) return true;
-    if (u.hostname === "github.com" && u.pathname.startsWith("/huranth/mapw")) return true;
-    if (u.hostname.endsWith("githubusercontent.com") || u.hostname.endsWith("github-releases.githubusercontent.com")) return true;
+    const host = u.hostname.toLowerCase();
+    const path = u.pathname;
+    if (host === "pdynfowdtiulrllqetbl.supabase.co" && path.includes("/storage/v1/object/public/releases/")) return true;
+    if (host === "github.com" && (path.startsWith("/huranth/mapw/releases/") || path.startsWith("/huranth/mapw-releases/releases/"))) return true;
     return false;
   } catch { return false; }
 }
@@ -229,21 +230,21 @@ export async function wireLiveCounters() {
   }
   await render();
 
-  // Poll every 10s as fallback (cached 5s at edge) — cheap for 1000s, feels live
-  const poll = setInterval(() => { void render(); }, 10_000);
+  // Poll every 5s as fallback (cached 2s at edge) — cheap for 1000s, feels instant.
+  // Realtime does the lighting-fast push; polling catches any missed broadcast or cache.
+  const poll = setInterval(() => { void render(); }, 5_000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") void render();
   });
 
-  // Realtime — lighting fast: device-heartbeat broadcasts fleet_update after each upsert/offline
+  // Realtime — up in ~1s (heartbeat broadcast), down in ~2s (offline beacon)
   if (supabase) {
     try {
       const ch = supabase.channel("fleet:live", { config: { broadcast: { ack: false } } });
       ch.on("broadcast", { event: "fleet_update" }, () => { void render(); });
-      // Also listen to postgres changes as hard fallback (if broadcast missed)
-      ch.on("postgres_changes", { event: "*", schema: "public", table: "installs" }, () => { void render(); });
+      // postgres_changes fallback requires RLS policy for anon; broadcast is primary.
+      // We keep a no-op fallback poll already, so no need for postgres_changes here.
       await ch.subscribe();
-      // Cleanup on unload to avoid ghost listeners
       window.addEventListener("beforeunload", () => { try { supabase.removeChannel(ch); } catch {} clearInterval(poll); });
     } catch {}
   }

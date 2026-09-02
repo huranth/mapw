@@ -37,7 +37,7 @@ const HEARTBEAT_URL = (() => {
   const o = supabaseOrigin();
   return o ? `${o}/functions/v1/device-heartbeat` : "";
 })();
-const HEARTBEAT_INTERVAL_MS = 45 * 1000;
+const HEARTBEAT_INTERVAL_MS = 30 * 1000;
 const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
 function anonymizedLabel(hostname: string, installId: string): string {
@@ -305,7 +305,11 @@ function createWindow(): void {
       preload: join(thisDir, "..", "preload", "index.mjs"),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
+      webSecurity: true,
+      allowRunningInsecureContent: false,
+      experimentalFeatures: false,
+      enableWebSQL: false,
 
       devTools: false,
     },
@@ -316,6 +320,10 @@ function createWindow(): void {
     const isMac = process.platform === "darwin";
     const mod = input.control || input.meta;
 
+    if (key === "f12") { event.preventDefault(); return; }
+    if (mod && input.shift && (key === "i" || key === "j" || key === "c")) { event.preventDefault(); return; }
+    if (isMac && input.meta && input.alt && key === "i") { event.preventDefault(); return; }
+
     if (mod && input.shift && key === "r") {
       event.preventDefault();
       return;
@@ -325,14 +333,10 @@ function createWindow(): void {
       event.preventDefault();
       return;
     }
-
-    if (
-      (mod && input.shift && key === "i") ||
-      (isMac && input.meta && input.alt && key === "i")
-    ) {
-      event.preventDefault();
-    }
   });
+  if (app.isPackaged) {
+    win.webContents.on("devtools-opened", () => win.webContents.closeDevTools());
+  }
 
   win.webContents.on("will-navigate", (event) => {
     event.preventDefault();
@@ -343,15 +347,19 @@ function createWindow(): void {
   win.webContents.on("will-attach-webview", (event) => {
     event.preventDefault();
   });
-
-  win.on("app-command", (_event, command) => {
-    if (command === "browser-backward" || command === "browser-forward") {
-
-    }
-  });
-
+  // Block any permission prompts (camera, mic, etc.) — mapw doesn't need them
+  win.webContents.session.setPermissionRequestHandler((_wc, _permission, callback) => callback(false));
+  win.webContents.session.setPermissionCheckHandler(() => false);
+  // Only allow external https to trusted hosts
   win.webContents.setWindowOpenHandler((details) => {
-    if (/^https?:\/\//i.test(details.url)) void shell.openExternal(details.url);
+    try {
+      const u = new URL(details.url);
+      if (u.protocol !== "https:") return { action: "deny" };
+      const host = u.hostname.toLowerCase();
+      const ok = host === "github.com" || host.endsWith(".github.com") || host.endsWith(".supabase.co") || host.endsWith(".vercel.app") || host === "fonts.googleapis.com" || host === "fonts.gstatic.com";
+      if (!ok) return { action: "deny" };
+      void shell.openExternal(details.url);
+    } catch {}
     return { action: "deny" };
   });
 
@@ -389,23 +397,43 @@ void app
     const heartbeatTimer = setInterval(() => void sendHeartbeat(), HEARTBEAT_INTERVAL_MS);
     void checkForUpdates();
     const updateTimer = setInterval(() => void checkForUpdates(), UPDATE_CHECK_INTERVAL_MS);
-    app.on("will-quit", () => {
+    // Keep reference so we can await it in before-quit
+    let offlineBeacon: Promise<void> | null = null;
+    const sendOfflineBeacon = async (): Promise<void> => {
+      if (!HEARTBEAT_URL) return;
+      const installId = getStore().getAll().installId;
+      if (!installId) return;
+      try {
+        // Use keepalive + no-cache to ensure it lands even as the process exits.
+        // Fall back to a tiny timeout so quit isn't blocked more than 800ms.
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 800);
+        await fetch(HEARTBEAT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ installId, offline: true }),
+          keepalive: true,
+          cache: "no-store",
+          signal: ctrl.signal,
+        } as RequestInit).catch(() => {});
+        clearTimeout(t);
+      } catch {}
+    };
+    app.on("will-quit", (e: Electron.Event) => {
       clearInterval(heartbeatTimer);
       clearInterval(updateTimer);
-      // Best-effort offline beacon — makes "live now" drop within seconds, not 20m.
-      // Use keepalive so it survives the quit; fire-and-forget.
-      try {
-        const installId = getStore().getAll().installId;
-        if (installId && HEARTBEAT_URL) {
-          void fetch(HEARTBEAT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ installId, offline: true }),
-            keepalive: true,
-          } as RequestInit).catch(() => {});
-        }
-      } catch {}
-      if (applyUpdateOnQuit) applyUpdateOnQuit();
+      // Block quit just long enough for the offline beacon to land — makes "live" drop in ~2s
+      // instead of waiting for the 75s window. Keep it under 900ms so quit still feels instant.
+      if (!offlineBeacon) {
+        e.preventDefault();
+        offlineBeacon = sendOfflineBeacon().finally(() => {
+          if (applyUpdateOnQuit) applyUpdateOnQuit();
+          // Quit for real after beacon (or timeout)
+          setTimeout(() => app.exit(0), 50);
+        });
+        // Safety: if beacon hangs, force quit after 900ms
+        setTimeout(() => { if (offlineBeacon) app.exit(0); }, 900);
+      }
     });
   });
 

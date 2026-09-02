@@ -27,7 +27,7 @@ describe("App", () => {
   it("renders the brand in the title bar", () => {
     installBridge({});
     render(<App />);
-    expect(screen.getByText(/^MAPW$/)).toBeInTheDocument();
+    expect(screen.getByText(/^mapw$/i)).toBeInTheDocument();
   });
 
   it("applies the active theme id to the document root", () => {

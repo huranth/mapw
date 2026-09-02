@@ -6,6 +6,8 @@ export interface LatestRelease {
   url: string;
   notes?: string;
   publishedAt?: string;
+  sha256?: string;
+  size?: number;
 }
 
 /** Strict semver-ish compare on dot-separated numeric parts; ignores prerelease tags. */
@@ -33,11 +35,15 @@ export function parseLatestJson(raw: string): LatestRelease | null {
     const version = typeof data.version === "string" ? data.version : null;
     const url = typeof data.url === "string" ? data.url : null;
     if (!version || !url || !/^https:\/\//.test(url)) return null;
+    const sha256 = typeof data.sha256 === "string" && /^[a-f0-9]{64}$/i.test(data.sha256) ? data.sha256.toLowerCase() : undefined;
+    const size = typeof data.size === "number" && Number.isFinite(data.size) && data.size > 0 ? data.size : undefined;
     return {
       version,
       url,
       notes: typeof data.notes === "string" ? data.notes : undefined,
       publishedAt: typeof data.publishedAt === "string" ? data.publishedAt : undefined,
+      sha256,
+      size,
     };
   } catch {
     return null;

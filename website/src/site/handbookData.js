@@ -1,7 +1,5 @@
 // Field Notes — mapw facts only.
 
-export const RELEASE_FEED = "";
-
 export const KEYS = [
   { k: "settings file", v: "%APPDATA%\\@bridgespace\\frontend\\settings.json" },
   { k: "mac / linux",   v: "~/Library/... and ~/.config/@bridgespace/frontend" },

@@ -43,10 +43,6 @@ function fmtLong(sec: number): string {
   const rh = h % 24;
   return `${d}d ${rh}h`;
 }
-function fmtShortSec(sec: number): string {
-  if (sec < 3600) return `${Math.floor(sec / 60)}m`;
-  return `${(sec / 3600).toFixed(1)}h`;
-}
 
 function calcStreak(
   daily: Record<string, { seconds: number; terminals: number }>,

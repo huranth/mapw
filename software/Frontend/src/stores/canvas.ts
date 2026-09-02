@@ -94,17 +94,25 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   addTerminal: (cwd, cliId) => {
     try { useUsageStore.getState().recordTerminal(1); } catch {}
     return set((s) => {
+      if (s.nodes.length >= 100) return s; // guard: 100 panes is the tested ceiling
       const id = `p${s.nextId}`;
       const n = s.nodes.length + 1;
-      const { width, height } = defaultSizeForCount(n);
-      const last = s.nodes[s.nodes.length - 1];
-      const pos = last ? { x: (last.position.x + 60) % 600, y: last.position.y + 60 } : { x: 0, y: 0 };
+      const { width, height, gap } = defaultSizeForCount(n);
+      // Grid placement that stays in viewport — not monotonic y like before (y=60*n → 60k at 1000)
+      const cols = Math.max(2, Math.min(6, Math.ceil(Math.sqrt(n))));
+      const idx = n - 1;
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const pos = { x: col * (width + gap), y: row * (height + gap) };
       return { nodes: [...s.nodes, { id, type: "terminal", position: pos, data: { cwd, cliId: cliId ?? null }, width, height } as Node], nextId: s.nextId + 1 };
     });
   },
   freshPaneId: () => {
-    const id = `p${get().nextId}`;
-    set({ nextId: get().nextId + 1 });
+    let id = "";
+    set((s) => {
+      id = `p${s.nextId}`;
+      return { nextId: s.nextId + 1 };
+    });
     return id;
   },
   removeNode: (id) => set((s) => ({ nodes: s.nodes.filter((n) => n.id !== id) })),

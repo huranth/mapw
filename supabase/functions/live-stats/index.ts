@@ -5,24 +5,35 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+const ONLINE_WINDOW_MS = 75 * 1000;
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, content-type, apikey",
-} as const;
-
-function json(data: unknown, status = 200): Response {
+const ALLOWED_ORIGINS_LIVE = new Set([
+  "https://mapw.vercel.app",
+  "https://www.mapw.vercel.app",
+  "http://localhost:5173",
+  "http://localhost:3000",
+]);
+function corsLive(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  const allow = !origin ? "*" : ALLOWED_ORIGINS_LIVE.has(origin) ? origin : "https://mapw.vercel.app";
+  return {
+    "Access-Control-Allow-Origin": allow,
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, content-type, apikey",
+    "Vary": "Origin",
+  };
+}
+function json(data: unknown, status = 200, req?: Request): Response {
+  const cors = req ? corsLive(req) : { "Access-Control-Allow-Origin": "https://mapw.vercel.app", "Vary": "Origin" } as const;
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS },
+    headers: { "Content-Type": "application/json", ...cors },
   });
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-  if (req.method !== "GET") return json({ error: "method not allowed" }, 405);
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsLive(req) });
+  if (req.method !== "GET") return json({ error: "method not allowed" }, 405, req);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -52,8 +63,9 @@ Deno.serve(async (req) => {
     }
 
     const onlineNow = (installsOnline.count ?? 0) + (devicesOnline.count ?? 0);
-    // Cache 5s at edge, 10s at CDN — feels live for fleet without hammering DB (30s before was sluggish).
-    const headers = { ...CORS, "Cache-Control": "public, s-maxage=5, max-age=3", "CDN-Cache-Control": "max-age=10" };
+    // Cache 2s at edge — fleet feels live (up in ~1s via Realtime broadcast, down in ~2s via offline beacon + 5s poll).
+    const cors = corsLive(req);
+    const headers = { ...cors, "Cache-Control": "public, s-maxage=2, max-age=2", "CDN-Cache-Control": "max-age=5" };
     return new Response(JSON.stringify({
       installs: installsTotal.count ?? 0,
       users: devicesUsers.count ?? 0,

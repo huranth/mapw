@@ -8,6 +8,7 @@
 // output), --version the Frontend package.json version.
 // Uploads mapw-<version>.exe, then writes latest.json — the single source of
 // truth that both the app's auto-updater and the website's download button read.
+import { createHash } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,6 +40,8 @@ if (!info?.isFile()) {
   process.exit(1);
 }
 const exe = await readFile(exePath);
+const sha256 = createHash("sha256").update(exe).digest("hex");
+const size = exe.length;
 const objectBase = `https://${PROJECT_REF}.supabase.co/storage/v1/object/${BUCKET}`;
 
 const upload = async (path, body, contentType) => {
@@ -83,6 +86,8 @@ const latest = {
   version,
   url: `${objectBase}/mapw-${version}.exe`,
   ...(gzUrl ? { gzUrl } : {}),
+  sha256,
+  size,
   notes,
   publishedAt: new Date().toISOString(),
 };

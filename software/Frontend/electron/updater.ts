@@ -8,7 +8,8 @@
 // Dev runs (unpackaged electron.exe) never self-update.
 import { app } from "electron";
 import { spawn } from "node:child_process";
-import { createWriteStream } from "node:fs";
+import { createHash } from "node:crypto";
+import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -72,9 +73,10 @@ function isAllowedReleaseUrl(url: string): boolean {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
-    if (u.hostname.endsWith(".supabase.co") && u.pathname.includes("/storage/v1/object/public/releases/")) return true;
-    if (u.hostname === "github.com" && u.pathname.startsWith("/huranth/mapw")) return true;
-    if (u.hostname.endsWith("githubusercontent.com") || u.hostname.endsWith("github-releases.githubusercontent.com")) return true;
+    const host = u.hostname.toLowerCase();
+    const path = u.pathname;
+    if (host === "pdynfowdtiulrllqetbl.supabase.co" && path.includes("/storage/v1/object/public/releases/")) return true;
+    if (host === "github.com" && (path.startsWith("/huranth/mapw/releases/") || path.startsWith("/huranth/mapw-releases/releases/"))) return true;
     return false;
   } catch { return false; }
 }
@@ -119,6 +121,18 @@ export interface UpdateContext {
   onStaged: (applyOnQuit: () => void) => void;
 }
 
+async function verifySha256(filePath: string, expected: string): Promise<void> {
+  const hash = createHash("sha256");
+  await new Promise<void>((resolve, reject) => {
+    const s = createReadStream(filePath);
+    s.on("data", (d) => hash.update(d));
+    s.on("end", () => resolve());
+    s.on("error", reject);
+  });
+  const actual = hash.digest("hex").toLowerCase();
+  if (actual !== expected.toLowerCase()) throw new Error(`checksum mismatch: expected ${expected.slice(0, 8)}… got ${actual.slice(0, 8)}…`);
+}
+
 export async function runUpdateCycle(ctx: UpdateContext): Promise<void> {
   try {
     ctx.onStatus({ phase: "checking" });
@@ -143,6 +157,12 @@ export async function runUpdateCycle(ctx: UpdateContext): Promise<void> {
       await downloadRelease(release.url, exePath, (receivedBytes, totalBytes) => {
         ctx.onStatus({ phase: "downloading", version: release.version, receivedBytes, totalBytes });
       });
+    }
+    // Integrity check — fail-closed if sha256 is present (all post-0.1.6 releases have it)
+    if (release.sha256) {
+      await verifySha256(exePath, release.sha256);
+    } else if (release.version.localeCompare("0.1.6", undefined, { numeric: true }) >= 0) {
+      throw new Error("release missing sha256 — refusing to apply");
     }
 
     const applyOnQuit = (): void => {
