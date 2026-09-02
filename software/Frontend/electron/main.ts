@@ -281,15 +281,24 @@ function registerIpc(): void {
 
 function resolveWindowIcon(): Electron.NativeImage | undefined {
   if (process.platform !== "win32") return undefined;
-  try {
-    const candidate = app.isPackaged
-      ? join(process.resourcesPath, "icon.png")
-      : join(thisDir, "..", "..", "build", "icon.png");
-    const img = nativeImage.createFromPath(candidate);
-    return img.isEmpty() ? undefined : img;
-  } catch {
-    return undefined;
+  // Use the same source the installer uses (build/icon.ico) — kept in
+  // extraResources as icon.ico/icon.png so the window/taskbar and the
+  // exe/shortcut (win.icon + nsis.installerIcon) stay in sync.
+  const candidates = app.isPackaged
+    ? [join(process.resourcesPath, "icon.ico"), join(process.resourcesPath, "icon.png")]
+    : [
+        join(thisDir, "..", "..", "build", "icon.ico"),
+        join(thisDir, "..", "..", "build", "icon.png"),
+      ];
+  for (const candidate of candidates) {
+    try {
+      const img = nativeImage.createFromPath(candidate);
+      if (!img.isEmpty()) return img;
+    } catch {
+      // try next candidate
+    }
   }
+  return undefined;
 }
 
 function createWindow(): void {

@@ -1,6 +1,6 @@
 {
   "name": "@bridgespace/frontend",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": true,
   "type": "module",
   "main": "out/main/index.js",
@@ -58,6 +58,10 @@
       {
         "from": "build/icon.png",
         "to": "icon.png"
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "icon.ico"
       }
     ],
     "asarUnpack": [
