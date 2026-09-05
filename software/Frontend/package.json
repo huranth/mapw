@@ -1,6 +1,6 @@
 {
   "name": "@bridgespace/frontend",
-  "version": "0.1.13",
+  "version": "0.1.15",
   "private": true,
   "type": "module",
   "main": "out/main/index.js",
@@ -79,8 +79,7 @@
           ]
         }
       ],
-      "artifactName": "${productName}-setup-${version}.${ext}",
-      "signAndEditExecutable": false
+      "artifactName": "${productName}-setup-${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,

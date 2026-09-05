@@ -47,6 +47,14 @@ function anonymizedLabel(hostname: string, installId: string): string {
 
 process.env["COLORFGBG"] = "0;15";
 
+// Explicit AppUserModelID — ties window/taskbar/shortcut to the same identity
+// as electron-builder's appId (com.mapw.app). Without this, Windows may group
+// the taskbar icon under a generic Electron ID and show the stale Atom icon
+// even when the exe's baked icon is correct.
+if (process.platform === "win32") {
+  try { app.setAppUserModelId("com.mapw.app"); } catch {}
+}
+
 const thisDir = fileURLToPath(new URL(".", import.meta.url));
 
 let store: SettingsStore | null = null;

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import iconUrl from "@/assets/icon.png";
 
 interface IconProps { readonly size?: number; readonly style?: CSSProperties; readonly className?: string; }
 
@@ -45,23 +46,21 @@ export function CompassIcon(p: IconProps) { return <Svg {...p}><circle cx="12" c
 export function CodeIcon(p: IconProps) { return <Svg {...p}><path d="M9 7l-5 5 5 5" /><path d="M15 7l5 5-5 5" /><path d="M13 3l-2 18" /></Svg>; }
 export function BarChart3Icon(p: IconProps) { return <Svg {...p}><path d="M6 20V12M12 20V4M18 20V8" /><path d="M3 20h18" /></Svg>; }
 export function ShareIcon(p: IconProps) { return <Svg {...p}><path d="M4 12v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8" /><path d="M12 16V3" /><path d="M8 7l4-4 4 4" /></Svg>; }
+
 export function MapwLogo({ size = 22, style, className }: IconProps) {
-  // Stacked terminal panes — line art from the official lockup (Terminals, like paper.)
-  // Stroke #2E2E2E on white, 3 panes with the front carrying >_ . Matches website/logo.svg
+  // Real PNG icon from C:/Users/W/Downloads/mapw-icon-195x195.png — now used everywhere
+  // (favicons, window/taskbar/desktop, and in-app chrome). Keeps the icon single-source.
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" style={style} className={className} aria-hidden="true" focusable="false">
-      {/* back */}
-      <path d="M5 8.5 L10 3.5 L26 3.5 L26 18.5 L7.5 18.5 L5 15.2 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.55} strokeLinejoin="round" strokeLinecap="round" />
-      {/* middle-right */}
-      <path d="M15 7 L20 3.5 L28.5 3.5 L28.5 19 L17 19 L15 16 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.15} strokeLinejoin="round" strokeLinecap="round" opacity={0.95} />
-      {/* front — the hero */}
-      <path d="M7 13.5 L12 8.2 L27.5 8.2 L27.5 24.2 L9.5 24.2 L7 21 Z" fill="white" stroke="#2E2E2E" strokeWidth={1.65} strokeLinejoin="round" strokeLinecap="round" />
-      {/* bottom peek */}
-      <path d="M8 24.2 L9.5 27.8 L22 28.5 L25 25.5" fill="none" stroke="#2E2E2E" strokeWidth={1.15} strokeLinecap="round" strokeLinejoin="round" opacity={0.95} />
-      {/* >_ */}
-      <path d="M13.2 14.2 L17 17 L13.2 19.8" fill="none" stroke="#2E2E2E" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16.8 20.2 H22.4" stroke="#2E2E2E" strokeWidth={1.7} strokeLinecap="round" />
-    </svg>
+    <img
+      src={iconUrl}
+      width={size}
+      height={size}
+      style={{ display: "block", objectFit: "contain", borderRadius: 4, ...style }}
+      className={className}
+      alt=""
+      aria-hidden="true"
+      draggable={false}
+    />
   );
 }
 
