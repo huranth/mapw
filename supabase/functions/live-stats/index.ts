@@ -7,6 +7,14 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const ONLINE_WINDOW_MS = 75 * 1000;
 
+// In-memory cache — 2s per isolate to avoid 800 counts/sec for 1000s polling
+let liveCache: { at: number; body: string; headers: Record<string, string> } | null = null;
+const CACHE_MS = 2000;
+// Per-IP rate limit for live-stats: 30 req/min per IP
+const liveIpLimit = new Map<string, { count: number; windowStart: number }>();
+const LIVE_IP_MAX = 30;
+const LIVE_IP_WINDOW_MS = 60_000;
+
 const ALLOWED_ORIGINS_LIVE = new Set([
   "https://mapw.vercel.app",
   "https://www.mapw.vercel.app",
@@ -35,6 +43,29 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsLive(req) });
   if (req.method !== "GET") return json({ error: "method not allowed" }, 405, req);
 
+  // IP rate limit for live-stats (prevent DB DoS)
+  const fwd = req.headers.get("x-forwarded-for") ?? "";
+  const ip = (req.headers.get("cf-connecting-ip")?.trim()) || fwd.split(",").map((s) => s.trim()).filter(Boolean).pop() || "unknown";
+  const nowIp = Date.now();
+  const entry = liveIpLimit.get(ip);
+  if (!entry || nowIp - entry.windowStart > LIVE_IP_WINDOW_MS) {
+    liveIpLimit.set(ip, { count: 1, windowStart: nowIp });
+  } else {
+    if (entry.count >= LIVE_IP_MAX) {
+      return json({ error: "rate limited" }, 429, req);
+    }
+    entry.count++;
+  }
+  if (liveIpLimit.size > 2000) {
+    for (const [k, v] of liveIpLimit) if (nowIp - v.windowStart > LIVE_IP_WINDOW_MS) liveIpLimit.delete(k);
+  }
+
+  // Serve from in-memory cache if fresh
+  const nowCache = Date.now();
+  if (liveCache && nowCache - liveCache.at < CACHE_MS) {
+    return new Response(liveCache.body, { status: 200, headers: { "Content-Type": "application/json", ...liveCache.headers } });
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!supabaseUrl || !serviceKey) {
@@ -45,33 +76,33 @@ Deno.serve(async (req) => {
   const cutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
 
   try {
-    const [installsTotal, installsOnline, devicesOnline, devicesUsers] = await Promise.all([
+    const [installsTotal, installsOnline, devicesOnline, usersCount] = await Promise.all([
       admin.from("installs").select("id", { count: "exact", head: true }),
       admin.from("installs").select("id", { count: "exact", head: true })
         .gt("last_seen_at", cutoff),
       admin.from("devices").select("id", { count: "exact", head: true })
         .gt("last_seen_at", cutoff),
-      // distinct users — head:true with count exact overcounts duplicates, but we treat as approximate
-      // and de-duplicate via Set if needed in future; for now we use exact as before.
-      admin.from("devices").select("user_id", { count: "exact", head: true }),
+      // Count distinct users via profiles (1 row per user) — accurate, not overcounting devices
+      admin.from("profiles").select("id", { count: "exact", head: true }),
     ]);
 
-    // Check all errors, not just two
-    if (installsTotal.error || installsOnline.error || devicesOnline.error || devicesUsers.error) {
-      console.error("[live-stats] count failed:", installsTotal.error ?? installsOnline.error ?? devicesOnline.error ?? devicesUsers.error);
+    if (installsTotal.error || installsOnline.error || devicesOnline.error || usersCount.error) {
+      console.error("[live-stats] count failed:", installsTotal.error ?? installsOnline.error ?? devicesOnline.error ?? usersCount.error);
       return json({ error: "failed to count" }, 500);
     }
 
     const onlineNow = (installsOnline.count ?? 0) + (devicesOnline.count ?? 0);
-    // Cache 2s at edge — fleet feels live (up in ~1s via Realtime broadcast, down in ~2s via offline beacon + 5s poll).
     const cors = corsLive(req);
     const headers = { ...cors, "Cache-Control": "public, s-maxage=2, max-age=2", "CDN-Cache-Control": "max-age=5" };
-    return new Response(JSON.stringify({
+    const body = JSON.stringify({
       installs: installsTotal.count ?? 0,
-      users: devicesUsers.count ?? 0,
+      users: usersCount.count ?? 0,
       onlineNow,
       updatedAt: new Date().toISOString(),
-    }), { status: 200, headers: { "Content-Type": "application/json", ...headers } });
+    });
+    // Store in cache for 2s
+    liveCache = { at: Date.now(), body, headers };
+    return new Response(body, { status: 200, headers: { "Content-Type": "application/json", ...headers } });
   } catch (err) {
     console.error("[live-stats] unexpected error:", err);
     return json({ error: "internal error" }, 500);

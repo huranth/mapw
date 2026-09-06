@@ -11,7 +11,7 @@ export interface ReturningScreenProps {
 export function ReturningScreen({ lastWorkspace, legacyLastCwd, onContinue, onChooseNew }: ReturningScreenProps) {
   return (
     <div className="returning" data-testid="returning-screen">
-      <div className="returning__hero" aria-hidden="true"><span className="returning__hero-icon" style={{ background: "#134E4A", borderColor: "#134E4A", color: "#FFF" }}><HistoryIcon size={22} /></span></div>
+      <div className="returning__hero" aria-hidden="true"><span className="returning__hero-icon" aria-hidden="true"><HistoryIcon size={22} style={{ color: "#1C1917" }} /></span></div>
       <h1 className="returning__headline">Welcome back</h1>
       <p className="returning__sub">Continue or start fresh.</p>
       {lastWorkspace ? (

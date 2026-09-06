@@ -14,9 +14,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const IPV4_RE = /^(\d{1,3}\.){3}\d{1,3}$/;
 const IPV6_RE = /^[0-9a-fA-F:]{2,45}$/;
 
-// Simple in-memory rate limit: installId -> last timestamp (ms)
+// Simple in-memory rate limit: key -> last timestamp (ms)
+// Note: per-isolate only — for 1000s, add Redis/Upstash in future. For now
+// we at least add IP-based global limit to prevent fake-install floods.
 const rateLimit = new Map<string, number>();
+const ipNewInstall = new Map<string, { count: number; windowStart: number }>();
 const RATE_LIMIT_MS = 5_000;
+const IP_NEW_INSTALL_WINDOW_MS = 60_000;
+const IP_NEW_INSTALL_MAX = 10; // 10 new installIds per IP per minute
 
 function clip(v: unknown, max: number): string | null {
   // also strip control chars and trim to prevent header injection
@@ -26,12 +31,20 @@ function clip(v: unknown, max: number): string | null {
 }
 
 function clientIp(req: Request): string | null {
+  // Prefer Cloudflare's trusted header, then last XFF (real client), not first (spoofable)
+  const cfIp = req.headers.get("cf-connecting-ip")?.trim();
+  if (cfIp) {
+    if (IPV4_RE.test(cfIp)) {
+      const parts = cfIp.split(".").map(Number);
+      if (!parts.some((n) => n < 0 || n > 255)) return cfIp;
+    } else if (IPV6_RE.test(cfIp)) return cfIp;
+  }
   const forwarded = req.headers.get("x-forwarded-for") ?? "";
-  const candidate = forwarded.split(",")[0]!.trim();
-  // Validate IP and ensure it's not private spoofed beyond trust
+  // Take the *last* entry — Cloudflare appends real IP, first may be spoofed
+  const candidates = forwarded.split(",").map((s) => s.trim()).filter(Boolean);
+  const candidate = candidates.length ? candidates[candidates.length - 1]! : "";
   if (candidate === "") return null;
   if (IPV4_RE.test(candidate)) {
-    // basic octet range check
     const parts = candidate.split(".").map(Number);
     if (parts.some((n) => n < 0 || n > 255)) return null;
     return candidate;
@@ -46,9 +59,22 @@ function isRateLimited(key: string): boolean {
   if (last != null && now - last < RATE_LIMIT_MS) return true;
   rateLimit.set(key, now);
   // prune old entries to prevent memory leak
-  if (rateLimit.size > 1000) {
+  if (rateLimit.size > 2000) {
     for (const [k, t] of rateLimit) if (now - t > 60_000) rateLimit.delete(k);
   }
+  return false;
+}
+
+function isIpRateLimited(ip: string | null, isNewInstall: boolean): boolean {
+  if (!ip || !isNewInstall) return false;
+  const now = Date.now();
+  const entry = ipNewInstall.get(ip);
+  if (!entry || now - entry.windowStart > IP_NEW_INSTALL_WINDOW_MS) {
+    ipNewInstall.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  if (entry.count >= IP_NEW_INSTALL_MAX) return true;
+  entry.count++;
   return false;
 }
 
@@ -58,6 +84,20 @@ interface HeartbeatBody {
   platform?: unknown;
   appVersion?: unknown;
   offline?: unknown;
+}
+
+const ALLOWED_PLATFORMS = new Set(["win32", "darwin", "linux", "windows", "macos", "unknown"]);
+const BROADCAST_DEBOUNCE_MS = 5_000;
+const lastBroadcast = new Map<string, number>();
+function shouldBroadcast(key: string): boolean {
+  const now = Date.now();
+  const last = lastBroadcast.get(key);
+  if (last != null && now - last < BROADCAST_DEBOUNCE_MS) return false;
+  lastBroadcast.set(key, now);
+  if (lastBroadcast.size > 1000) {
+    for (const [k, t] of lastBroadcast) if (now - t > 60_000) lastBroadcast.delete(k);
+  }
+  return true;
 }
 
 const ALLOWED_ORIGINS = new Set([
@@ -86,6 +126,11 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return Response.json({ error: "method not allowed" }, { status: 405, headers: CORS_HEADERS });
   }
+  // Early body size gate — 2KB is plenty for heartbeat (installId+label)
+  const len = req.headers.get("content-length");
+  if (len && Number(len) > 2048) {
+    return Response.json({ error: "payload too large" }, { status: 413, headers: CORS_HEADERS });
+  }
 
   let body: HeartbeatBody;
   try {
@@ -94,10 +139,13 @@ Deno.serve(async (req) => {
     return Response.json({ error: "invalid json" }, { status: 400, headers: CORS_HEADERS });
   }
 
-  const label = clip(body.label, 120) ?? "unknown-device";
-  const platform = clip(body.platform, 40) ?? "unknown";
+  const rawLabel = clip(body.label, 120) ?? "unknown-device";
+  const rawPlatform = clip(body.platform, 40) ?? "unknown";
+  const platform = ALLOWED_PLATFORMS.has(rawPlatform) ? rawPlatform : "unknown";
+  const label = rawLabel;
   const appVersion = clip(body.appVersion, 40);
   const now = new Date().toISOString();
+  const ip = clientIp(req);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -126,7 +174,7 @@ Deno.serve(async (req) => {
           platform,
           app_version: appVersion,
           last_seen_at: now,
-          last_ip: clientIp(req),
+          last_ip: ip,
         },
         { onConflict: "user_id,label" },
       );
@@ -134,8 +182,10 @@ Deno.serve(async (req) => {
         console.error("[device-heartbeat] devices upsert failed:", error);
         return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
       }
-      // Best-effort realtime push — makes fleet live in ~1s for 1000s without polling storm
-      try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+      // Debounced realtime push — per-device key prevents 30 RPS storm for 1000s
+      if (shouldBroadcast(`device:${userData.user.id}:${label}`)) {
+        try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+      }
       return Response.json({ ok: true, kind: "device" }, { headers: CORS_HEADERS });
     } catch (err) {
       console.error("[device-heartbeat] auth path error:", err);
@@ -147,7 +197,12 @@ Deno.serve(async (req) => {
   if (typeof body.installId !== "string" || !UUID_RE.test(body.installId)) {
     return Response.json({ error: "installId must be a uuid" }, { status: 400, headers: CORS_HEADERS });
   }
+  const isNewInThisIsolate = !rateLimit.has(`anon:${body.installId}`);
   if (isRateLimited(`anon:${body.installId}`)) {
+    return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
+  }
+  // Global IP flood gate — 10 new installIds per IP per minute
+  if (isNewInThisIsolate && isIpRateLimited(ip, true)) {
     return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
   }
   // Offline beacon — mark as not online without deleting the row (preserves installs count)
@@ -155,13 +210,15 @@ Deno.serve(async (req) => {
     try {
       const { error } = await admin.from("installs").update({
         last_seen_at: new Date(0).toISOString(), // 1970 — falls out of 20m window
-        last_ip: clientIp(req),
+        last_ip: ip,
       }).eq("id", body.installId);
       if (error) {
         console.error("[device-heartbeat] offline update failed:", error);
         return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
       }
-      try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+      if (shouldBroadcast(`offline:${body.installId}`)) {
+        try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+      }
       return Response.json({ ok: true, kind: "install", offline: true }, { headers: CORS_HEADERS });
     } catch (err) {
       console.error("[device-heartbeat] offline path error:", err);
@@ -176,7 +233,7 @@ Deno.serve(async (req) => {
         platform,
         app_version: appVersion,
         last_seen_at: now,
-        last_ip: clientIp(req),
+        last_ip: ip,
       },
       { onConflict: "id" },
     );
@@ -184,7 +241,9 @@ Deno.serve(async (req) => {
       console.error("[device-heartbeat] installs upsert failed:", error);
       return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
     }
-    try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+    if (shouldBroadcast(`install:${body.installId}`)) {
+      try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
+    }
     return Response.json({ ok: true, kind: "install" }, { headers: CORS_HEADERS });
   } catch (err) {
     console.error("[device-heartbeat] anon path error:", err);

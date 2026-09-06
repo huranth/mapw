@@ -1,12 +1,13 @@
-import { useEffect } from "react";
-import { InsightsScreen } from "@/components/InsightsScreen";
+import { lazy, Suspense, useEffect } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { TitleBar } from "@/components/TitleBar";
-import { Workspace } from "@/components/Workspace";
 import { ThemeProvider } from "@/themes";
 import { useSettingsStore } from "@/stores/settings";
 import { useUiState } from "@/stores/uiState";
 import { useUsageStore } from "@/stores/usage";
+
+const InsightsScreen = lazy(() => import("@/components/InsightsScreen").then((m) => ({ default: m.InsightsScreen })));
+const Workspace = lazy(() => import("@/components/Workspace").then((m) => ({ default: m.Workspace })));
 
 export function App() {
   const ensureLoaded = useSettingsStore((s) => s.ensureLoaded);
@@ -29,7 +30,9 @@ export function App() {
         <div className="app-shell__main">
           <TitleBar />
           <div className="app-main">
-            {activeView === "insights" ? <InsightsScreen /> : <Workspace />}
+            <Suspense fallback={<div style={{ padding: 24, color: "var(--bs-fg-muted)" }}>Loading…</div>}>
+              {activeView === "insights" ? <InsightsScreen /> : <Workspace />}
+            </Suspense>
           </div>
         </div>
       </div>

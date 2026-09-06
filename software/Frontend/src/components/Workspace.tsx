@@ -101,7 +101,16 @@ export function Workspace() {
         <div className="layouts" data-testid="layouts-screen">
           <button type="button" className="layouts__close" onClick={() => useUiState.getState().closeLayouts()} aria-label="Close Layouts panel" data-testid="layouts-close">×</button>
           <div className="layouts__header">
-            <div className="layouts__hero" aria-hidden="true"><span className="layouts__hero-icon" style={{ background: "#134E4A", borderColor: "#134E4A", color: "#FFF" }}><span style={{ fontSize: 18, lineHeight: 1 }}>◧</span></span></div>
+            <div className="layouts__hero" aria-hidden="true">
+              <span className="layouts__hero-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <rect x="2" y="2" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+                  <rect x="11" y="2" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+                  <rect x="2" y="11" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+                  <rect x="11" y="11" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+                </svg>
+              </span>
+            </div>
             <h1 className="layouts__headline">Layouts</h1>
             <p className="layouts__sub" style={{ marginTop: 6, color: "#6B6560", fontSize: 12 }}>Pick a folder</p>
           </div>

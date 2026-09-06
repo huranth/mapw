@@ -416,7 +416,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--bs-bg-elevated);
 }
 
-.node-terminal:focus-within .node-terminal__focus-tag {
+.node-terminal:has(.pane:focus-within) .node-terminal__focus-tag {
   display: inline-flex;
 }
 
@@ -981,8 +981,20 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 .welcome__hero, .returning__hero, .layouts__hero { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .welcome__hero-icon, .returning__hero-icon, .layouts__hero-icon {
   width: 44px; height: 44px; display: grid; place-items: center;
-  background: var(--bs-bg-elevated); border: 1px solid var(--bs-border);
+  background: var(--bs-bg-elevated);
+  background-image: radial-gradient(circle at 1px 1px, rgba(28,25,23,0.07) 1px, transparent 0);
+  background-size: 10px 10px;
+  border: 1px solid var(--bs-border);
   border-radius: 12px; color: var(--bs-fg); box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  position: relative;
+  overflow: hidden;
+}
+.welcome__hero-icon::after, .returning__hero-icon::after, .layouts__hero-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.55), transparent 55%);
+  pointer-events: none;
 }
 
 .welcome__headline,

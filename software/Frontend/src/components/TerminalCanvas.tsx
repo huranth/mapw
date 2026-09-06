@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { MiniMap, Panel, ReactFlow, type OnInit, type ReactFlowInstance } from "@xyflow/react";
 import type { PaneNodePersist } from "@bridgespace/backend/renderer";
-import { LayoutGridIcon, PlusIcon, SparklesIcon } from "@/components/Icons";
+import { LayoutGridIcon, PlusIcon } from "@/components/Icons";
 import { TerminalNode } from "@/components/TerminalNode";
 import { NODE_H, NODE_W, useCanvasStore } from "@/stores/canvas";
 import { useSettingsStore } from "@/stores/settings";
@@ -138,7 +138,6 @@ export function TerminalCanvas() {
           <button type="button" className="canvas__add-chip" onClick={onNewTerminal}>
             <PlusIcon size={12} style={{ marginRight: 6, color: "#FFF" }} />
             New terminal
-            <SparklesIcon size={11} style={{ marginLeft: 7, color: "#FFA726" }} />
           </button>
         </Panel>
       </ReactFlow>

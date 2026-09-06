@@ -23,8 +23,20 @@ export default defineConfig({
   renderer: {
     root: fileURLToPath(new URL("src", import.meta.url)),
     build: {
+      chunkSizeWarningLimit: 900,
       rollupOptions: {
         input: { index: fileURLToPath(new URL("src/index.html", import.meta.url)) },
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("recharts")) return "charts";
+              if (id.includes("@xyflow")) return "flow";
+              if (id.includes("@xterm")) return "xterm";
+              if (id.includes("react") || id.includes("zustand")) return "vendor";
+              return "vendor";
+            }
+          },
+        },
       },
     },
     resolve: {

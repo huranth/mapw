@@ -418,9 +418,10 @@ void app
 
     await ensureInstallId();
     void sendHeartbeat();
-    const heartbeatTimer = setInterval(() => void sendHeartbeat(), HEARTBEAT_INTERVAL_MS);
+    // Jitter heartbeat to avoid thundering herd for 1000s (30s ±2.5s)
+    const heartbeatTimer = setInterval(() => void sendHeartbeat(), HEARTBEAT_INTERVAL_MS + Math.random() * 5000);
     void checkForUpdates();
-    const updateTimer = setInterval(() => void checkForUpdates(), UPDATE_CHECK_INTERVAL_MS);
+    const updateTimer = setInterval(() => void checkForUpdates(), UPDATE_CHECK_INTERVAL_MS + Math.random() * 5000);
     // Keep reference so we can await it in before-quit
     let offlineBeacon: Promise<void> | null = null;
     const sendOfflineBeacon = async (): Promise<void> => {

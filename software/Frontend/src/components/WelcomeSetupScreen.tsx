@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { PaneNodePersist } from "@bridgespace/backend/renderer";
-import { ArrowRightIcon, CompassIcon, FolderIcon, FolderPlusIcon, RefreshIcon, SparklesIcon, TerminalIcon } from "@/components/Icons";
+import { ArrowRightIcon, CompassIcon, FolderIcon, FolderPlusIcon, GridIcon, RefreshIcon, TerminalIcon } from "@/components/Icons";
 import { seedNodes } from "@/stores/canvas";
 
 export interface WelcomeSetupScreenProps { onCommit: (nodes: PaneNodePersist[], primaryCwd: string) => void; compact?: boolean; }
@@ -32,7 +32,7 @@ export function WelcomeSetupScreen({ onCommit, compact = false }: WelcomeSetupSc
 
   return (
     <div className="welcome" data-testid="welcome-screen">
-      {!compact && <><div className="welcome__hero" aria-hidden="true"><span className="welcome__hero-icon" style={{ background: "#134E4A", borderColor: "#134E4A", color: "#FFF" }}><CompassIcon size={22} /></span></div><h1 className="welcome__headline">Welcome</h1><p className="welcome__sub">Pick a folder to begin.</p></>}
+      {!compact && <><div className="welcome__hero" aria-hidden="true"><span className="welcome__hero-icon" aria-hidden="true"><CompassIcon size={22} style={{ color: "#1C1917" }} /></span></div><h1 className="welcome__headline">Welcome</h1><p className="welcome__sub">Pick a folder to begin.</p></>}
       {perPane ? (
         <div className="welcome__grid">
           {([0, 1, 2, 3] as const).map((slot) => (
@@ -44,7 +44,7 @@ export function WelcomeSetupScreen({ onCommit, compact = false }: WelcomeSetupSc
       )}
       <label className="welcome__toggle">
         <input type="checkbox" checked={perPane} onChange={(e) => setPerPane(e.target.checked)} />
-        <span className="welcome__toggle__label"><SparklesIcon size={12} style={{ marginRight: 6, color: "#7C3AED" }} />Use a different folder per pane</span>
+        <span className="welcome__toggle__label"><GridIcon size={12} style={{ marginRight: 6, color: "#57534E" }} />Use a different folder per pane</span>
       </label>
       <button type="button" className="welcome__cta" disabled={!ready} onClick={onOpenWorkspace} data-testid="welcome-open-workspace"><TerminalIcon size={13} style={{ marginRight: 7, color: "#FFF" }} />Open workspace <ArrowRightIcon size={13} style={{ marginLeft: 6, color: "#FFF" }} /></button>
     </div>

@@ -82,13 +82,22 @@ export function LayoutsScreen({ onApply, onClose }: LayoutsScreenProps) {
     <div className="layouts" data-testid="layouts-screen">
       <button type="button" className="layouts__close" onClick={onClose} aria-label="Close Layouts panel" data-testid="layouts-close"><XIcon size={14} /></button>
       <div className="layouts__header">
-        <div className="layouts__hero" aria-hidden="true"><span className="layouts__hero-icon" style={{ background: "#134E4A", borderColor: "#134E4A", color: "#FFF" }}><LayersIcon size={20} /></span></div>
+        <div className="layouts__hero" aria-hidden="true">
+          <span className="layouts__hero-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+              <rect x="2" y="2" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+              <rect x="11" y="2" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+              <rect x="2" y="11" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+              <rect x="11" y="11" width="7" height="7" rx="1.4" stroke="#1C1917" strokeWidth="1.3" />
+            </svg>
+          </span>
+        </div>
         <h1 className="layouts__headline">Layouts</h1>
       </div>
 
       <section className="layouts__section">
         <div className="layouts__section-head">
-          <h2 className="layouts__heading"><GridIcon size={12} style={{ marginRight: 7, color: "#134E4A" }} />Templates</h2>
+          <h2 className="layouts__heading"><GridIcon size={12} style={{ marginRight: 7, color: "#57534E" }} />Templates</h2>
           <span className="layouts__count">{BUILTIN_LAYOUTS.length} available</span>
         </div>
         <div className="layouts__grid">
@@ -98,7 +107,7 @@ export function LayoutsScreen({ onApply, onClose }: LayoutsScreenProps) {
               <article key={layout.id} className="layouts__card layouts__card--template" data-testid={`layouts-builtin-${layout.id}`}>
                 <LayoutPreview layout={layout} />
                 <div className="layouts__card-body">
-                  <h3 className="layouts__card-name"><GridIcon size={12} style={{ marginRight: 6, color: "#134E4A" }} />{layout.name}</h3>
+                  <h3 className="layouts__card-name"><GridIcon size={12} style={{ marginRight: 6, color: "#57534E" }} />{layout.name}</h3>
                   <p className="layouts__summary">{summarizeLayout(layout)}</p>
                   <MissingBadge ids={missing} />
                 </div>
@@ -165,7 +174,7 @@ function SavedRow({ layout, missing, onApply }: { layout: SavedLayout; missing: 
         ) : (
           <button type="button" className="layouts__row-name" onClick={() => { setDraftName(layout.name); setRenaming(true); }} data-testid={`layouts-rename-btn-${layout.id}`} aria-label={`Rename ${layout.name}`}><BookmarkIcon size={11} style={{ marginRight: 6, color: "#7C3AED" }} />{layout.name}</button>
         )}
-        <span className="layouts__summary layouts__summary--inline" data-testid={`layouts-saved-summary-${layout.id}`}><GridIcon size={10} style={{ marginRight: 5, color: "#134E4A" }} />{summarizeLayout(layout)}</span>
+          <span className="layouts__summary layouts__summary--inline" data-testid={`layouts-saved-summary-${layout.id}`}><GridIcon size={10} style={{ marginRight: 5, color: "#57534E" }} />{summarizeLayout(layout)}</span>
         <MissingBadge ids={missing} />
       </div>
       <div className="layouts__row-actions">

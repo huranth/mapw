@@ -24,10 +24,10 @@ beforeEach(() => {
 });
 
 describe("App", () => {
-  it("renders the brand in the title bar", () => {
+  it("renders the brand in the sidebar", () => {
     installBridge({});
     render(<App />);
-    expect(screen.getByText(/^mapw$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/mapw/i)).toBeInTheDocument();
   });
 
   it("applies the active theme id to the document root", () => {

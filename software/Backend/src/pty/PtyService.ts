@@ -26,9 +26,10 @@ export class PtyService {
     if (!Number.isInteger(opts.cols) || !Number.isInteger(opts.rows) || opts.cols <= 0 || opts.rows <= 0 || opts.cols > 1000 || opts.rows > 1000) throw new Error("PtyService.spawn: cols and rows must be positive integers");
 
     const SAFE_ENV_KEYS = new Set(["TERM","COLORTERM","PATH","PATHEXT","WINDIR","ProgramFiles","ProgramFiles(x86)","USERPROFILE","HOME","HOMEDRIVE","HOMEPATH","LANG","LC_ALL","LC_CTYPE","SHELL","USER","LOGNAME","TMP","TEMP","TMPDIR","COMSPEC","SYSTEMROOT","NUMBER_OF_PROCESSORS","OS"]);
+    const BLOCKED_ENV_OVERRIDE = new Set(["PATH","PATHEXT","WINDIR","SYSTEMROOT","COMSPEC","ProgramFiles","ProgramFiles(x86)","USERPROFILE","HOME","TMP","TEMP","TMPDIR","WINDIR"]);
     const baseEnv: NodeJS.ProcessEnv = {};
     for (const k of SAFE_ENV_KEYS) if (process.env[k] != null) baseEnv[k] = process.env[k]!;
-    if (opts.env) for (const [k, v] of Object.entries(opts.env)) if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(k) && !/^SUPABASE_|^OPENAI_|^DEVICE_HEARTBEAT/.test(k) && typeof v === "string" && v.length < 4096) baseEnv[k] = v;
+    if (opts.env) for (const [k, v] of Object.entries(opts.env)) if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(k) && !BLOCKED_ENV_OVERRIDE.has(k) && !/^SUPABASE_|^OPENAI_|^DEVICE_HEARTBEAT/.test(k) && typeof v === "string" && v.length < 4096) baseEnv[k] = v;
 
     const shell = detectShell({ preference: opts.shellOverride ?? null, shellEnv: baseEnv["SHELL"], platform: process.platform });
     const home = homedir() || "/";
