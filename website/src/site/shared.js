@@ -205,9 +205,16 @@ export async function wireLiveCounters() {
       if (installs) installs.textContent = stats.installs;
     });
   }
-  // immediate + poll interval (poll always runs, even if first render fails)
+  // show immediately as 0, then replace with real counts — no blank flash
+  document.querySelectorAll("[data-live]").forEach(function (el) {
+    el.hidden = false;
+    const online = el.querySelector("[data-live-online]");
+    const installs = el.querySelector("[data-live-installs]");
+    if (online && !online.textContent) online.textContent = "0";
+    if (installs && !installs.textContent) installs.textContent = "0";
+  });
   void render();
-  const poll = setInterval(() => { void render(); }, 3_000);
+  const poll = setInterval(() => { void render(); }, 2_000);
   document.addEventListener("visibilitychange", () => { void render(); });
   if (supabase) {
     try {

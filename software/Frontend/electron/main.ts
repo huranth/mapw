@@ -38,7 +38,7 @@ const HEARTBEAT_URL = (() => {
   const o = supabaseOrigin();
   return o ? `${o}/functions/v1/device-heartbeat` : "";
 })();
-const HEARTBEAT_INTERVAL_MS = 30 * 1000;
+const HEARTBEAT_INTERVAL_MS = 15 * 1000;
 const UPDATE_CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
 function anonymizedLabel(hostname: string, installId: string): string {

@@ -5,11 +5,11 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const ONLINE_WINDOW_MS = 75 * 1000;
+const ONLINE_WINDOW_MS = 40 * 1000;
 
-// In-memory cache — 2s per isolate to avoid 800 counts/sec for 1000s polling
+// In-memory cache — 1s per isolate to feel live for 0→1 and 1→0 transitions
 let liveCache: { at: number; body: string; headers: Record<string, string> } | null = null;
-const CACHE_MS = 2000;
+const CACHE_MS = 1000;
 // Per-IP rate limit for live-stats: 30 req/min per IP
 const liveIpLimit = new Map<string, { count: number; windowStart: number }>();
 const LIVE_IP_MAX = 30;
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
 
     const onlineNow = (installsOnline.count ?? 0) + (devicesOnline.count ?? 0);
     const cors = corsLive(req);
-    const headers = { ...cors, "Cache-Control": "public, s-maxage=2, max-age=2", "CDN-Cache-Control": "max-age=5" };
+    const headers = { ...cors, "Cache-Control": "public, s-maxage=1, max-age=1", "CDN-Cache-Control": "max-age=2" };
     const body = JSON.stringify({
       installs: installsTotal.count ?? 0,
       users: devicesUsers.count ?? 0,

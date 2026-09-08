@@ -87,7 +87,7 @@ interface HeartbeatBody {
 }
 
 const ALLOWED_PLATFORMS = new Set(["win32", "darwin", "linux", "windows", "macos", "unknown"]);
-const BROADCAST_DEBOUNCE_MS = 5_000;
+const BROADCAST_DEBOUNCE_MS = 2_000;
 const lastBroadcast = new Map<string, number>();
 function shouldBroadcast(key: string): boolean {
   const now = Date.now();
