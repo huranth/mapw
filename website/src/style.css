@@ -1,4 +1,4 @@
-/* Hallmark · Workbench — topbar + calm hero (no N8) · footer Ft2 · Brutal paper */
+/* Hallmark Workbench */
 :root {
   --paper:   #F0F2F5;
   --paper-2: #E8EBF0;
@@ -20,7 +20,7 @@
   --sans: "Instrument Sans", "Inter", system-ui, sans-serif;
   --display: "Fraunces", Georgia, serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
-  /* Hallmark locked tokens — every color/font references these */
+  /* Tokens */
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
   --color-surface: var(--surface);
@@ -72,7 +72,7 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 ::selection { background: var(--ink); color: var(--paper); }
 
-/* Scroll reveal — snap */
+/* Scroll reveal */
 [data-reveal] {
 	opacity: 0;
 	transform: translateY(8px);
@@ -87,7 +87,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
 @media (max-width: 720px) { .page { padding: 0 20px; } }
 
-/* TOPBAR — Workbench header, full-bleed */
+/* TOPBAR Workbench */
 .site-header {
   position: sticky; top: 0; z-index: 20;
   background: var(--paper);
@@ -105,7 +105,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 .brand a { display: inline-flex; align-items: center; }
 .brand { position: relative; cursor: default; }
-/* live tick breathes */
+/* live tick */
 .brand::after {
 	content: "";
 	display: inline-block;
@@ -147,10 +147,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .nav .cta:active { transform: translateY(0); box-shadow: none; }
 @media (max-width: 720px) { .nav a:not(.cta) { display: none; } }
 
-/* N8 Terminal — kept for handbook/legacy, not used as primary nav */
+/* N8 Terminal */
 .nav-term { display: none; }
 
-/* HERO — calm sheet, no 86vh gap */
+/* HERO calm */
 .hero {
 	position: relative;
 	min-height: 560px;
@@ -170,20 +170,30 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	z-index: 0;
 	pointer-events: auto;
   background: transparent;
-  opacity: 0;
-  transition: opacity 0.45s var(--ease);
 	-webkit-mask-image: radial-gradient(circle at 50% 50%, #000 68%, transparent 84%);
 	        mask-image: radial-gradient(circle at 50% 50%, #000 68%, transparent 84%);
-  will-change: opacity;
+  contain: paint;
 }
-.arrangement-bg.is-ready { opacity: 1; }
-.arrangement-bg canvas { display: block; width: 100% !important; height: 100% !important; opacity: 1; background: transparent !important; }
+.arrangement-bg canvas { display: block; width: 100% !important; height: 100% !important; background: transparent !important; position: absolute; inset: 0; }
 @media (max-width: 900px) {
-	.arrangement-bg { position: relative; top: auto; right: auto; transform: none; width: 100%; max-width: 420px; margin: 20px auto 0; aspect-ratio: 1.2 / 1; opacity: 0; -webkit-mask-image: none; mask-image: none; }
-  .arrangement-bg.is-ready { opacity: 0.95; }
+	.arrangement-bg { position: relative; top: auto; right: auto; transform: none; width: 100%; max-width: 420px; margin: 20px auto 0; aspect-ratio: 1.2 / 1; -webkit-mask-image: none; mask-image: none; }
 }
+.ph-pane {
+  background: var(--surface); border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink);
+  border-radius: 2px; padding: 8px 7px 10px; position: relative;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ph-dots { display: block; height: 6px; background: radial-gradient(circle 3px at 4px 3px, var(--ink) 2px, transparent 2.5px), radial-gradient(circle 3px at 14px 3px, rgba(10,10,10,0.28) 2px, transparent 2.5px), radial-gradient(circle 3px at 24px 3px, rgba(10,10,10,0.28) 2px, transparent 2.5px); opacity: 0.9; }
+.ph-chip { position: absolute; top: 7px; right: 7px; width: 18px; height: 10px; background: var(--ink); border-radius: 1px; }
+.ph-bar { display: block; height: 4px; background: rgba(10,10,10,0.16); border-radius: 1px; margin-top: 10px; }
+.ph-bar--prompt { width: 22%; background: var(--ink); opacity: 0.9; height: 5px; }
+.ph-bar:nth-of-type(3) { width: 72%; }
+.ph-bar:nth-of-type(4) { width: 58%; }
+.arrangement-bg.is-ready .arrangement-placeholder { opacity: 0; transition: opacity 0.35s var(--ease); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
-  .arrangement-bg { display: none !important; }
+  .arrangement-bg canvas { display: none !important; }
+  .arrangement-bg { opacity: 1 !important; }
+  .arrangement-placeholder { opacity: 1 !important; }
 }
 @media (max-width: 900px) { .hero { flex-direction: column; align-items: stretch; } }
 
@@ -384,7 +394,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .section-head p { color: var(--ink-2); font-size: 1rem; max-width: 52ch; margin-top: 8px; }
 .section-head p code { font-family: var(--mono); font-size: 0.9em; color: var(--teal); }
 
-/* Chip catalogue — a live terminal plate. */
+/* Chip catalogue */
 .netmap {
 	position: relative;
 	border: 3px solid var(--ink);
@@ -512,7 +522,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	.term-row { opacity: 1; transform: none; transition: none; }
 }
 
-/* Under the hood */
+/* Under the */
 .integrate { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: start; }
 @media (max-width: 900px) { .integrate { grid-template-columns: 1fr; gap: 36px; } }
 .integrate .idx { font-family: var(--font-body); font-size: 13px; color: var(--color-muted); letter-spacing: -0.01em; text-transform: none; display: block; margin-bottom: 8px; }

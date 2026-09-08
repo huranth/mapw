@@ -11,7 +11,7 @@ export function initSite() {
     ${topbarHTML("")}
     <div class="page">
       <section class="hero">
-        <div id="arrangement" class="arrangement-bg"></div>
+        <div id="arrangement" class="arrangement-bg" aria-hidden="true"></div>
         <div class="hero-inner">
           <div class="eyebrow" data-reveal>Multi-pane terminal workspace</div>
           <h1 data-reveal data-reveal-delay="1">Arrange your terminals <em>like paper</em>.</h1>
@@ -66,7 +66,7 @@ export function initSite() {
         </div>
         <div class="right" data-reveal data-reveal-delay="2">
           <div class="code-label"><span>settings.json</span><button class="copy-btn" data-copy-code="#code">Copy</button></div>
-          <pre class="code" id="code"><span class="c">// what mapw persists, %APPDATA%/@mapw/frontend</span>
+          <pre class="code" id="code"><span class="c">// what mapw
 {
   <span class="k">"theme"</span>: <span class="s">"paper"</span>,
   <span class="k">"fontFamily"</span>: <span class="s">"JetBrains Mono"</span>,

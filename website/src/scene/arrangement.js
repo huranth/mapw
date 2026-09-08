@@ -10,8 +10,8 @@ const TEAL = 0x0a0a0a;
 const LIVE = 0xff2e00;
 
 function buildPane(width, height, depth) {
-  // A pane: paper-white slab, ink edges, a header line, a few command bars
-  // and one teal chip — the anatomy of a mapw terminal pane, in miniature.
+  // Pane build
+  // and one
   const group = new THREE.Group();
 
   const slab = new THREE.Mesh(
@@ -21,8 +21,8 @@ function buildPane(width, height, depth) {
   slab.name = "slab";
   group.add(slab);
 
-  // Brutalist shadow: thin ink offset behind slab — smaller so right edge
-  // doesn't push panes into frustum clip. 6px illusion, but compact.
+  // Pane shadow
+  // Shadow compact
   const shadow = new THREE.Mesh(
     new THREE.BoxGeometry(width, height, depth * 0.92),
     new THREE.MeshBasicMaterial({ color: INK }),
@@ -38,7 +38,7 @@ function buildPane(width, height, depth) {
   edges.name = "edges";
   group.add(edges);
 
-  // Header strip: three dots + a teal chip square, like the pane chrome.
+  // Pane chrome
   const chrome = new THREE.Group();
   chrome.position.set(-width / 2 + 0.09, height / 2 - 0.14, depth / 2 + 0.001);
   const dotGeo = new THREE.CircleGeometry(0.022, 16);
@@ -56,7 +56,7 @@ function buildPane(width, height, depth) {
   chrome.add(chip);
   group.add(chrome);
 
-  // Command bars — a prompt tick (teal) plus indented ink bars at low opacity.
+  // Command bars
   const bars = new THREE.Group();
   bars.position.set(-width / 2 + 0.12, -0.08, depth / 2 + 0.001);
   const rows = [0, 1, 2, 3];
@@ -82,8 +82,6 @@ export function mountArrangement(hostEl) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(PAPER, 0);
-  renderer.domElement.style.opacity = "0";
-  renderer.domElement.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1)";
   hostEl.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -97,7 +95,7 @@ export function mountArrangement(hostEl) {
   arrangement.position.x = 0.18;
   scene.add(arrangement);
 
-  // The default 2×2 sheet.
+  // The default
   const PW = 1.55;
   const PH = 0.95;
   const GAP = 0.22;
@@ -120,7 +118,7 @@ export function mountArrangement(hostEl) {
     arrangement.add(pane);
   });
 
-  // ---- cursor: lerp tilt, never drops ------------------------------------
+  // Cursor lerp
   const target = { x: 0, y: 0 };
   const cur = { x: 0, y: 0 };
   function onPointerMove(e) {
@@ -136,7 +134,7 @@ export function mountArrangement(hostEl) {
   window.addEventListener("pointermove", onPointerMove, { passive: true });
   document.addEventListener("pointerleave", onPointerLeave);
 
-  // ---- hover: raycast, lift + LIVE accent (only color on the page) -----
+  // Hover raycast
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   const hostRect = () => hostEl.getBoundingClientRect();
@@ -199,10 +197,9 @@ export function mountArrangement(hostEl) {
   window.addEventListener("resize", resize);
   resize();
 
-  // ---- loop — render once before visible to avoid white/circular flash ----
+  // loop immediate
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let raf = 0;
-  let firstFrame = true;
   function tick(now) {
     const t = now * 0.001;
     cur.x += (target.x - cur.x) * 0.055;
@@ -216,21 +213,10 @@ export function mountArrangement(hostEl) {
       }
     });
     renderer.render(scene, camera);
-    if (firstFrame) {
-      firstFrame = false;
-      // Fade in only after first pixels are ready — kills circular mask flash
-      requestAnimationFrame(function () {
-        renderer.domElement.style.opacity = "1";
-        hostEl.classList.add("is-ready");
-      });
-    }
     raf = requestAnimationFrame(tick);
   }
-  // Ensure size is correct before first paint
   resize();
   renderer.render(scene, camera);
-  renderer.domElement.style.opacity = "1";
-  hostEl.classList.add("is-ready");
   raf = requestAnimationFrame(tick);
 
   return function dispose() {
@@ -242,8 +228,6 @@ export function mountArrangement(hostEl) {
     hostEl.removeEventListener("pointerleave", onHostLeave);
     renderer.dispose();
     hostEl.dataset.mounted = "";
-    hostEl.classList.remove("is-ready");
-    // three disposes geometry/materials; clear DOM last
     hostEl.innerHTML = "";
   };
 }

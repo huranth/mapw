@@ -30,7 +30,7 @@ export function tidyLayout(nodes: Node[]): Node[] {
   if (n === 0) return nodes;
   const { width: W, height: H, gap: G } = defaultSizeForCount(n);
   const cols = Math.max(2, Math.min(6, Math.ceil(Math.sqrt(n))));
-  // stable sort by paneId numeric to keep deterministic
+  // Stable sort
   const sorted = [...nodes].sort((a, b) => {
     const na = Number(/^p(\d+)$/.exec(a.id)?.[1] ?? 0);
     const nb = Number(/^p(\d+)$/.exec(b.id)?.[1] ?? 0);
@@ -61,7 +61,7 @@ function nodesFromPersist(persisted: PaneNodePersist[]): Node[] {
   return persisted.map((p) => {
     let w = p.size?.width ?? NODE_W;
     let h = p.size?.height ?? NODE_H;
-    // migrate old huge defaults (560×320) to new compact defaults — keeps user-moved positions
+    // Migrate old
     if (w === 560 && h === 320) {
       w = NODE_W;
       h = NODE_H;
@@ -69,7 +69,7 @@ function nodesFromPersist(persisted: PaneNodePersist[]): Node[] {
       if (w === 560) w = NODE_W;
       if (h === 320) h = NODE_H;
     }
-    // clamp any still-huge persisted size that escaped (e.g., 560+ width from old seed)
+    // Clamp any
     if (w > 600) w = NODE_W;
     if (h > 360) h = NODE_H;
     return { id: p.paneId, type: "terminal", position: p.position, data: { cwd: p.cwd, cliId: p.cliId ?? null }, width: w, height: h };
@@ -98,7 +98,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       const id = `p${s.nextId}`;
       const n = s.nodes.length + 1;
       const { width, height, gap } = defaultSizeForCount(n);
-      // Grid placement that stays in viewport — not monotonic y like before (y=60*n → 60k at 1000)
+      // Grid placement
       const cols = Math.max(2, Math.min(6, Math.ceil(Math.sqrt(n))));
       const idx = n - 1;
       const col = idx % cols;

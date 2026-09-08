@@ -10,7 +10,7 @@ const SUPABASE_URL = supabaseOrigin();
 export const RELEASES_INDEX_URL = `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json`;
 export const LIVE_STATS_URL = `${SUPABASE_URL}/functions/v1/live-stats`;
 
-// anon public — RLS gates (hardcoded fallback so local vercel --prod without env still works)
+// anon public
 const SUPABASE_ANON_KEY = (() => {
   try { const k = import.meta.env?.VITE_SUPABASE_ANON_KEY?.trim(); if (k) return k; } catch {}
   return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeW5mb3dkdGl1bHJsbHFldGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODEzNzAsImV4cCI6MjEwMzU1NzM3MH0.ZtPaxuiFHhGoZhgpD5wfr0kabHKC0G0lIS16BX27yLA";
@@ -40,7 +40,7 @@ export function footerHTML() {
     </footer>`;
 }
 
-// Reveal
+// Reveal no
 export function setupReveal() {
   const items = document.querySelectorAll("[data-reveal]");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -50,22 +50,29 @@ export function setupReveal() {
     return;
   }
 
+  // Hero is
+  const heroEls = document.querySelectorAll(".hero [data-reveal]");
+  heroEls.forEach(function (el) {
+    const step = parseInt(el.getAttribute("data-reveal-delay") || "0", 10);
+    el.style.transitionDelay = (step * 60) + "ms";
+    el.classList.add("is-in");
+  });
+
   const io = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       const el = entry.target;
+      // Skip hero
+      if (el.closest(".hero")) return;
       if (entry.isIntersecting) {
         const step = parseInt(el.getAttribute("data-reveal-delay") || "0", 10);
         el.style.transitionDelay = (step * 60) + "ms";
         el.classList.add("is-in");
-      } else {
-        el.style.transitionDelay = "0ms";
-        el.classList.remove("is-in");
       }
     });
   }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
-  items.forEach(function (el) { io.observe(el); });
-  // Fallback — if observer never fires (e.g. hero already in view but not intersecting), force visible
+  items.forEach(function (el) { if (!el.closest(".hero")) io.observe(el); });
+  // Fallback if
   setTimeout(function () {
     items.forEach(function (el) {
       if (!el.classList.contains("is-in")) {
@@ -199,7 +206,7 @@ export async function wireDownloadControls() {
   });
 }
 
-// Live counters — always dynamic, no refresh needed
+// Live counters
 export async function wireLiveCounters() {
   async function render() {
     const stats = await fetchLiveStats();
@@ -212,7 +219,7 @@ export async function wireLiveCounters() {
       if (installs) installs.textContent = stats.installs;
     });
   }
-  // show immediately as 0, then replace with real counts — no blank flash
+  // show immediately
   document.querySelectorAll("[data-live]").forEach(function (el) {
     el.hidden = false;
     const online = el.querySelector("[data-live-online]");

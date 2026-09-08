@@ -94,12 +94,12 @@ export function resolveSyncCloseAnchor(b: SyncBatcher): { row: number; col: numb
   const chunkHadCup = b.outsideCupFresh || b.bodyCupFresh;
   if (b.outsideCupFresh) return b.lastOutsideCup;
   if (chunkHadCup) {
-    // typing heuristic: if body and outside share a row, cursor should stay after the typed char
+    // Typing heuristic
     if (b.lastBodyCup && (!b.lastOutsideCup || b.lastBodyCup.row === b.lastOutsideCup.row)) return b.lastBodyCup;
     return b.lastOutsideCup;
   }
   if (b.lastBodyCup) {
-    // split-stream heuristic: different rows → teleporter, anchor to stable outside
+    // Split stream
     if (b.lastOutsideCup && b.lastBodyCup.row !== b.lastOutsideCup.row) return b.lastOutsideCup;
     return b.lastBodyCup;
   }

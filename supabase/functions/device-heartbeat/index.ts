@@ -14,14 +14,14 @@ const IP_NEW_INSTALL_WINDOW_MS = 60_000;
 const IP_NEW_INSTALL_MAX = 10; // 10 new installIds per IP per minute
 
 function clip(v: unknown, max: number): string | null {
-  // also strip control chars and trim to prevent header injection
+  // Also strip
   if (typeof v !== "string" || v.length === 0) return null;
   const cleaned = v.replace(/[\x00-\x1F\x7F]/g, "").trim();
   return cleaned.length > 0 ? cleaned.slice(0, max) : null;
 }
 
 function clientIp(req: Request): string | null {
-  // Prefer Cloudflare's trusted header, then last XFF (real client), not first (spoofable)
+  // Prefer Cloudflare
   const cfIp = req.headers.get("cf-connecting-ip")?.trim();
   if (cfIp) {
     if (IPV4_RE.test(cfIp)) {
@@ -30,7 +30,7 @@ function clientIp(req: Request): string | null {
     } else if (IPV6_RE.test(cfIp)) return cfIp;
   }
   const forwarded = req.headers.get("x-forwarded-for") ?? "";
-  // Take the *last* entry — Cloudflare appends real IP, first may be spoofed
+  // Take the
   const candidates = forwarded.split(",").map((s) => s.trim()).filter(Boolean);
   const candidate = candidates.length ? candidates[candidates.length - 1]! : "";
   if (candidate === "") return null;
@@ -48,7 +48,7 @@ function isRateLimited(key: string): boolean {
   const last = rateLimit.get(key);
   if (last != null && now - last < RATE_LIMIT_MS) return true;
   rateLimit.set(key, now);
-  // prune old entries to prevent memory leak
+  // Prune old
   if (rateLimit.size > 2000) {
     for (const [k, t] of rateLimit) if (now - t > 60_000) rateLimit.delete(k);
   }
@@ -98,7 +98,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 function corsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get("origin") ?? "";
-  // Electron has no Origin — allow it (no browser to enforce CORS anyway)
+  // Electron has
   const allow = !origin ? "*" : ALLOWED_ORIGINS.has(origin) ? origin : "https://mapw.vercel.app";
   return {
     "Access-Control-Allow-Origin": allow,
@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return Response.json({ error: "method not allowed" }, { status: 405, headers: CORS_HEADERS });
   }
-  // Early body size gate — 2KB is plenty for heartbeat (installId+label)
+  // Early body
   const len = req.headers.get("content-length");
   if (len && Number(len) > 2048) {
     return Response.json({ error: "payload too large" }, { status: 413, headers: CORS_HEADERS });
@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
   if (authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice("Bearer ".length).trim();
     if (!token) return Response.json({ error: "unauthorized" }, { status: 401, headers: CORS_HEADERS });
-    // Rate limit on token prefix to prevent brute force
+    // Rate limit
     if (isRateLimited(`auth:${token.slice(0, 8)}`)) {
       return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
     }
@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
         console.error("[device-heartbeat] devices upsert failed:", error);
         return Response.json({ error: "internal error" }, { status: 500, headers: CORS_HEADERS });
       }
-      // Debounced realtime push — per-device key prevents 30 RPS storm for 1000s
+      // Debounced realtime
       if (shouldBroadcast(`device:${userData.user.id}:${label}`)) {
         try { const ch = admin.channel("fleet:live"); await ch.send({ type: "broadcast", event: "fleet_update", payload: { ts: now } }); } catch {}
       }
@@ -191,11 +191,11 @@ Deno.serve(async (req) => {
   if (isRateLimited(`anon:${body.installId}`)) {
     return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
   }
-  // Global IP flood gate — 10 new installIds per IP per minute
+  // Global IP
   if (isNewInThisIsolate && isIpRateLimited(ip, true)) {
     return Response.json({ error: "rate limited" }, { status: 429, headers: CORS_HEADERS });
   }
-  // Offline beacon — mark as not online without deleting the row (preserves installs count)
+  // Offline beacon
   if (body.offline === true) {
     try {
       const { error } = await admin.from("installs").update({

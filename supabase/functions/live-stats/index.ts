@@ -4,10 +4,10 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const ONLINE_WINDOW_MS = 40 * 1000;
 
-// In-memory cache — 1s per isolate to feel live for 0→1 and 1→0 transitions
+// In memory
 let liveCache: { at: number; body: string; headers: Record<string, string> } | null = null;
 const CACHE_MS = 1000;
-// Per-IP rate limit for live-stats: 30 req/min per IP
+// Per IP
 const liveIpLimit = new Map<string, { count: number; windowStart: number }>();
 const LIVE_IP_MAX = 30;
 const LIVE_IP_WINDOW_MS = 60_000;
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsLive(req) });
   if (req.method !== "GET") return json({ error: "method not allowed" }, 405, req);
 
-  // IP rate limit for live-stats (prevent DB DoS)
+  // IP rate
   const fwd = req.headers.get("x-forwarded-for") ?? "";
   const ip = (req.headers.get("cf-connecting-ip")?.trim()) || fwd.split(",").map((s) => s.trim()).filter(Boolean).pop() || "unknown";
   const nowIp = Date.now();
@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     for (const [k, v] of liveIpLimit) if (nowIp - v.windowStart > LIVE_IP_WINDOW_MS) liveIpLimit.delete(k);
   }
 
-  // Serve from in-memory cache if fresh
+  // Serve from
   const nowCache = Date.now();
   if (liveCache && nowCache - liveCache.at < CACHE_MS) {
     return new Response(liveCache.body, { status: 200, headers: { "Content-Type": "application/json", ...liveCache.headers } });
