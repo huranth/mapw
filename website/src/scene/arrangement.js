@@ -5,11 +5,14 @@
 import * as THREE from "three";
 import { gsap } from "gsap";
 
-const PAPER = 0xf7f4ec;
-const SURFACE = 0xfffdf7;
-const INK = 0x181712;
-const TEAL = 0x134e4a;
-const TEAL_BRIGHT = 0x5ba8a3;
+// Brutalist tokens — keeps hero panes in lockstep with site CSS vars
+// --paper #F0F2F5, --surface #FFFFFF, --ink #0A0A0A, --teal #0A0A0A (black)
+// --live #FF2E00 is the only accent left, used on hover.
+const PAPER = 0xf0f2f5;
+const SURFACE = 0xffffff;
+const INK = 0x0a0a0a;
+const TEAL = 0x0a0a0a;
+const LIVE = 0xff2e00;
 
 function buildPane(width, height, depth) {
   // A pane: paper-white slab, ink edges, a header line, a few command bars
@@ -23,9 +26,19 @@ function buildPane(width, height, depth) {
   slab.name = "slab";
   group.add(slab);
 
+  // Brutalist shadow: thin ink offset behind slab — smaller so right edge
+  // doesn't push panes into frustum clip. 6px illusion, but compact.
+  const shadow = new THREE.Mesh(
+    new THREE.BoxGeometry(width, height, depth * 0.92),
+    new THREE.MeshBasicMaterial({ color: INK }),
+  );
+  shadow.position.set(0.04, -0.04, -0.028);
+  shadow.name = "shadow";
+  group.add(shadow);
+
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(slab.geometry),
-    new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0.85 }),
+    new THREE.LineBasicMaterial({ color: INK, transparent: false, opacity: 1 }),
   );
   edges.name = "edges";
   group.add(edges);
@@ -76,11 +89,15 @@ export function mountArrangement(hostEl) {
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 50);
-  camera.position.set(0, 0, 6.2);
+  camera.position.set(0, 0, 6.65);
 
   const arrangement = new THREE.Group();
   arrangement.rotation.x = -0.32;
   arrangement.rotation.y = 0.38;
+  // Small nudge to clear the "like paper." period — just enough, not so much
+  // that the right column clips. 0.18 ≈ 24px, plus the CSS right offset does
+  // the rest. Keeps all 4 panes fully in frustum (camera 38deg/6.2).
+  arrangement.position.x = 0.18;
   scene.add(arrangement);
 
   // The default 2×2 sheet.
@@ -122,11 +139,17 @@ export function mountArrangement(hostEl) {
   window.addEventListener("pointermove", onPointerMove, { passive: true });
   document.addEventListener("pointerleave", onPointerLeave);
 
-  // ---- hover: raycast, lift + teal edges ---------------------------------
+  // ---- hover: raycast, lift + LIVE accent (only color on the page) -----
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   const hostRect = () => hostEl.getBoundingClientRect();
   let hovered = null;
+
+  function resetHovered(pane) {
+    gsap.to(pane.position, { z: pane.userData.base.z, duration: 0.5, ease: "power2.out" });
+    gsap.to(pane.getObjectByName("edges").material, { color: INK, duration: 0.4 });
+    gsap.to(pane.scale, { x: 1, y: 1, duration: 0.5, ease: "power2.out" });
+  }
 
   function pick(e) {
     const rect = hostRect();
@@ -141,16 +164,11 @@ export function mountArrangement(hostEl) {
     );
     const slab = hits.length > 0 ? hits[0].object.parent : null;
     if (slab === hovered) return;
-    if (hovered) {
-      const prev = hovered;
-      gsap.to(prev.position, { z: prev.userData.base.z, duration: 0.5, ease: "power2.out" });
-      gsap.to(prev.getObjectByName("edges").material, { color: INK, duration: 0.4 });
-      gsap.to(prev.scale, { x: 1, y: 1, duration: 0.5, ease: "power2.out" });
-    }
+    if (hovered) resetHovered(hovered);
     hovered = slab;
     if (hovered) {
       gsap.to(hovered.position, { z: hovered.userData.base.z + 0.28, duration: 0.5, ease: "power2.out" });
-      gsap.to(hovered.getObjectByName("edges").material, { color: TEAL, duration: 0.3 });
+      gsap.to(hovered.getObjectByName("edges").material, { color: LIVE, duration: 0.3 });
       gsap.to(hovered.scale, { x: 1.04, y: 1.04, duration: 0.5, ease: "power2.out" });
     }
   }
@@ -161,22 +179,17 @@ export function mountArrangement(hostEl) {
       e.clientY >= rect.top && e.clientY <= rect.bottom;
     if (inside) pick(e);
     else if (hovered) {
-      const prev = hovered;
-      gsap.to(prev.position, { z: prev.userData.base.z, duration: 0.5, ease: "power2.out" });
-      gsap.to(prev.getObjectByName("edges").material, { color: INK, duration: 0.4 });
-      gsap.to(prev.scale, { x: 1, y: 1, duration: 0.5, ease: "power2.out" });
+      resetHovered(hovered);
       hovered = null;
     }
   }
-  hostEl.addEventListener("pointermove", onHoverMove, { passive: true });
-  hostEl.addEventListener("pointerleave", () => {
+  function onHostLeave() {
     if (!hovered) return;
-    const prev = hovered;
-    gsap.to(prev.position, { z: prev.userData.base.z, duration: 0.5, ease: "power2.out" });
-    gsap.to(prev.getObjectByName("edges").material, { color: INK, duration: 0.4 });
-    gsap.to(prev.scale, { x: 1, y: 1, duration: 0.5, ease: "power2.out" });
+    resetHovered(hovered);
     hovered = null;
-  });
+  }
+  hostEl.addEventListener("pointermove", onHoverMove, { passive: true });
+  hostEl.addEventListener("pointerleave", onHostLeave);
 
   // ---- size ---------------------------------------------------------------
   function resize() {
@@ -212,8 +225,12 @@ export function mountArrangement(hostEl) {
   return function dispose() {
     cancelAnimationFrame(raf);
     window.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerleave", onPointerLeave);
     window.removeEventListener("resize", resize);
+    hostEl.removeEventListener("pointermove", onHoverMove);
+    hostEl.removeEventListener("pointerleave", onHostLeave);
     renderer.dispose();
+    // three disposes geometry/materials; clear DOM last
     hostEl.innerHTML = "";
   };
 }

@@ -292,16 +292,30 @@ function resolveWindowIcon(): Electron.NativeImage | undefined {
   // Use the same source the installer uses (build/icon.ico) — kept in
   // extraResources as icon.ico/icon.png so the window/taskbar and the
   // exe/shortcut (win.icon + nsis.installerIcon) stay in sync.
+  // In dev, thisDir is .../electron (source) or .../out/main (built). Try both one- and two-level ups to cover both.
+  const devCandidates = [
+    join(thisDir, "..", "build", "icon.ico"),
+    join(thisDir, "..", "build", "icon.png"),
+    join(thisDir, "..", "..", "build", "icon.ico"),
+    join(thisDir, "..", "..", "build", "icon.png"),
+    join(process.cwd(), "build", "icon.ico"),
+    join(process.cwd(), "build", "icon.png"),
+    join(process.cwd(), "Frontend", "build", "icon.ico"),
+    join(process.cwd(), "Frontend", "build", "icon.png"),
+    join(process.cwd(), "software", "Frontend", "build", "icon.ico"),
+    join(process.cwd(), "software", "Frontend", "build", "icon.png"),
+  ];
   const candidates = app.isPackaged
     ? [join(process.resourcesPath, "icon.ico"), join(process.resourcesPath, "icon.png")]
-    : [
-        join(thisDir, "..", "..", "build", "icon.ico"),
-        join(thisDir, "..", "..", "build", "icon.png"),
-      ];
+    : devCandidates;
   for (const candidate of candidates) {
     try {
       const img = nativeImage.createFromPath(candidate);
-      if (!img.isEmpty()) return img;
+      if (!img.isEmpty()) {
+        // Ensure we return a sized image for the window/taskbar — Windows prefers 256 for high-DPI.
+        // If the ICO contains multiple sizes, nativeImage will pick the best; we just verify it's not empty.
+        return img;
+      }
     } catch {
       // try next candidate
     }

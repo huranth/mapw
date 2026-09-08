@@ -123,7 +123,7 @@ export function initPaneGrid(band, opts = {}) {
         const y = r * (CELL + GAP);
         let v = heat.get(c + "," + r) || 0;
         if (v <= 0) {
-          ctx.strokeStyle = "rgba(247, 244, 236, 0.07)";
+          ctx.strokeStyle = "rgba(240, 242, 245, 0.07)";
           ctx.lineWidth = 1;
           roundRect(ctx, x, y, CELL, CELL, radius);
           ctx.stroke();
@@ -157,13 +157,13 @@ export function initPaneGrid(band, opts = {}) {
             drawCell = CELL * scale;
             drawRadius = Math.max(2, radius * scale);
           }
-          const a = 0.1 + displayV * 0.55;
-          ctx.fillStyle = `rgba(94, 178, 170, ${a.toFixed(3)})`;
+          const a = 0.08 + displayV * 0.42;
+          ctx.fillStyle = `rgba(248, 246, 240, ${a.toFixed(3)})`;
           roundRect(ctx, drawX, drawY, drawCell, drawCell, drawRadius);
           ctx.fill();
           // border follows the same wave — so the whole tile breathes
-          const ba = 0.3 + displayV * 0.5;
-          ctx.strokeStyle = `rgba(126, 194, 189, ${ba.toFixed(3)})`;
+          const ba = 0.22 + displayV * 0.38;
+          ctx.strokeStyle = `rgba(248, 246, 240, ${ba.toFixed(3)})`;
           ctx.lineWidth = 1;
           roundRect(ctx, drawX, drawY, drawCell, drawCell, drawRadius);
           ctx.stroke();

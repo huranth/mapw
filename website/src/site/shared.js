@@ -34,7 +34,7 @@ export function topbarHTML(active) {
   };
   return `
     <header class="topbar">
-      <div class="brand"><a href="index.html" aria-label="mapw — Terminals, like paper."><img src="/logo-header.svg" alt="mapw" height="28" width="122" style="display:block"/></a></div>
+      <div class="brand"><a href="index.html" aria-label="mapw — Terminals, like paper."><b>mapw</b></a></div>
       <nav class="nav">
         ${link("index.html#chips", "Chips", "chips")}
         ${link("index.html#under-the-hood", "Under the hood", "hood")}
@@ -109,7 +109,7 @@ export function wireCopy(root) {
       flash(cc);
     }
   });
-  function write(t) { if (navigator.clipboard) navigator.clipboard.writeText(t); }
+  function write(t) { if (navigator.clipboard) navigator.clipboard.writeText(t).catch(() => {}); }
   function flash(btn) {
     const label = btn.dataset._label || btn.textContent;
     btn.dataset._label = label;
@@ -232,7 +232,8 @@ export async function wireLiveCounters() {
 
   // Poll every 5s as fallback (cached 2s at edge) — cheap for 1000s, feels instant.
   // Realtime does the lighting-fast push; polling catches any missed broadcast or cache.
-  const poll = setInterval(() => { void render(); }, 5_000);
+  // Skip poll when hidden to save edge hits for 1000s.
+  const poll = setInterval(() => { if (!document.hidden) void render(); }, 5_000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") void render();
   });

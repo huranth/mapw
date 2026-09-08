@@ -76,18 +76,17 @@ Deno.serve(async (req) => {
   const cutoff = new Date(Date.now() - ONLINE_WINDOW_MS).toISOString();
 
   try {
-    const [installsTotal, installsOnline, devicesOnline, usersCount] = await Promise.all([
+    const [installsTotal, installsOnline, devicesOnline, devicesUsers] = await Promise.all([
       admin.from("installs").select("id", { count: "exact", head: true }),
       admin.from("installs").select("id", { count: "exact", head: true })
         .gt("last_seen_at", cutoff),
       admin.from("devices").select("id", { count: "exact", head: true })
         .gt("last_seen_at", cutoff),
-      // Count distinct users via profiles (1 row per user) — accurate, not overcounting devices
-      admin.from("profiles").select("id", { count: "exact", head: true }),
+      admin.from("devices").select("user_id", { count: "exact", head: true }),
     ]);
 
-    if (installsTotal.error || installsOnline.error || devicesOnline.error || usersCount.error) {
-      console.error("[live-stats] count failed:", installsTotal.error ?? installsOnline.error ?? devicesOnline.error ?? usersCount.error);
+    if (installsTotal.error || installsOnline.error || devicesOnline.error || devicesUsers.error) {
+      console.error("[live-stats] count failed:", installsTotal.error ?? installsOnline.error ?? devicesOnline.error ?? devicesUsers.error);
       return json({ error: "failed to count" }, 500);
     }
 
@@ -96,11 +95,10 @@ Deno.serve(async (req) => {
     const headers = { ...cors, "Cache-Control": "public, s-maxage=2, max-age=2", "CDN-Cache-Control": "max-age=5" };
     const body = JSON.stringify({
       installs: installsTotal.count ?? 0,
-      users: usersCount.count ?? 0,
+      users: devicesUsers.count ?? 0,
       onlineNow,
       updatedAt: new Date().toISOString(),
     });
-    // Store in cache for 2s
     liveCache = { at: Date.now(), body, headers };
     return new Response(body, { status: 200, headers: { "Content-Type": "application/json", ...headers } });
   } catch (err) {
