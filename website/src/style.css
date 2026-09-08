@@ -13,8 +13,8 @@
   --teal-bright: #F0F2F5;
   --live:    #FF2E00;
   --border-w: 3px;
-  --shadow: 6px 6px 0 #0A0A0A;
-  --shadow-sm: 4px 4px 0 #0A0A0A;
+  --shadow: 8px 8px 0 #0A0A0A;
+  --shadow-sm: 6px 6px 0 #0A0A0A;
   --radius: 0px;
 
   --sans: "Instrument Sans", "Inter", system-ui, sans-serif;
@@ -33,8 +33,8 @@
   --font-display: var(--display);
   --font-body: var(--sans);
   --font-mono: var(--mono);
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
 
   color-scheme: light;
   font-synthesis: none;
@@ -72,11 +72,11 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 ::selection { background: var(--ink); color: var(--paper); }
 
-/* Scroll reveal — rise + fade, replays on re-entry. */
+/* Scroll reveal — snap */
 [data-reveal] {
 	opacity: 0;
-	transform: translateY(12px);
-	transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+	transform: translateY(8px);
+	transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
 	will-change: opacity, transform;
 }
 [data-reveal].is-in { opacity: 1; transform: none; }
@@ -194,15 +194,15 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	color: var(--color-ink);
 	font-family: var(--font-display);
 	font-optical-sizing: auto;
-	font-size: clamp(2.2rem, 4.5vw, 3.4rem);
-	line-height: 1.08;
-	letter-spacing: -0.025em;
-	font-weight: 650;
+	font-size: clamp(2.8rem, 5.8vw, 4.4rem);
+	line-height: 1.02;
+	letter-spacing: -0.04em;
+	font-weight: 750;
 	margin-bottom: 16px;
 	text-wrap: balance;
 	overflow-wrap: anywhere; min-width: 0;
 }
-.hero h1 em { font-style: normal; font-weight: 800; color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; text-decoration-color: var(--color-rule); }
+.hero h1 em { font-style: normal; font-weight: 800; color: var(--color-paper); background: var(--color-ink); padding: 0 8px; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
 .hero p { font-size: 1.04rem; color: var(--ink-2); max-width: 42ch; margin-bottom: 28px; }
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
