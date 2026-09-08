@@ -28,7 +28,7 @@ export function topbarHTML(active) {
         ${link("/catalog", "Catalog", "chips")}
         ${link("/how-it-works", "How it works", "hood")}
         ${link("/handbook", "Field notes", "handbook")}
-        <a class="cta" href="/#download">Download</a>
+        <a class="cta" href="/download">Download</a>
       </nav>
     </header>`;
 }
