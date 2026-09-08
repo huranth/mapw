@@ -24,60 +24,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <style>/* Loader — first paint, brutal paper */
-      #loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#F0F2F5;background-image:linear-gradient(#0A0A0A 1px,transparent 1px),linear-gradient(90deg,#0A0A0A 1px,transparent 1px);background-size:32px 32px;background-position:-1px -1px}
-      #loader::before{content:"";position:absolute;inset:0;background:#F0F2F5;opacity:0.92}
-      .ld-card{position:relative;width:min(420px,92vw);background:#FFFFFF;border:3px solid #0A0A0A;box-shadow:8px 8px 0 #0A0A0A;padding:0;overflow:hidden}
-      .ld-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#E8EBF0;border-bottom:3px solid #0A0A0A;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6B6B6B}
-      .ld-head i{width:7px;height:7px;border-radius:50%;background:#0A0A0A;display:inline-block}
-      .ld-head i:nth-child(2),.ld-head i:nth-child(3){background:#0A0A0A;opacity:0.28}
-      .ld-body{padding:22px 22px 18px}
-      .ld-mark{font-family:"Fraunces",Georgia,serif;font-size:42px;font-weight:700;letter-spacing:-0.04em;line-height:1;color:#0A0A0A;margin:0}
-      .ld-rule{height:3px;background:#0A0A0A;margin:10px 0 14px;transform:scaleX(0);transform-origin:left;animation:ldGrow 0.7s 0.15s cubic-bezier(0.16,1,0.3,1) forwards}
-      @keyframes ldGrow{to{transform:scaleX(1)}}
-      .ld-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 16px}
-      .ld-pane{height:62px;background:#FFFFFF;border:2px solid #0A0A0A;box-shadow:4px 4px 0 #0A0A0A;position:relative;overflow:hidden;opacity:0;transform:translateY(6px);animation:ldIn 0.45s cubic-bezier(0.16,1,0.3,1) forwards}
-      .ld-pane:nth-child(1){animation-delay:0.18s}
-      .ld-pane:nth-child(2){animation-delay:0.26s}
-      .ld-pane:nth-child(3){animation-delay:0.34s}
-      .ld-pane:nth-child(4){animation-delay:0.42s}
-      @keyframes ldIn{to{opacity:1;transform:none}}
-      .ld-pane::before{content:"";position:absolute;top:6px;left:6px;right:6px;height:6px;background:radial-gradient(circle 2.5px at 4px 3px,#0A0A0A 1.8px,transparent 2px),radial-gradient(circle 2.5px at 14px 3px,rgba(10,10,10,0.28) 1.8px,transparent 2px),radial-gradient(circle 2.5px at 24px 3px,rgba(10,10,10,0.28) 1.8px,transparent 2px)}
-      .ld-pane::after{content:"";position:absolute;bottom:8px;left:8px;right:24px;height:3px;background:rgba(10,10,10,0.14);border-radius:1px}
-      .ld-term{font-family:"JetBrains Mono",monospace;font-size:11px;color:#0A0A0A;background:#F0F2F5;border:2px solid #0A0A0A;padding:8px 10px;display:flex;gap:6px;align-items:center}
-      .ld-prompt{color:#0A0A0A;font-weight:600}
-      .ld-typed{white-space:pre;overflow:hidden}
-      .ld-caret{width:7px;height:13px;background:#0A0A0A;display:inline-block;animation:ldBlink 1.05s steps(2) infinite}
-      @keyframes ldBlink{50%{opacity:0}}
-      .ld-foot{padding:10px 14px;border-top:3px solid #0A0A0A;background:#F0F2F5;display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#6B6B6B}
-      #loader.out{opacity:0;pointer-events:none;transition:opacity 0.35s cubic-bezier(0.16,1,0.3,1)}
-      @media(prefers-reduced-motion:reduce){#loader .ld-rule,#loader .ld-pane,#loader .ld-caret{animation:none;opacity:1;transform:none}#loader{transition:none}}
-    </style>
   </head>
   <body>
-    <div id="loader" aria-label="Loading mapw" aria-live="polite">
-      <div class="ld-card" role="status">
-        <div class="ld-head"><i></i><i></i><i></i><span style="margin-left:6px">mapw — boot</span><span style="margin-left:auto">v0.1.28</span></div>
-        <div class="ld-body">
-          <div class="ld-mark">mapw</div>
-          <div class="ld-rule" aria-hidden="true"></div>
-          <div class="ld-grid" aria-hidden="true"><div class="ld-pane"></div><div class="ld-pane"></div><div class="ld-pane"></div><div class="ld-pane"></div></div>
-          <div class="ld-term"><span class="ld-prompt">></span><span class="ld-typed" id="ld-typed"></span><span class="ld-caret" aria-hidden="true"></span></div>
-        </div>
-        <div class="ld-foot"><span>paper · ink · four</span><span id="ld-pct">00%</span></div>
-      </div>
-    </div>
     <div id="app"></div>
-    <script>/* Loader type */
-      (function(){
-        var t=document.getElementById('ld-typed'),p=document.getElementById('ld-pct'),s="mapw --load --panes 4 --ok",i=0;
-        function type(){ if(!t) return; t.textContent=s.slice(0,i); i++; if(i<=s.length) setTimeout(type,22+Math.random()*18); }
-        var n=0,iv=setInterval(function(){ n=Math.min(100,n+Math.floor(4+Math.random()*9)); if(p) p.textContent=(n<10?"0":"")+n+"%"; if(n>=100) clearInterval(iv); },70);
-        type();
-        var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if(reduce){ var l=document.getElementById('loader'); if(l) l.style.display='none'; }
-      })();
-    </script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
