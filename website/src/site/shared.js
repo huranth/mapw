@@ -18,9 +18,18 @@ const SUPABASE_ANON_KEY = (() => {
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
 export function topbarHTML(active) {
+  const is = (p) => active === p ? ' class="here" aria-current="page"' : "";
   return `
-    <header class="nav-term">
-      <pre class="nav-term__line"><span class="prompt">&gt;</span> mapw <a href="/catalog">--catalog</a> <a href="/how-it-works">--how</a> <a href="/handbook">--notes</a> <a href="/download">--get</a><span class="caret" aria-hidden="true">▮</span></pre>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <div class="brand"><a href="/" aria-label="mapw home"><b>mapw</b></a></div>
+        <nav class="nav" aria-label="Primary">
+          <a href="/catalog"${is("catalog")}>Catalog</a>
+          <a href="/how-it-works"${is("how")}>How</a>
+          <a href="/handbook"${is("handbook")}>Notes</a>
+          <a class="cta" href="/download" data-download><span data-download-label>Download</span></a>
+        </nav>
+      </div>
     </header>`;
 }
 

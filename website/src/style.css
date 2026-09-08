@@ -1,4 +1,4 @@
-/* Hallmark · macrostructure: Workbench · nav: N8 Terminal · footer: Ft2 Inline · theme: Brutal · pre-emit critique: P5 H4 E5 S4 R5 V4 · contrast: pass · nav: N8 · footer: Ft2 · slop: pass */
+/* Hallmark · Workbench — topbar + calm hero (no N8) · footer Ft2 · Brutal paper */
 :root {
   --paper:   #F0F2F5;
   --paper-2: #E8EBF0;
@@ -87,12 +87,17 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .page { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
 @media (max-width: 720px) { .page { padding: 0 20px; } }
 
-/* TOPBAR */
-.topbar {
-	display: flex; align-items: center; justify-content: space-between;
-	height: 64px;
-	border-bottom: 3px solid var(--ink);
+/* TOPBAR — Workbench header, full-bleed */
+.site-header {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--paper);
+  border-bottom: 3px solid var(--ink);
 }
+.site-header__inner {
+  max-width: 1120px; margin: 0 auto; padding: 0 32px;
+  height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+}
+@media (max-width: 720px) { .site-header__inner { padding: 0 20px; height: 56px; } }
 .brand b {
 	color: var(--ink); letter-spacing: -0.035em; font-size: 26px;
 	font-family: var(--display); font-optical-sizing: auto; font-weight: 700;
@@ -100,7 +105,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 .brand a { display: inline-flex; align-items: center; }
 .brand { position: relative; cursor: default; }
-/* the live tick beside the wordmark breathes */
+/* live tick breathes */
 .brand::after {
 	content: "";
 	display: inline-block;
@@ -114,13 +119,12 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	0%, 100% { opacity: 0.35; transform: scale(0.85); }
 	50%      { opacity: 1;    transform: scale(1); }
 }
-
-.nav { display: flex; align-items: center; gap: 2px; }
+.nav { display: flex; align-items: center; gap: 4px; }
 .nav a {
 	position: relative;
 	font-size: 13.5px; color: var(--ink-2);
-	padding: 7px 12px; border-radius: 4px;
-	transition: color .2s var(--ease);
+	padding: 8px 12px; border-radius: 0;
+	transition: color .2s var(--ease), background .2s var(--ease);
 }
 .nav a:not(.cta)::after {
 	content: "";
@@ -129,81 +133,78 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	transform: scaleX(0); transform-origin: left;
 	transition: transform .32s var(--ease);
 }
-.nav a:not(.cta):hover { color: var(--ink); background: transparent; }
+.nav a:not(.cta):hover { color: var(--ink); background: var(--paper-2); }
 .nav a:not(.cta):hover::after { transform: scaleX(1); }
 .nav a.here { color: var(--ink); }
 .nav a.here::after { transform: scaleX(1); }
 .nav .cta {
 	color: var(--paper); background: var(--ink);
-	transition: background .22s var(--ease), transform .12s var(--ease), box-shadow .22s var(--ease);
+  border: 3px solid var(--ink);
+  padding: 7px 14px;
+	transition: background .2s var(--ease), transform .12s var(--ease), box-shadow .2s var(--ease), color .2s var(--ease);
 }
-.nav .cta:hover { background: var(--teal); transform: translateY(-1px); box-shadow: var(--shadow); }
-.nav .cta:active { transform: translateY(0); }
+.nav .cta:hover { background: var(--paper); color: var(--ink); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.nav .cta:active { transform: translateY(0); box-shadow: none; }
 @media (max-width: 720px) { .nav a:not(.cta) { display: none; } }
 
-/* N8 Terminal */
-.nav-term { padding: 16px 32px; border-bottom: 3px solid var(--color-rule, var(--ink)); max-width: 1120px; margin: 0 auto; background: var(--paper); position: sticky; top: 0; z-index: 20; }
-.nav-term__line { font-family: var(--font-mono); font-size: 13px; margin: 0; overflow-wrap: anywhere; min-width: 0; white-space: pre-wrap; letter-spacing: -0.01em; }
-.nav-term__line .prompt { color: var(--color-accent); padding-right: 0.5ch; font-weight: 600; }
-.nav-term__line a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; padding: 2px 3px; border-radius: 0; transition: background .15s var(--ease), color .15s var(--ease); }
-.nav-term__line a:hover { background: var(--color-ink); color: var(--color-paper); text-decoration-color: var(--color-ink); }
-.caret { display: inline-block; width: 1ch; animation: blink 1.05s steps(2) infinite; color: var(--color-accent); font-weight: 600; }
-@keyframes blink { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .caret { animation: none; opacity: 1; } }
-@media (max-width: 720px) { .nav-term { padding: 14px 20px; } }
+/* N8 Terminal — kept for handbook/legacy, not used as primary nav */
+.nav-term { display: none; }
 
-/* HERO */
-/* The Arrangement */
+/* HERO — calm sheet, no 86vh gap */
 .hero {
 	position: relative;
-	min-height: 86vh;
+	min-height: 560px;
 	display: flex;
 	align-items: center;
-	overflow: visible;
+	overflow: clip;
+  padding: 32px 0 24px;
 }
+@media (max-width: 900px) { .hero { min-height: auto; padding: 28px 0 20px; } }
 .arrangement-bg {
 	position: absolute;
 	top: 50%;
-	right: -5%;
-	transform: translateY(-50%) translateX(6px);
-	width: min(56%, 700px);
+	right: 0;
+	transform: translateY(-50%);
+	width: min(48%, 560px);
 	aspect-ratio: 1 / 1;
 	z-index: 0;
 	pointer-events: auto;
-	-webkit-mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 86%);
-	        mask-image: radial-gradient(circle at 50% 50%, #000 66%, transparent 86%);
+	-webkit-mask-image: radial-gradient(circle at 50% 50%, #000 68%, transparent 84%);
+	        mask-image: radial-gradient(circle at 50% 50%, #000 68%, transparent 84%);
 }
 .arrangement-bg canvas { display: block; width: 100% !important; height: 100% !important; }
 @media (max-width: 900px) {
-	.arrangement-bg { right: -20%; width: 92%; opacity: 0.5; }
+	.arrangement-bg { position: relative; top: auto; right: auto; transform: none; width: 100%; max-width: 420px; margin: 20px auto 0; aspect-ratio: 1.2 / 1; opacity: 0.95; -webkit-mask-image: none; mask-image: none; }
 }
+@media (max-width: 900px) { .hero { flex-direction: column; align-items: stretch; } }
 
 .hero-inner {
 	position: relative;
 	z-index: 1;
-	max-width: 620px;
-	padding: 40px 0;
+	max-width: 600px;
+	padding: 8px 0;
 }
 .eyebrow {
-	font-family: var(--font-body); font-size: 13px;
-	letter-spacing: -0.01em; text-transform: none;
-	color: var(--color-muted); margin-bottom: 16px;
+	font-family: var(--font-body); font-size: 12px;
+	letter-spacing: 0.08em; text-transform: uppercase;
+	color: var(--color-muted); margin-bottom: 14px;
 	display: block;
+  font-weight: 500;
 }
 .hero h1 {
 	color: var(--color-ink);
 	font-family: var(--font-display);
 	font-optical-sizing: auto;
-	font-size: clamp(2.8rem, 5.8vw, 4.4rem);
-	line-height: 1.02;
-	letter-spacing: -0.04em;
-	font-weight: 750;
-	margin-bottom: 16px;
+	font-size: clamp(2.6rem, 5.2vw, 4rem);
+	line-height: 0.98;
+	letter-spacing: -0.045em;
+	font-weight: 720;
+	margin-bottom: 14px;
 	text-wrap: balance;
 	overflow-wrap: anywhere; min-width: 0;
 }
-.hero h1 em { font-style: normal; font-weight: 800; color: var(--color-paper); background: var(--color-ink); padding: 0 8px; border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
-.hero p { font-size: 1.04rem; color: var(--ink-2); max-width: 42ch; margin-bottom: 28px; }
+.hero h1 em { font-style: normal; font-weight: 720; color: var(--color-ink); background: transparent; padding: 0; border: none; box-shadow: none; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px; text-decoration-color: var(--ink); }
+.hero p { font-size: 1rem; color: var(--ink-2); max-width: 44ch; margin-bottom: 24px; line-height: 1.6; }
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .btn {
