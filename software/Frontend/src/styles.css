@@ -46,7 +46,7 @@
 
 :root {
   color-scheme: light;
-  /* Calm brutalist — soft shadows, 8px radius */
+  /* Calm brutalist */
   --mapw-shadow:    0 8px 24px rgba(10,10,10,0.08);
   --mapw-shadow-sm: 0 2px 8px rgba(10,10,10,0.06);
   --mapw-radius:   8px;
@@ -209,7 +209,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 .titlebar__button { display: inline-flex; align-items: center; justify-content: center; gap: 0; }
 
 
-/* — Workspace — the terminal canvas — */
+/* Workspace the */
 
 .workspace {
   position: relative;

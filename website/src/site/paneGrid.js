@@ -53,7 +53,7 @@ export function initPaneGrid(band, opts = {}) {
   const CELL = 34;
   const GAP = 7;
   const heat = new Map(); // "c,r" → 0..1
-  // idle breathing state — premium, not a strobe
+  // Idle breathing
   let lastMoveAt = performance.now();
   let idleMix = 0; // 0 → moving, 1 → at rest (lerped)
 
@@ -127,17 +127,17 @@ export function initPaneGrid(band, opts = {}) {
             const cx = c * (CELL + GAP) + CELL / 2;
             const cy = r * (CELL + GAP) + CELL / 2;
             const dist = Math.hypot(cx - px, cy - py);
-            // stable per-cell offset so neighbours are never in phase
+            // Stable per
             const cellPhase = (c * 0.71 + r * 0.83) * 2.1 + (c * r * 0.0047);
-            // outward travelling wave — premium ripple, not a strobe
+            // Outward travelling
             const wave = Math.sin(now * 0.00185 - dist * 0.022 + cellPhase);
             const wave2 = Math.sin(now * 0.00095 + cellPhase * 0.6 + 1.7);
 // 0 22
             const breathe = (wave * 0.68 + wave2 * 0.32) * 0.22;
             const centreBias = 0.78 + v * 0.45; // hots breathe harder, edges stay calmer
             displayV = Math.max(0, Math.min(1, v * (1 + breathe * centreBias * idleMix) + breathe * 0.035 * idleMix));
-            // subtle scale pulse — 1px inset at trough, flush at peak
-            // keeps the grid feeling like a living material, not a screen
+            // Subtle scale
+            // Keeps the
             const scale = 1 + breathe * 0.045 * idleMix;
             const inset = (CELL - CELL * scale) / 2;
             drawX = x + inset;
@@ -149,7 +149,7 @@ export function initPaneGrid(band, opts = {}) {
           ctx.fillStyle = `rgba(248, 246, 240, ${a.toFixed(3)})`;
           roundRect(ctx, drawX, drawY, drawCell, drawCell, drawRadius);
           ctx.fill();
-          // border follows the same wave — so the whole tile breathes
+          // Border follows
           const ba = 0.22 + displayV * 0.38;
           ctx.strokeStyle = `rgba(248, 246, 240, ${ba.toFixed(3)})`;
           ctx.lineWidth = 1;
@@ -172,7 +172,7 @@ export function initPaneGrid(band, opts = {}) {
 
   let mouse = { x: -9999, y: -9999, r: 0 };
   function loop(now) {
-    // ease the spotlight center so the heat trail feels physical
+    // Ease the
     drawGrid(mouse.x, mouse.y, mouse.r, now);
     requestAnimationFrame(loop);
   }
@@ -185,7 +185,7 @@ export function initPaneGrid(band, opts = {}) {
       src.clientY >= rect.top && src.clientY <= rect.bottom;
     const nx = src.clientX - rect.left;
     const ny = src.clientY - rect.top;
-    // only treat real movement as a reset — micro-jitter shouldn't thrash idle
+    // Only treat
     if (Math.abs(nx - mouse.x) > 1.5 || Math.abs(ny - mouse.y) > 1.5 || (inside ? 150 : 0) !== mouse.r) {
       lastMoveAt = performance.now();
     }

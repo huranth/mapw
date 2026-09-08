@@ -112,7 +112,7 @@ export function AmpIcon(p: IconProps) {
   );
 }
 
-// map for CLI ids — colored: each CLI gets its own hue
+// Map for
 import type { ComponentType } from "react";
 export const cliBrandIcon: Record<string, ComponentType<IconProps>> = {
   opencode: OpenCodeIcon,

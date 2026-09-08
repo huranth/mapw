@@ -20,7 +20,7 @@ export function TerminalCanvas() {
   const lastMoveRef = useRef<number>(Date.now());
   const prevCountRef = useRef<number>(nodes.length);
 
-  // migrate old huge defaults (560×320) → compact, keeps drag pos (run once on mount)
+  // Migrate old
   useEffect(() => {
     const cur = useCanvasStore.getState().nodes;
     const big = cur.some((n) => (n.width ?? 0) > 600 || (n.height ?? 0) > 360);
@@ -55,7 +55,7 @@ export function TerminalCanvas() {
     };
   }, [updateSettings]);
 
-  // idle-gated auto-frame: only when user hasn't panned/dragged in 2s
+  // Idle gated
   useEffect(() => {
     const prev = prevCountRef.current;
     const cur = nodes.length;
@@ -66,7 +66,7 @@ export function TerminalCanvas() {
     if (!rf) return;
     const padding = Math.max(0.18, Math.min(0.32, 0.18 + cur * 0.004));
     const maxZoom = cur <= 4 ? 1 : cur <= 25 ? 1.05 : 0.9;
-    // small delay so new node mounts first
+    // Small delay
     const t = window.setTimeout(() => rf.fitView({ padding, maxZoom, duration: 280 }), 80);
     return () => window.clearTimeout(t);
   }, [nodes.length]);

@@ -1,5 +1,5 @@
-// Chip catalogue as a live console — types `mapw launch <chip>`, streams the
-// real curated CLI list, filters live, copies launch commands. Pure DOM.
+// Chip catalogue
+// Real curated
 
 const PROMPT = "$ ";
 const CMD = "mapw launch <chip>";

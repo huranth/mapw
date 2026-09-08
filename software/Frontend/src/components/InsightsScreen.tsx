@@ -15,7 +15,7 @@ import { ShareIcon } from "@/components/Icons";
 import { buildUsageReport } from "@/components/usageReport";
 import { useUsageStore } from "@/stores/usage";
 
-// Brutalist palette — ink + paper, live red only accent
+// Brutalist palette
 const ZMUTED = "#6B6B6B";
 const ZGRID = "#0A0A0A";
 const BLUE = "#0A0A0A";
@@ -235,14 +235,14 @@ export function InsightsScreen() {
   const [copied, setCopied] = useState(false);
   const copyTimerRef = useRef<number | null>(null);
   const [isComputing, setIsComputing] = useState(() => {
-    // skip gate in tests (jsdom) so vitest can assert content immediately
+    // Skip gate
     if (typeof navigator !== "undefined" && /jsdom/i.test(navigator.userAgent)) return false;
     return true;
   });
 
   useEffect(() => {
     if (!isComputing) return;
-    // mimic reading local session history — matches Image 2
+    // Mimic reading
     const t = window.setTimeout(() => setIsComputing(false), 900);
     return () => window.clearTimeout(t);
   }, [isComputing]);
@@ -251,8 +251,8 @@ export function InsightsScreen() {
     if (copyTimerRef.current != null) window.clearTimeout(copyTimerRef.current);
   }, []);
 
-  // Heatmap is heavy (224 cells) — throttle to minute. Everything else stays
-  // live per-second so Activity Breakdown / trend / top bar stay dynamic.
+  // Heatmap is
+  // Live per
   const tickMinute = Math.floor(usage.lastTick / 60000);
   const dailyThrottled = useMemo(() => usage.daily, [tickMinute]);
   const streak = useMemo(() => calcStreak(usage.daily, usage.sessions), [usage.daily, usage.sessions]);
@@ -267,7 +267,7 @@ export function InsightsScreen() {
     return max;
   }, [usage.daily]);
   const longestSessionSec = useMemo(() => {
-    // longest single-day as longest session proxy
+    // Longest single
     return peakDaySec;
   }, [peakDaySec]);
 
@@ -292,7 +292,7 @@ export function InsightsScreen() {
     return out;
   }, [usage.daily, usage.lastTick, range]);
 
-  // donut breakdown — last 7 days by day share of time (live per-second)
+  // Donut breakdown
   const donut = useMemo(() => {
     const n = 7;
     const segs: Array<{ name: string; value: number; seconds: number }> = [];
@@ -306,7 +306,7 @@ export function InsightsScreen() {
       const name = d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       segs.push({ name, value: sec, seconds: sec });
     }
-    // filter 0 and sort desc for legend like screenshot
+    // Filter 0
     const filtered = segs.filter((s) => s.seconds > 0);
     const sorted = [...filtered].sort((a, b) => b.seconds - a.seconds);
     return { segs: sorted.length ? sorted : [{ name: "No activity", value: 1, seconds: 0 }], total };
@@ -360,7 +360,7 @@ export function InsightsScreen() {
         </div>
       </div>
 
-      {/* Top stats bar — 5 cols like screenshot */}
+      {/* Top stats */}
       <div className="z-statsbar">
         <div className="z-statsbar__item">
           <b>{fmtLong(totalTimeSec) || "0m"}</b>
@@ -420,7 +420,7 @@ export function InsightsScreen() {
         </div>
       </section>
 
-      {/* Time range + Daily trend */}
+      {/* Time range */}
       <div className="z-range">
         <span className="z-range__label">Time range</span>
         <div className="z-range__tabs">

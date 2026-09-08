@@ -389,7 +389,7 @@ function wireCanvasGrid(root) {
     });
   });
 
-  // reset on double-click — recenters the rectangle
+  // Reset on
   mini.addEventListener("dblclick", () => {
     start = centeredStart();
     panes.forEach((el, i) => {
@@ -407,7 +407,7 @@ function wireShellWires(root) {
   if (!svg || nodes.length < 2) return;
 
   const NW = 68, NH = 36;
-  // initial spread — centered row, same paper logic as canvas
+  // Initial spread
   function layout() {
     const W = grid.clientWidth, H = grid.clientHeight;
     const gap = Math.max(12, Math.min(24, (W - NW * nodes.length) / (nodes.length + 1)));

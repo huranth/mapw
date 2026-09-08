@@ -34,7 +34,7 @@ export function TerminalPane({ paneId, cwd, cliId }: TerminalPaneProps) {
   const fontSize = useSettingsStore((s) => s.settings.fontSize);
   const rawScrollback = useSettingsStore((s) => s.settings.scrollbackLines);
   const lastCwd = useSettingsStore((s) => s.settings.lastCwd);
-  // Count-aware scrollback — 100 panes * 10k = 1M lines risks OOM. Scale down for large canvases.
+  // Count aware
   const workspaceNodes = useSettingsStore((s) => s.settings.workspace?.nodes.length ?? 0);
   const scrollbackLines = workspaceNodes > 50 ? Math.min(rawScrollback, 2000) : workspaceNodes > 25 ? Math.min(rawScrollback, 5000) : rawScrollback;
 

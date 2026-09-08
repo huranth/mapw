@@ -24,8 +24,8 @@ export function Sidebar() {
   const activeSeconds = useUsageStore((s) => s.activeSeconds);
   const [readyVersion, setReadyVersion] = useState<string | null>(null);
 
-  // The auto-updater runs in main; when it stages a new build we surface one
-  // honest line here. No buttons, no promises — it applies on next launch.
+  // The auto
+  // Honest line
   useEffect(
     () =>
       window.bridge.onUpdateStatus((status) => {
@@ -34,8 +34,8 @@ export function Sidebar() {
     [],
   );
 
-  // Bootstrap the local profile once: the first launch has no stored name, so
-  // adopt the OS account name and persist it. Afterwards settings.json owns it.
+  // Bootstrap the
+  // Adopt the
   useEffect(() => {
     if (!settingsLoaded || userName) return;
     let cancelled = false;
