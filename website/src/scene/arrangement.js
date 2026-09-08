@@ -77,9 +77,15 @@ function buildPane(width, height, depth) {
 }
 
 export function mountArrangement(hostEl) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  if (hostEl.dataset.mounted === "1") return function () {};
+  hostEl.dataset.mounted = "1";
+  // Prevent flash — keep host invisible until first frame is ready
+  hostEl.style.background = "#F0F2F5";
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(PAPER, 0);
+  renderer.setClearColor(PAPER, 1);
+  renderer.domElement.style.opacity = "0";
+  renderer.domElement.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1)";
   hostEl.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
@@ -195,9 +201,10 @@ export function mountArrangement(hostEl) {
   window.addEventListener("resize", resize);
   resize();
 
-  // ---- loop ----------------------------------------------------------------
+  // ---- loop — render once before visible to avoid white/circular flash ----
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let raf = 0;
+  let firstFrame = true;
   function tick(now) {
     const t = now * 0.001;
     cur.x += (target.x - cur.x) * 0.055;
@@ -211,8 +218,21 @@ export function mountArrangement(hostEl) {
       }
     });
     renderer.render(scene, camera);
+    if (firstFrame) {
+      firstFrame = false;
+      // Fade in only after first pixels are ready — kills circular mask flash
+      requestAnimationFrame(function () {
+        renderer.domElement.style.opacity = "1";
+        hostEl.classList.add("is-ready");
+      });
+    }
     raf = requestAnimationFrame(tick);
   }
+  // Ensure size is correct before first paint
+  resize();
+  renderer.render(scene, camera);
+  renderer.domElement.style.opacity = "1";
+  hostEl.classList.add("is-ready");
   raf = requestAnimationFrame(tick);
 
   return function dispose() {
@@ -223,6 +243,8 @@ export function mountArrangement(hostEl) {
     hostEl.removeEventListener("pointermove", onHoverMove);
     hostEl.removeEventListener("pointerleave", onHostLeave);
     renderer.dispose();
+    hostEl.dataset.mounted = "";
+    hostEl.classList.remove("is-ready");
     // three disposes geometry/materials; clear DOM last
     hostEl.innerHTML = "";
   };
