@@ -1,5 +1,4 @@
-/* Drafting */
-
+/* Hallmark · macrostructure: Workbench · nav: N8 Terminal · footer: Ft2 Inline · theme: Brutal · pre-emit critique: P5 H4 E5 S4 R5 V4 · contrast: pass · nav: N8 · footer: Ft2 · slop: pass */
 :root {
   --paper:   #F0F2F5;
   --paper-2: #E8EBF0;
@@ -21,6 +20,19 @@
   --sans: "Instrument Sans", "Inter", system-ui, sans-serif;
   --display: "Fraunces", Georgia, serif;
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  /* Hallmark locked tokens — every color/font references these */
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--ink-3);
+  --color-rule: var(--line);
+  --color-accent: var(--ink);
+  --color-accent-ink: var(--paper);
+  --font-display: var(--display);
+  --font-body: var(--sans);
+  --font-mono: var(--mono);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -33,6 +45,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { overflow-x: clip; }
 html, body {
 	background: var(--paper);
 	color: var(--ink-2);
@@ -40,7 +53,7 @@ html, body {
 	font-size: 15px;
 	line-height: 1.55;
 }
-body { overflow-x: hidden; }
+body { overflow-x: clip; }
 
 /* The drafting */
 body::before {
@@ -128,6 +141,17 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .nav .cta:active { transform: translateY(0); }
 @media (max-width: 720px) { .nav a:not(.cta) { display: none; } }
 
+/* N8 Terminal */
+.nav-term { padding: var(--space-sm, 12px) 32px; border-bottom: 3px solid var(--color-rule, var(--ink)); max-width: 1120px; margin: 0 auto; }
+.nav-term__line { font-family: var(--font-mono); font-size: 13px; margin: 0; overflow-wrap: anywhere; min-width: 0; white-space: pre-wrap; }
+.nav-term__line .prompt { color: var(--color-accent); padding-right: 0.4ch; }
+.nav-term__line a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.nav-term__line a:hover { background: var(--color-paper-2); }
+.caret { display: inline-block; width: 1ch; animation: blink 1.05s steps(2) infinite; color: var(--color-accent); }
+@keyframes blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .caret { animation: none; opacity: 1; } }
+@media (max-width: 720px) { .nav-term { padding: 12px 20px; } }
+
 /* HERO */
 /* The Arrangement */
 .hero {
@@ -161,27 +185,24 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	padding: 40px 0;
 }
 .eyebrow {
-	font-family: var(--mono); font-size: 12px;
-	letter-spacing: 0.16em; text-transform: uppercase;
-	color: var(--ink-3); margin-bottom: 22px;
-	display: inline-flex; align-items: center; gap: 10px;
-}
-.eyebrow::before {
-	content: "";
-	width: 26px; height: 1px; background: var(--teal);
+	font-family: var(--font-body); font-size: 13px;
+	letter-spacing: -0.01em; text-transform: none;
+	color: var(--color-muted); margin-bottom: 16px;
+	display: block;
 }
 .hero h1 {
-	color: var(--ink);
-	font-family: var(--display);
+	color: var(--color-ink);
+	font-family: var(--font-display);
 	font-optical-sizing: auto;
-	font-size: clamp(2.6rem, 5.6vw, 4.2rem);
-	line-height: 1.04;
-	letter-spacing: -0.02em;
-	font-weight: 560;
-	margin-bottom: 20px;
+	font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+	line-height: 1.08;
+	letter-spacing: -0.025em;
+	font-weight: 650;
+	margin-bottom: 16px;
 	text-wrap: balance;
+	overflow-wrap: anywhere; min-width: 0;
 }
-.hero h1 em { font-style: normal; color: var(--paper); background: var(--teal); padding: 0 6px; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); font-weight: 800; }
+.hero h1 em { font-style: normal; font-weight: 800; color: var(--color-ink); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; text-decoration-color: var(--color-rule); }
 .hero p { font-size: 1.04rem; color: var(--ink-2); max-width: 42ch; margin-bottom: 28px; }
 
 .actions { display: flex; gap: 10px; flex-wrap: wrap; }
@@ -341,16 +362,10 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .section { padding: 80px 0; border-top: 3px solid var(--ink); }
 .section-head { margin-bottom: 36px; }
 .section-head .idx {
-	font-family: var(--mono); font-size: 12px; color: var(--ink-3);
-	letter-spacing: 0.14em; text-transform: uppercase;
-	display: inline-flex; align-items: center; gap: 9px;
+	font-family: var(--font-body); font-size: 13px; color: var(--color-muted);
+	letter-spacing: -0.01em; text-transform: none;
+	display: block; margin-bottom: 8px;
 }
-.section-head .idx::after {
-	content: ""; width: 40px; height: 1px; background: var(--line-2);
-	transform: scaleX(0); transform-origin: left;
-	transition: transform .6s .15s var(--ease);
-}
-.idx.is-in::after { transform: scaleX(1); }
 .section-head h2 {
 	color: var(--ink); font-family: var(--display); font-optical-sizing: auto;
 	font-size: 2.1rem; letter-spacing: -0.015em; font-weight: 560; margin-top: 8px;
@@ -421,7 +436,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 .term-out { margin: 10px 0 0; min-height: 14px; font-size: 11.5px; color: var(--teal-bright); white-space: pre-wrap; word-break: break-word; }
 .term-out[hidden] { display: none; }
 
-.term-rows { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; }
+.term-rows { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 8px; }
 .term-row {
 	position: relative;
 	display: grid;
@@ -490,7 +505,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 /* Under the hood */
 .integrate { display: grid; grid-template-columns: 1fr 1.05fr; gap: 56px; align-items: start; }
 @media (max-width: 900px) { .integrate { grid-template-columns: 1fr; gap: 36px; } }
-.integrate .idx { font-family: var(--mono); font-size: 12px; color: var(--ink-3); letter-spacing: 0.14em; text-transform: uppercase; }
+.integrate .idx { font-family: var(--font-body); font-size: 13px; color: var(--color-muted); letter-spacing: -0.01em; text-transform: none; display: block; margin-bottom: 8px; }
 .integrate h2 {
 	color: var(--ink); font-family: var(--display); font-optical-sizing: auto;
 	font-size: 1.9rem; letter-spacing: -0.015em; margin: 8px 0 14px; font-weight: 560;
@@ -700,6 +715,11 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 }
 .foot .fr a:hover { color: var(--ink); }
 .foot .fr a:hover::after { transform: scaleX(1); }
+
+/* Ft2 Inline */
+.foot-line { padding: 24px 0; border-top: 3px solid var(--color-rule, var(--ink)); text-align: center; font-family: var(--font-body); font-size: 13px; color: var(--color-muted); }
+.foot-line a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; }
+.foot-line a:hover { background: var(--color-paper-2); }
 
 /* Footer band */
 .lines-band {

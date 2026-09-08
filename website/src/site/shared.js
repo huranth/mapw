@@ -18,28 +18,16 @@ const SUPABASE_ANON_KEY = (() => {
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
 export function topbarHTML(active) {
-  const link = function (href, label, id) {
-    return `<a href="${href}"${active === id ? ' class="here"' : ""}>${label}</a>`;
-  };
   return `
-    <header class="topbar">
-      <div class="brand"><a href="/" aria-label="mapw — Terminals, like paper."><b>mapw</b></a></div>
-      <nav class="nav">
-        ${link("/catalog", "Catalog", "chips")}
-        ${link("/how-it-works", "How it works", "hood")}
-        ${link("/handbook", "Field notes", "handbook")}
-        <a class="cta" href="/download">Download</a>
-      </nav>
+    <header class="nav-term">
+      <pre class="nav-term__line"><span class="prompt">&gt;</span> mapw <a href="/catalog">--catalog</a> <a href="/how-it-works">--how</a> <a href="/handbook">--notes</a> <a href="/download">--get</a><span class="caret" aria-hidden="true">▮</span></pre>
     </header>`;
 }
 
 export function footerHTML() {
   return `
-    <footer class="foot">
-      <div class="fl">© 2026 mapw</div>
-      <div class="fr">
-        <a href="/handbook">Field notes</a><a href="${RELEASES_INDEX_URL}" target="_blank" rel="noreferrer">Releases</a>
-      </div>
+    <footer class="foot-line">
+      <p>© 2026 mapw · MIT · Terminals, like paper — <a href="/handbook">Field notes</a> · <a href="${RELEASES_INDEX_URL}" target="_blank" rel="noreferrer">Releases</a></p>
     </footer>`;
 }
 
