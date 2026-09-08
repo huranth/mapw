@@ -65,12 +65,18 @@
       </div>
     </div>
     <div id="app"></div>
-    <script>/* Loader 2.5s */
+    <script>/* Loader pct — time based */
       (function(){
         var t=document.getElementById('ld-typed'),p=document.getElementById('ld-pct'),s="mapw --load --panes 4 --ok",i=0;
-        function type(){ if(!t) return; t.textContent=s.slice(0,i); i++; if(i<=s.length) setTimeout(type,22+Math.random()*16); }
-        var n=0,iv=setInterval(function(){ n=Math.min(100,n+Math.floor(5+Math.random()*8)); if(p) p.textContent=(n<10?"0":"")+n+"%"; if(n>=100) clearInterval(iv); },55);
+        function type(){ if(!t) return; t.textContent=s.slice(0,i); i++; if(i<=s.length) setTimeout(type,18+Math.random()*12); }
         type();
+        var start=Date.now(),dur=2400,iv=setInterval(function(){
+          var e=Date.now()-start,pct=Math.min(100,Math.floor((e/dur)*100));
+          // ease a bit
+          if(pct<100) pct=Math.min(99,Math.floor(100*(1-Math.pow(1-e/dur,2))));
+          if(p) p.textContent=(pct<10?"0":"")+pct+"%";
+          if(e>=dur){ clearInterval(iv); if(p) p.textContent="100%"; }
+        },32);
       })();
     </script>
     <script type="module" src="/src/main.js"></script>
