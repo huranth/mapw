@@ -1,6 +1,6 @@
 {
   "name": "@mapw/frontend",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "type": "module",
   "main": "out/main/index.js",
@@ -80,10 +80,10 @@
     "npmRebuild": false,
     "compression": "maximum",
     "win": {
-      "icon": "build/icon.ico",
+      "icon": "build/icon.png",
       "verifyUpdateCodeSignature": false,
       "forceCodeSigning": false,
-      "signAndEditExecutable": false,
+      "signAndEditExecutable": true,
       "target": [
         {
           "target": "nsis",
@@ -101,9 +101,9 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "mapw",
-      "installerIcon": "build/icon.ico",
-      "uninstallerIcon": "build/icon.ico",
-      "installerHeaderIcon": "build/icon.ico",
+      "installerIcon": "build/icon.png",
+      "uninstallerIcon": "build/icon.png",
+      "installerHeaderIcon": "build/icon.png",
       "deleteAppDataOnUninstall": false
     }
   }

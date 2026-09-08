@@ -4,5 +4,5 @@
 export default function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   // 302 to our own static asset keeps the domain as mapw.vercel.app
-  return res.redirect(302, '/download/mapw-setup-0.1.26.exe');
+  return res.redirect(302, '/download/mapw-setup-0.1.27.exe');
 }

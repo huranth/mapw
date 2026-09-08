@@ -251,21 +251,21 @@ export function InsightsScreen() {
     if (copyTimerRef.current != null) window.clearTimeout(copyTimerRef.current);
   }, []);
 
-  // Throttle heavy calcs to minute granularity — daily object identity changes every second (tick) but
-  // heatmap/trend only needs minute precision; keeps 224-cell heatmap + recharts from running at 1Hz.
+  // Heatmap is heavy (224 cells) — throttle to minute. Everything else stays
+  // live per-second so Activity Breakdown / trend / top bar stay dynamic.
   const tickMinute = Math.floor(usage.lastTick / 60000);
   const dailyThrottled = useMemo(() => usage.daily, [tickMinute]);
-  const streak = useMemo(() => calcStreak(dailyThrottled, usage.sessions), [dailyThrottled, usage.sessions]);
+  const streak = useMemo(() => calcStreak(usage.daily, usage.sessions), [usage.daily, usage.sessions]);
   const daysActive = Math.max(1, Math.ceil((usage.lastTick - usage.firstSeen) / 86_400_000));
   const avgPerDay = usage.activeSeconds / daysActive;
 
-  // top stats
+  // top stats — live
   const totalTimeSec = usage.activeSeconds;
   const peakDaySec = useMemo(() => {
     let max = 0;
-    for (const v of Object.values(dailyThrottled)) max = Math.max(max, v.seconds);
+    for (const v of Object.values(usage.daily)) max = Math.max(max, v.seconds);
     return max;
-  }, [dailyThrottled]);
+  }, [usage.daily]);
   const longestSessionSec = useMemo(() => {
     // longest single-day as longest session proxy
     return peakDaySec;
@@ -278,7 +278,7 @@ export function InsightsScreen() {
       const d = new Date(usage.lastTick || Date.now());
       d.setDate(d.getDate() - i);
       const k = localKey(d);
-      const s = dailyThrottled[k];
+      const s = usage.daily[k];
       const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); // Aug 23
       const timeMin = s ? Math.round((s.seconds / 60) * 10) / 10 : 0;
       out.push({
@@ -290,9 +290,9 @@ export function InsightsScreen() {
       });
     }
     return out;
-  }, [dailyThrottled, usage.lastTick, range]);
+  }, [usage.daily, usage.lastTick, range]);
 
-  // donut breakdown — last 7 days by day share of time
+  // donut breakdown — last 7 days by day share of time (live per-second)
   const donut = useMemo(() => {
     const n = 7;
     const segs: Array<{ name: string; value: number; seconds: number }> = [];
@@ -301,7 +301,7 @@ export function InsightsScreen() {
       const d = new Date(usage.lastTick || Date.now());
       d.setDate(d.getDate() - i);
       const k = localKey(d);
-      const sec = dailyThrottled[k]?.seconds ?? 0;
+      const sec = usage.daily[k]?.seconds ?? 0;
       total += sec;
       const name = d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       segs.push({ name, value: sec, seconds: sec });
@@ -310,7 +310,7 @@ export function InsightsScreen() {
     const filtered = segs.filter((s) => s.seconds > 0);
     const sorted = [...filtered].sort((a, b) => b.seconds - a.seconds);
     return { segs: sorted.length ? sorted : [{ name: "No activity", value: 1, seconds: 0 }], total };
-  }, [dailyThrottled, usage.lastTick]);
+  }, [usage.daily, usage.lastTick]);
 
   const DONUT_COLORS = [BLUE, GREEN, PURPLE, RED, ORANGE, CYAN, "#6B7280"];
 
@@ -567,12 +567,6 @@ export function InsightsScreen() {
             <div className="z-legendlist__hint">7 days · avg {fmtLong(Math.round(avgPerDay))}/day</div>
           </div>
         </div>
-      </div>
-
-      <div className="z-foot">
-        <button className="z-refresh" onClick={() => window.location.reload()}>
-          ↻ Refresh
-        </button>
       </div>
     </div>
   );

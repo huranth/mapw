@@ -4,14 +4,17 @@ import { createClient } from "@supabase/supabase-js";
 function supabaseOrigin() {
   try { const v = import.meta.env?.VITE_SUPABASE_URL?.trim(); if (v) return v.replace(/\/+$/, ""); } catch {}
   if (typeof process !== "undefined" && process.env?.SUPABASE_URL) return String(process.env.SUPABASE_URL).replace(/\/+$/, "");
-  return "";
+  return "https://pdynfowdtiulrllqetbl.supabase.co";
 }
 const SUPABASE_URL = supabaseOrigin();
-export const RELEASES_INDEX_URL = SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json` : "";
-export const LIVE_STATS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/live-stats` : "";
+export const RELEASES_INDEX_URL = `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json`;
+export const LIVE_STATS_URL = `${SUPABASE_URL}/functions/v1/live-stats`;
 
-// anon public — RLS gates
-const SUPABASE_ANON_KEY = (() => { try { const k = import.meta.env?.VITE_SUPABASE_ANON_KEY?.trim(); if (k) return k; } catch {} return ""; })();
+// anon public — RLS gates (hardcoded fallback so local vercel --prod without env still works)
+const SUPABASE_ANON_KEY = (() => {
+  try { const k = import.meta.env?.VITE_SUPABASE_ANON_KEY?.trim(); if (k) return k; } catch {}
+  return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkeW5mb3dkdGl1bHJsbHFldGJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5ODEzNzAsImV4cCI6MjEwMzU1NzM3MH0.ZtPaxuiFHhGoZhgpD5wfr0kabHKC0G0lIS16BX27yLA";
+})();
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
 export function topbarHTML(active) {
@@ -147,7 +150,8 @@ export async function fetchLatestRelease() {
 
 export async function fetchLiveStats() {
   if (!LIVE_STATS_URL) return null;
-  const res = await fetchWithRetry(LIVE_STATS_URL, { signal: AbortSignal.timeout(8000) });
+  const busted = `${LIVE_STATS_URL}${LIVE_STATS_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+  const res = await fetchWithRetry(busted, { signal: AbortSignal.timeout(8000), cache: "no-store" });
   if (!res) return null;
   try {
     return await res.json();
@@ -188,7 +192,7 @@ export async function wireDownloadControls() {
   });
 }
 
-// Live counters
+// Live counters — always dynamic, no refresh needed
 export async function wireLiveCounters() {
   async function render() {
     const stats = await fetchLiveStats();
@@ -201,9 +205,10 @@ export async function wireLiveCounters() {
       if (installs) installs.textContent = stats.installs;
     });
   }
-  await render();
-  const poll = setInterval(() => { if (!document.hidden) void render(); }, 5_000);
-  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void render(); });
+  // immediate + poll interval (poll always runs, even if first render fails)
+  void render();
+  const poll = setInterval(() => { void render(); }, 3_000);
+  document.addEventListener("visibilitychange", () => { void render(); });
   if (supabase) {
     try {
       const ch = supabase.channel("fleet:live", { config: { broadcast: { ack: false } } });
