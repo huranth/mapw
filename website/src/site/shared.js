@@ -176,7 +176,7 @@ export async function wireDownloadControls() {
       el.removeAttribute("download");
       el.removeAttribute("data-disabled");
       const label = el.querySelector("[data-download-label]");
-      if (label) label.textContent = "Download for Windows";
+      if (label) label.textContent = el.closest(".site-header") ? "Download" : "Download for Windows";
     } else if (el.matches("a")) {
       el.removeAttribute("href");
       el.setAttribute("aria-disabled", "true");
