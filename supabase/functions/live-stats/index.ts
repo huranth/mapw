@@ -74,9 +74,9 @@ Deno.serve(async (req) => {
 
   try {
     const [installsTotal, installsOnline, devicesOnline, devicesUsers] = await Promise.all([
-      admin.from("installs").select("id", { count: "exact", head: true }),
+      admin.from("installs").select("id", { count: "exact", head: true }).neq("label", "test-offline").neq("app_version", "0.0.0-test"),
       admin.from("installs").select("id", { count: "exact", head: true })
-        .gt("last_seen_at", cutoff),
+        .gt("last_seen_at", cutoff).neq("label", "test-offline").neq("app_version", "0.0.0-test"),
       admin.from("devices").select("id", { count: "exact", head: true })
         .gt("last_seen_at", cutoff),
       admin.from("devices").select("user_id", { count: "exact", head: true }),

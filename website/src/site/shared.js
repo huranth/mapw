@@ -208,34 +208,58 @@ export async function wireDownloadControls() {
 
 // Live counters
 export async function wireLiveCounters() {
+  let lastInstalls = null;
+  let lastOnline = null;
+  let stableOnline = null;
+  let stableCount = 0;
   async function render() {
     const stats = await fetchLiveStats();
-    if (!stats) return;
+    if (!stats) {
+      if (lastInstalls === null) return;
+      else return;
+    }
+    if (typeof stats.installs !== "number" || typeof stats.onlineNow !== "number") return;
+    const installs = Math.max(0, Math.floor(stats.installs));
+    const online = Math.max(0, Math.floor(stats.onlineNow));
+    if (lastInstalls !== null && installs === lastInstalls && online === lastOnline) return;
+    if (online !== stableOnline) {
+      stableOnline = online;
+      stableCount = 1;
+    } else {
+      stableCount += 1;
+    }
+    if (stableCount < 2 && lastOnline !== null) return;
+    lastInstalls = installs;
+    lastOnline = online;
     document.querySelectorAll("[data-live]").forEach(function (el) {
-      el.hidden = false;
-      const online = el.querySelector("[data-live-online]");
-      const installs = el.querySelector("[data-live-installs]");
-      if (online) online.textContent = stats.onlineNow;
-      if (installs) installs.textContent = stats.installs;
+      if (el.hidden) el.hidden = false;
+      const o = el.querySelector("[data-live-online]");
+      const ins = el.querySelector("[data-live-installs]");
+      if (o) o.textContent = String(online);
+      else if (!o) return;
+      if (ins) ins.textContent = String(installs);
+      else return;
     });
   }
-  // show immediately
-  document.querySelectorAll("[data-live]").forEach(function (el) {
-    el.hidden = false;
-    const online = el.querySelector("[data-live-online]");
-    const installs = el.querySelector("[data-live-installs]");
-    if (online && !online.textContent) online.textContent = "0";
-    if (installs && !installs.textContent) installs.textContent = "0";
+  const poll = setInterval(() => { void render(); }, 3000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void render();
+    else return;
   });
   void render();
-  const poll = setInterval(() => { void render(); }, 2_000);
-  document.addEventListener("visibilitychange", () => { void render(); });
   if (supabase) {
     try {
       const ch = supabase.channel("fleet:live", { config: { broadcast: { ack: false } } });
       ch.on("broadcast", { event: "fleet_update" }, () => { void render(); });
       await ch.subscribe();
-      window.addEventListener("beforeunload", () => { try { supabase.removeChannel(ch); } catch {} clearInterval(poll); });
-    } catch {}
+      window.addEventListener("beforeunload", () => {
+        try { supabase.removeChannel(ch); } catch {}
+        clearInterval(poll);
+      });
+    } catch {
+      return;
+    }
+  } else {
+    return;
   }
 }
