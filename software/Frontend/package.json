@@ -1,6 +1,6 @@
 {
   "name": "@bridgespace/frontend",
-  "version": "0.1.21",
+  "version": "0.1.25",
   "private": true,
   "type": "module",
   "main": "out/main/index.js",
@@ -39,6 +39,7 @@
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "jsdom": "^25.0.1",
+    "rcedit": "^5.0.2",
     "typescript": "^5.6.2",
     "vite": "^5.4.10",
     "vitest": "^2.1.4"
@@ -80,6 +81,9 @@
     "compression": "maximum",
     "win": {
       "icon": "build/icon.ico",
+      "verifyUpdateCodeSignature": false,
+      "forceCodeSigning": false,
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",

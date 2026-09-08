@@ -15,15 +15,15 @@ import { ShareIcon } from "@/components/Icons";
 import { buildUsageReport } from "@/components/usageReport";
 import { useUsageStore } from "@/stores/usage";
 
-// Paper-matched palette — Z-code layout but MAPW paper theme (light)
-const ZMUTED = "#78716C";
-const ZGRID = "#E8E2D6";
-const BLUE = "#3B82F6";
-const GREEN = "#10B981";
-const PURPLE = "#8B5CF6";
-const RED = "#EF4444";
-const ORANGE = "#F97316";
-const CYAN = "#06B6D4";
+// Brutalist palette — ink + paper, live red only accent
+const ZMUTED = "#6B6B6B";
+const ZGRID = "#0A0A0A";
+const BLUE = "#0A0A0A";
+const GREEN = "#6B6B6B";
+const PURPLE = "#FF2E00";
+const RED = "#FF2E00";
+const ORANGE = "#6B6B6B";
+const CYAN = "#B8BDC4";
 const SERIES = [
   { key: "time", label: "time", color: BLUE },
   { key: "commands", label: "commands", color: GREEN },
@@ -163,11 +163,11 @@ function Heatmap({
   }, [daily, mode]);
 
   const colorFor = (lvl: number) => {
-    if (lvl === 0) return "#F5EBDD";
-    if (lvl === 1) return "#FDE9C8";
-    if (lvl === 2) return "#F9C38A";
-    if (lvl === 3) return "#E8A166";
-    return "#D4853D";
+    if (lvl === 0) return "#F0F2F5";
+    if (lvl === 1) return "#E8EBF0";
+    if (lvl === 2) return "#B8BDC4";
+    if (lvl === 3) return "#6B6B6B";
+    return "#0A0A0A";
   };
 
   return (
@@ -185,7 +185,7 @@ function Heatmap({
             <div
               key={c.key + mode}
               className={`z-heatmap__cell${edge}`}
-              style={{ background: colorFor(c.level) }}
+              style={{ background: colorFor(c.level), borderColor: c.level === 0 ? "#E8EBF0" : colorFor(c.level) }}
             >
               <div className="z-heatmap__tip" role="tooltip">
                 <div className="z-heatmap__tip-head">{tipTitle}</div>
@@ -214,6 +214,16 @@ function Heatmap({
           <span key={m}>{m}</span>
         ))}
       </div>
+      <div className="z-heatmap__legend" aria-hidden="true">
+        <span>Less</span>
+        <i style={{ background: "#F0F2F5", border: "1px solid #E8EBF0" }} />
+        <i style={{ background: "#E8EBF0" }} />
+        <i style={{ background: "#B8BDC4" }} />
+        <i style={{ background: "#6B6B6B" }} />
+        <i style={{ background: "#0A0A0A" }} />
+        <span>More</span>
+        <span className="z-heatmap__legend-note">— daily active time</span>
+      </div>
     </div>
   );
 }
@@ -241,7 +251,11 @@ export function InsightsScreen() {
     if (copyTimerRef.current != null) window.clearTimeout(copyTimerRef.current);
   }, []);
 
-  const streak = useMemo(() => calcStreak(usage.daily, usage.sessions), [usage.daily, usage.sessions]);
+  // Throttle heavy calcs to minute granularity — daily object identity changes every second (tick) but
+  // heatmap/trend only needs minute precision; keeps 224-cell heatmap + recharts from running at 1Hz.
+  const tickMinute = Math.floor(usage.lastTick / 60000);
+  const dailyThrottled = useMemo(() => usage.daily, [tickMinute]);
+  const streak = useMemo(() => calcStreak(dailyThrottled, usage.sessions), [dailyThrottled, usage.sessions]);
   const daysActive = Math.max(1, Math.ceil((usage.lastTick - usage.firstSeen) / 86_400_000));
   const avgPerDay = usage.activeSeconds / daysActive;
 
@@ -249,9 +263,9 @@ export function InsightsScreen() {
   const totalTimeSec = usage.activeSeconds;
   const peakDaySec = useMemo(() => {
     let max = 0;
-    for (const v of Object.values(usage.daily)) max = Math.max(max, v.seconds);
+    for (const v of Object.values(dailyThrottled)) max = Math.max(max, v.seconds);
     return max;
-  }, [usage.daily]);
+  }, [dailyThrottled]);
   const longestSessionSec = useMemo(() => {
     // longest single-day as longest session proxy
     return peakDaySec;
@@ -264,7 +278,7 @@ export function InsightsScreen() {
       const d = new Date(usage.lastTick || Date.now());
       d.setDate(d.getDate() - i);
       const k = localKey(d);
-      const s = usage.daily[k];
+      const s = dailyThrottled[k];
       const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); // Aug 23
       const timeMin = s ? Math.round((s.seconds / 60) * 10) / 10 : 0;
       out.push({
@@ -276,7 +290,7 @@ export function InsightsScreen() {
       });
     }
     return out;
-  }, [usage.daily, usage.lastTick, range]);
+  }, [dailyThrottled, usage.lastTick, range]);
 
   // donut breakdown — last 7 days by day share of time
   const donut = useMemo(() => {
@@ -287,7 +301,7 @@ export function InsightsScreen() {
       const d = new Date(usage.lastTick || Date.now());
       d.setDate(d.getDate() - i);
       const k = localKey(d);
-      const sec = usage.daily[k]?.seconds ?? 0;
+      const sec = dailyThrottled[k]?.seconds ?? 0;
       total += sec;
       const name = d.toLocaleDateString("en-US", { weekday: "short" }) + " " + d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       segs.push({ name, value: sec, seconds: sec });
@@ -296,7 +310,7 @@ export function InsightsScreen() {
     const filtered = segs.filter((s) => s.seconds > 0);
     const sorted = [...filtered].sort((a, b) => b.seconds - a.seconds);
     return { segs: sorted.length ? sorted : [{ name: "No activity", value: 1, seconds: 0 }], total };
-  }, [usage.daily, usage.lastTick]);
+  }, [dailyThrottled, usage.lastTick]);
 
   const DONUT_COLORS = [BLUE, GREEN, PURPLE, RED, ORANGE, CYAN, "#6B7280"];
 
@@ -402,7 +416,7 @@ export function InsightsScreen() {
             </button>
           </div>
         </div>
-        <Heatmap daily={usage.daily} mode={heatmapMode} />
+        <Heatmap daily={dailyThrottled} mode={heatmapMode} />
         </div>
       </section>
 

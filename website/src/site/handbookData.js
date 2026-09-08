@@ -27,11 +27,11 @@ export const SECTIONS = [
   {
     id: "canvas",
     title: "Canvas & panes",
-    desc: "Panes are free floating nodes. Position and size persist, buffer does not.",
+    desc: "Panes are free floating nodes on a brutalist sheet. Position and size persist, buffer does not.",
     bullets: [
-      "Drag header to move, edges and corners to resize",
-      "Header shows pane id and live state: ready, exit 0, exit 1, EXIT",
-      "New terminal picks a folder and drops a 5th pane at last.x+60",
+      "Drag header to move, edges and corners to resize (min 320×160, 1–100 panes)",
+      "Header shows pane id and live state: ready, exit 0, exit 1, EXIT — shadow 6×6, hairline 3px",
+      "New terminal picks a folder and drops a 5th pane at next grid slot (count-aware 520→260)",
     ],
     code: [
       "{",
@@ -39,13 +39,13 @@ export const SECTIONS = [
       '    "nodes": [',
       '      { "paneId": "p1", "cwd": "C:\\\\Users\\\\you\\\\project",',
       '        "position": { "x": 0, "y": 0 },',
-      '        "size": { "width": 560, "height": 320 },',
+      '        "size": { "width": 420, "height": 260 },',
       '        "cliId": "claude" }',
       "    ]",
       "  }",
       "}",
     ].join("\n"),
-    note: "Persisted after 400 ms. See canvas.ts:10 and types.ts:11.",
+    note: "Persisted after 400 ms. See canvas.ts:11 (defaultSizeForCount) and types.ts:3.",
   },
   {
     id: "layouts",
@@ -123,8 +123,8 @@ export const SECTIONS = [
     desc: "Local first. Counts leave. Contents do not.",
     bullets: [
       "On disk: settings.json, localStorage mapw:usage",
-      "On wire counts only: installId, label hostname, platform, appVersion every 15 min",
-      "Live counter is seen in last 20 min, no rows returned",
+      "On wire counts only: installId (uuid), label (hashed hostname), platform, appVersion every 30s + jitter, offline beacon on quit",
+      "Live counter is seen in last 75s, no rows returned — 5s poll fallback + realtime broadcast",
     ],
     code: [
       "local:",

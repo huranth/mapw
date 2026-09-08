@@ -441,10 +441,10 @@ function wireShellWires(root) {
       const d = `M ${a.x} ${a.y} C ${a.x + dx} ${a.y}, ${b.x - dx} ${b.y}, ${b.x} ${b.y}`;
       path.setAttribute("d", d);
       path.setAttribute("fill", "none");
-      path.setAttribute("stroke", i === 1 ? "#134E4A" : "#CFC9B4");
-      path.setAttribute("stroke-width", i === 1 ? "1.6" : "1.2");
+      path.setAttribute("stroke", i === 1 ? "#0A0A0A" : "#6B6B6B");
+      path.setAttribute("stroke-width", i === 1 ? "1.8" : "1.2");
       path.setAttribute("stroke-linecap", "round");
-      path.setAttribute("opacity", "0.95");
+      path.setAttribute("opacity", i === 1 ? "1" : "0.55");
       // arrow head via marker
       path.setAttribute("marker-end", "url(#arrow)");
       svg.appendChild(path);
@@ -464,7 +464,7 @@ function wireShellWires(root) {
       m.setAttribute("orient", "auto-start-reverse");
       const p = document.createElementNS(ns2, "path");
       p.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
-      p.setAttribute("fill", "#134E4A");
+      p.setAttribute("fill", "#0A0A0A");
       p.setAttribute("opacity", "0.9");
       m.appendChild(p);
       defs.appendChild(m);

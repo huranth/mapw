@@ -7,10 +7,20 @@ export default defineConfig({
     outDir: "dist",
     assetsDir: "assets",
     sourcemap: false,
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       input: {
         main: "index.html",
         handbook: "handbook.html",
+      },
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("three")) return "vendor-three";
+            if (id.includes("gsap")) return "vendor-gsap";
+            if (id.includes("@supabase")) return "vendor-supabase";
+          }
+        },
       },
     },
   },
