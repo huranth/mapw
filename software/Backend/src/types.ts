@@ -29,9 +29,9 @@ export interface Settings {
   lastCwd: string | null;
   workspace: WorkspacePersist | null;
   savedLayouts: readonly SavedLayout[];
-  /** Display name for the local profile; "" until bootstrapped from the OS account. */
+  /* Display name */
   userName: string;
-  /** Client-generated uuid identifying this install for anonymous heartbeats. */
+  /* Client generated */
   installId: string;
 }
 
@@ -49,7 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   installId: "",
 };
 
-/** Auto-update lifecycle, broadcast from main to the renderer. */
+/* Auto update */
 export interface UpdateProgress {
   phase: "checking" | "available" | "downloading" | "staged" | "up-to-date" | "error";
   version?: string;

@@ -1,7 +1,4 @@
-// Footer band — "the canvas". mapw's own signature: an outlined Fraunces
-// wordmark over a grid of pane cells drawn on canvas. Cells near the cursor
-// illuminate like panes being placed on the canvas; the wordmark fill follows
-// the same spotlight. Pure DOM + one small canvas, reduced-motion aware.
+// Footer band
 
 export function initPaneGrid(band, opts = {}) {
   const word = opts.word || "mapw";
@@ -50,10 +47,7 @@ export function initPaneGrid(band, opts = {}) {
   window.addEventListener("touchmove", onMove, { passive: true });
   band.addEventListener("mouseleave", onLeave);
 
-  // ---- the pane grid ----
-  // Cells light up beneath the cursor with a soft falloff and a slow decay —
-  // like panes you've placed and that are still warm. When the pointer rests,
-  // the lit cluster breathes — a low, desynchronised shimmer, not a blink.
+// the pane
   let w = 0, h = 0;
   let cols = 0, rows = 0;
   const CELL = 34;
@@ -103,9 +97,7 @@ export function initPaneGrid(band, opts = {}) {
       }
     }
 
-    // idle detection — pointer at rest inside the band → premium shimmer
-    // reduced-motion disables it entirely; otherwise we want it OBVIOUS
-    // but still refined — not a cheap global blink.
+// idle detection
     if (!reduce) {
       const resting = pr > 0 && (now - lastMoveAt) > 260;
       const target = resting ? 1 : 0;
@@ -128,9 +120,7 @@ export function initPaneGrid(band, opts = {}) {
           roundRect(ctx, x, y, CELL, CELL, radius);
           ctx.stroke();
         } else {
-          // PREMIUM IDLE SHIMMER — visible, desynchronised, organic wave
-          // Each lit cell breathes on its own phase + a distance wave from
-          // the cursor so the cluster ripples outward, not blinks in unison.
+// PREMIUM IDLE
           let drawX = x, drawY = y, drawCell = CELL, drawRadius = radius;
           let displayV = v;
           if (idleMix > 0.015 && v > 0.12) {
@@ -142,9 +132,7 @@ export function initPaneGrid(band, opts = {}) {
             // outward travelling wave — premium ripple, not a strobe
             const wave = Math.sin(now * 0.00185 - dist * 0.022 + cellPhase);
             const wave2 = Math.sin(now * 0.00095 + cellPhase * 0.6 + 1.7);
-            // ±0.22 is deliberately VISIBLE — you will see it. idleMix gates it
-            // so it only appears when you rest, and the per-cell phase keeps it
-            // from looking like a cheap global blink.
+// 0 22
             const breathe = (wave * 0.68 + wave2 * 0.32) * 0.22;
             const centreBias = 0.78 + v * 0.45; // hots breathe harder, edges stay calmer
             displayV = Math.max(0, Math.min(1, v * (1 + breathe * centreBias * idleMix) + breathe * 0.035 * idleMix));

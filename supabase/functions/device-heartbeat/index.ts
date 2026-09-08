@@ -1,12 +1,4 @@
-// device-heartbeat — called by the mapw desktop app on launch and every 15 min.
-// Two paths:
-//  • Signed-in users (Authorization: Bearer <supabase jwt>) → upsert into
-//    `devices`, keyed by (user_id, label). last_ip comes from x-forwarded-for,
-//    captured server-side — never trusted from the request body.
-//  • Anonymous installs (no auth) → upsert into `installs`, keyed by the
-//    client-generated installId uuid. This is what powers the live counter
-//    before accounts exist.
-// Both paths are service-role writes; RLS has no client policies by design.
+// device heartbeat
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -14,9 +6,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 const IPV4_RE = /^(\d{1,3}\.){3}\d{1,3}$/;
 const IPV6_RE = /^[0-9a-fA-F:]{2,45}$/;
 
-// Simple in-memory rate limit: key -> last timestamp (ms)
-// Note: per-isolate only — for 1000s, add Redis/Upstash in future. For now
-// we at least add IP-based global limit to prevent fake-install floods.
+// Simple in
 const rateLimit = new Map<string, number>();
 const ipNewInstall = new Map<string, { count: number; windowStart: number }>();
 const RATE_LIMIT_MS = 5_000;

@@ -1,7 +1,4 @@
-// live-stats — public aggregate counts for the website's live user counter.
-// Returns counts only, never rows: nothing here is personal data. The app
-// heartbeats every 45s, so "online" = seen in the last 2 minutes — fast enough
-// to feel live for 1000s, cheap enough for free tier (with DB index on last_seen).
+// live stats
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 

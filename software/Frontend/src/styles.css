@@ -1,7 +1,4 @@
-/* Brutalist Paper — #F0F2F5 sheet, #0A0A0A ink, 3px hairlines, 6px shadows.
-   Type: Instrument Sans (body/UI) + Fraunces (editorial display) +
-   JetBrains Mono (terminals, data, code). All faces are self-hosted variable
-   woff2 under assets/fonts — no CDN. Tokens via applyThemeVars → var(--mapw-*). */
+/* Brutalist Paper */
 @font-face {
   font-family: "Instrument Sans";
   font-style: normal;
@@ -53,14 +50,13 @@
   --mapw-shadow:    0 8px 24px rgba(10,10,10,0.08);
   --mapw-shadow-sm: 0 2px 8px rgba(10,10,10,0.06);
   --mapw-radius:   8px;
-  /* Body — neutral grotesk for UI density; tight apertures read sharp on paper */
+  /* Body neutral */
   --mapw-font-body:    "Instrument Sans", "Inter", system-ui, -apple-system, sans-serif;
-  /* Display — Fraunces variable, optical sizing on, editorial headlines */
+  /* Display Fraunces */
   --mapw-font-display: "Fraunces", Georgia, serif;
   --mapw-font-mono:    "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
-  /* Type scale — operate mode: fixed roles, not marketing fluid.
-     Roles map to purpose, not size: display / title / kpi / label / meta / body */
+  /* Type scale */
   --mapw-tracking-tight: -0.022em;
   --mapw-tracking-label: 0.09em;
   --mapw-tracking-meta:  0.08em;
@@ -113,7 +109,7 @@ body::before {
 .app-shell__sidebar { grid-column: 1; grid-row: 1 / -1; }
 .app-shell__main { grid-column: 2; grid-row: 1 / -1; display: grid; grid-template-rows: 44px 1fr; min-width: 0; min-height: 0; background: var(--mapw-bg); }
 
-/* — Title bar — 1px hairline bottom; wordmark + codename + theme picker — */
+/* Title bar */
 
 .titlebar {
   display: flex;
@@ -126,27 +122,7 @@ body::before {
   -webkit-app-region: drag;
 }
 
-/* Cluster 7c — per-platform titlebar inset for the OS chrome clusters that
-   only appear once `titleBarStyle: "hidden"` activates WCO (win32) or the
-   frameless darwin traffic lights. `main.tsx` stamps
-   `document.documentElement.dataset.platform` at bootstrap
-   (`darwin` / `win32` / `linux`) via navigator.userAgent regex; these
-   rules gate the inset per platform so the OS controls never overlap the
-   brandmark/wordmark (darwin) or the Layouts button cluster (win32).
-   - darwin — the 3 traffic-light buttons anchor top-left; reserve 80px
-     (lights occupy ~70px from the left edge at 44px bar height, +10px
-     breathing room before the brandmark).
-   - win32 — WCO paints min/max/close at top-right; reserve 160px so the
-     Layouts button cluster (.titlebar__actions, margin-left:auto) keeps
-     its right edge clear of the controls.
-   - linux — default framed titlebar (no WCO); the 18px symmetric padding
-     stays as-is.
-   Specificity `(0,2,1)` on the platform-prefixed selector (the `html` type
-   selector contributes one element slot, and `[data-platform=…]` + `.titlebar`
-   together contribute two class slots) beats `(0,1,0)` on `.titlebar`, so
-   each `padding-left` / `padding-right` longhand cleanly overrides the
-   matching side of the shorthand `padding: 0 18px` above without needing
-   `!important`. */
+/* Cluster 7c */
 html[data-platform="darwin"] .titlebar { padding-left: 80px; }
 html[data-platform="win32"] .titlebar { padding-right: 160px; }
 
@@ -181,14 +157,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   border-left: 1px solid var(--mapw-border);
 }
 
-/* — Titlebar actions — a cluster on the right of the bar (currently just the
-   Layouts button; future settings/theme buttons will live here too).
-   -webkit-app-region: no-drag is load-bearing: `.titlebar` carries
-   `-webkit-app-region: drag` (the whole bar is a window-drag handle), so
-   without this override OS-level drag would swallow button clicks. The
-   Layouts button is the titlebar's first non-brand interactive element;
-   clicking it opens the panel (useUiState.openLayouts) — Workspace's render
-   branch produces the panel surface (LayoutsScreen) once the flag is true. */
+/* Titlebar actions */
 
 .titlebar__actions {
   margin-left: auto;
@@ -198,11 +167,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   -webkit-app-region: no-drag;
 }
 
-/* Ghost button recipe — mirrors .welcome__filechip / .node-terminal__chip's
-   vocab: transparent at rest, hairline on hover, 120ms ease. Mono tiny font +
-   22px tall matches the label-adjacent chip idiom without inviting misclicks
-   on the bar's drag region. The Layouts button is hidden outside `ready`
-   (TitleBar gates visibility on `useUiState.activePhase === "ready"`). */
+/* Ghost button */
 .titlebar__button {
   appearance: none;
   font-family: var(--mapw-font-mono);
@@ -254,26 +219,14 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--mapw-bg);
 }
 
-/* Welcome / Returning / Layouts surfaces span the full workspace row. With the
-   single-column grid any phase child already fills the sheet; the explicit
-   span is kept so a future second column slot can't auto-place a phase screen
-   into the wrong track. The loading overlay (`.workspace__loader`) is
-   absolute-positioned and exits grid flow, so it isn't part of this rule. */
+/* Welcome Returning */
 .workspace > .welcome,
 .workspace > .returning,
 .workspace > .layouts {
   grid-column: 1 / -1;
 }
 
-/* M2 terminal surface — a freeform React Flow canvas. Each terminal is a
-   draggable, closeable, RESIZABLE node wrapping one <TerminalPane>. The card
-   chrome is a borderless white rectangle on the sheet with a 6px radius; the
-   value step (#FFFFFF over #FAFAFA) + rounded corners carry the edge — no
-   hairline, no drop shadow. The previous 1px hairline border bled through
-   overlay surfaces as a stray light-gray horizontal line, so it (and the
-   header's bottom hairline) was removed. Per-node resize handles (NodeResizer)
-   are invisible at rest and reveal on hover so the card stays clean — see
-   the `.node-terminal-wrap` + `.react-flow__resize-control` rules below. */
+/* M2 terminal */
 
 .canvas {
   position: relative;
@@ -283,20 +236,10 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--mapw-bg);
 }
 
-/* React Flow nodes get a default drop shadow we strip so cards read as
-   value-step white rectangles on the canvas — no shadow, no hairline. */
+/* React Flow */
 .react-flow__node { box-shadow: none; }
 
-/* Cluster 9d — selected-outline. React Flow 12 stamps `.selected` on every
-   node the canvas considers selected; without an explicit outline the only
-   selection cue was the resize-handle lines (Cluster 9 above), which only
-   render on hover. This outline stays visible at rest so a keyboard or
-   edge-click selection reads as "selected" even without the pointer over the
-   card. --mapw-accent (with the #0070F3 fallback) ties it to the rest of the
-   accent chrome; the -1px offset keeps the ring inside the card border-radius
-   so adjacent cards don't visually overlap. The custom terminal node type
-   receives the `react-flow__node-terminal` class (React Flow 12 derives the
-   node-wrapper class from `type`), hence this scoped selector. */
+/* Cluster 9d */
 .react-flow__node-terminal.selectable.selected {
   outline: 1px solid var(--mapw-accent, #0070F3);
   outline-offset: -1px;
@@ -315,18 +258,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   box-shadow: var(--mapw-shadow-sm);
 }
 
-/* Header — the drag handle. Holds the 3 gray blinking dots (left), the
-   pane-id label (center, flex-1 so it absorbs slack), and the × close button
-   right-aligned by margin auto isn't needed — gap + flex layout settle it.
-   Cluster 9f/9g — `position: relative; z-index: 6` lifts the header ABOVE the
-   resize-control line layer (which sits at z-index 5, see `.react-flow__
-   -resize-control { z-index: 5 }`). Without this, the top edge's hover bar
-   paints OVER the header's label row whenever the pointer enters the top
-   dead-zone — the "↕" glyph (Cluster 9b, top: 20px below) and the blinking
-   dots collided visually whenever a top-edge resize gesture was even
-   hinted. Taller 32px header (was 28px) + 4px vertical padding (was 0)
-   gives the dots/label/close-button more breathing room proportional to
-   the rest of the cluster's M3 sizing tweaks. */
+/* Header the */
 .node-terminal__header {
   display: flex;
   align-items: center;
@@ -349,9 +281,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 
 .node-terminal__header:active { cursor: grabbing; }
 
-/* 3 gray blinking dots — pure decoration, non-interactive (aria-hidden in
-   JSX). Subtle staggered heartbeat at idle; the delays ripple a soft "alive"
-   cue without competing with the terminal content below. */
+/* 3 gray */
 .node-terminal__dots {
   display: inline-flex;
   align-items: center;
@@ -391,19 +321,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   font-variant-numeric: tabular-nums;
 }
 
-/* Focus tag — small pill that lights up in the node header when THIS pane
-   is focused. Replaces the previous `inset 2 px` accent box-shadow on
-   `.pane:focus-within` (which ringed codex's content while the TUI
-   churned and flickered against each repaint). Triggered by
-   `.node-terminal:focus-within` — clicks focus xterm's helper textarea
-   inside `.pane`; the focus signal propagates up the tree, so the wrapper
-   that owns the header + the body fires the pseudo at the same time. The
-   pill sits right after the pane label, before the chip strip; the chip
-   strip may hide itself while a TUI runs, but the focus tag stays put
-   (you still see which pane is focused while typing into codex). Default-
-   hidden via `display: none`; shown only when the wrapper has
-   focus-within. Accent-pill background with a small inner dot for the
-   cue's at-a-glance visibility — even without reading the tag's text. */
+/* Focus tag */
 
 .node-terminal__focus-tag {
   display: none;
@@ -436,8 +354,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   display: inline-flex;
 }
 
-/* × close — ghost recipe: transparent at rest, hairline + ink on hover.
-   Plain ASCII glyph; no emojis. */
+/* close ghost */
 .node-terminal__close {
   appearance: none;
   width: 22px;
@@ -471,11 +388,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   outline-offset: 1px;
 }
 
-/* Copy — sibling to × close. One click puts the pane's full active buffer
-   onto the clipboard (whatever the user is currently staring at — primary
-   scrollback OR a full-screen alt-screen TUI). Plain ASCII label. Shares the
-   ghost-button recipe with ×. The `--copied` modifier flashes green for ~1s
-   on a successful clipboard write so the click landed without ambiguity. */
+/* Copy sibling */
 .node-terminal__copy {
   appearance: none;
   height: 22px;
@@ -514,13 +427,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: transparent;
 }
 
-/* Famous-CLI chip strip — populates each pane header. Mirrors the ghost
-   recipe of `.node-terminal__copy` / `.node-terminal__close` (same 22px
-   height, 120ms color/opacity transitions, hairline + ink on hover, no
-   shadow). Hidden wholesale via the HTML5 `hidden` attribute on
-   `.node-terminal__chips` while a TUI is running in the pane — see
-   TerminalNode.tsx + the `tuiRunning` per-pane latch in the terminals
-   store. Plain ASCII label; no emoji. */
+/* Famous CLI */
 .node-terminal__chip {
   appearance: none;
   height: 22px;
@@ -553,44 +460,22 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   outline-offset: 1px;
 }
 
-/* Chip-strip container — flex row hugging the right edge of the pane
-   header (sits between the pane label and Copy/Close). Gap of 4px keeps
-   adjacent chips readable. The HTML5 `hidden` attribute (set by
-   TerminalNode when `tuiRunning === true`) toggles the strip out of view
-   via UA-default `display: none` — no class toggle needed. */
+/* Chip strip */
 .node-terminal__chips {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  /* Cluster 10a — allow the chips container to SHRINK inside the header
-     flex row when space runs short. The previous `flex: 0 0 auto` made the
-     chips NON-SHRINKABLE, so on a 320px-wide card with installed-CLI
-     pressure (3+ chips at rest — opencode+claude+gemini ≈ 184px — exceeds
-     the available slop by ~24px and pushes Copy/Close past `.node-terminal
-     { overflow: hidden }`'s clip line → Close ungraspable). Allowing shrink
-     + `overflow: hidden` + `min-width: 0` lets the chips clip INTERNALLY
-     rather than push the action cluster off-canvas. Copy (62-px min) +
-     Close (22-px min) stay grabbable via the separate sibling-`<button>`
-     cluster that remains `flex: 0 0 auto` (no shrink). */
+  /* Cluster 10a */
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
 }
-/* Cluster 10b — the JSX uses HTML5 `hidden={tuiRunning}` on the chips div
-   to hide the strip while a TUI runs in the pane (so the user can't fire
-   `${cli}\r` into the running TUI's stdin by accident). The author
-   `.node-terminal__chips { display: inline-flex }` above overrides the
-   UA-level `[hidden] { display: none }` (cascade: author origin >
-   UA origin; specificity aside), so the auto-hide silently no-ops. The
-   `&[hidden]` selector above is specificity (0,2,0) > base ".node-
-   terminal__chips" (0,1,0), so `[hidden]` resolves to `display: none`
-   again — actual hide while a TUI runs. */
+/* Cluster 10b */
 .node-terminal__chips[hidden] {
   display: none;
 }
 
-/* The terminal body — `nodrag` stops xterm selection from kicking off a node
-   drag. The pane fills the body's cross-axis height. */
+/* The terminal */
 .node-terminal__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -599,8 +484,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   display: flex;
 }
 
-/* Hidden Handles — React Flow requires a source + target Handle per custom
-   node even with `edges={[]}`; keep them visually absent. */
+/* Hidden Handles */
 .node-terminal__handle--hidden {
   opacity: 0;
   width: 1px;
@@ -612,18 +496,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   border: none;
 }
 
-/* — Per-node resize handles (React Flow <NodeResizer>) —
-   React Flow's .react-flow__resize-control already sets the arrow-resize
-   cursors (ew / ns / nwse / nesw) on hover, so "the cursor transforms into
-   the arrow" is satisfied out of the box. The card chrome must stay clean at
-   rest, so the default line border is reset; the edges are DISCOVERED on
-   hover. `.node-terminal-wrap` (TerminalNode's outer element) is the
-   positioned containing block for the absolutely-positioned controls and
-   sits OUTSIDE `.node-terminal`'s `overflow: hidden`, so the edge handles
-   that straddle the card via translate(-50%) aren't clipped. The handles
-   render AFTER the card in the DOM (NodeResizer is last in TerminalNode) so
-   they paint on top without a z-index fight; a small z-index is kept as a
-   safety net. */
+/* Per node */
 .node-terminal-wrap {
   position: relative;
   width: 100%;
@@ -632,40 +505,19 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 
 .react-flow__resize-control { z-index: 5; }
 
-/* Strip React Flow's default line border/bg so the borderless card stays
-   clean everywhere except where the hover states below paint accent. The
-   !important beats React Flow's dist style.css line variant; the hover rules
-   are MORE specific AND carry !important so they still win when active. */
+/* Strip React */
 .react-flow__resize-control.line {
   border: 0 !important;
   background: transparent !important;
-  /* Cluster 9b — transition lives on the BASE rule (covers the opacity-OUT
-     fade when hover ends) AND on the hover rule (covers the
-     opacity/width/height-IN step from 0 -> 0.3 / 0px -> 2px). Putting the
-     transition here is load-bearing: when the card stops being hovered, the
-     hover rule stops applying and the base rule's `background: transparent
-     !important` + `opacity 0` re-engage — IF the transition lived only on
-     the hover rule, hover-loss would snap the line back to invisible
-     (no transition on the rest path); keeping it on the base rule makes
-     the rest-path fade animate smoothly. The two transition declarations
-     are identical so no mutation hazard when the hover rule re-engages. */
+  /* Cluster 9b */
   transition: opacity 120ms ease, width 120ms ease, height 120ms ease;
 }
 
-/* Discover the four edges on card hover: faint accent hairlines that thicken
-   + brighten when the pointer lands on a specific edge. Card-hover gives a
-   2px hint at every edge; edge-hover makes it a 4px solid accent bar —
-   the "border" the user grabs. */
+/* Discover the */
 .node-terminal-wrap:hover .react-flow__resize-control.line {
   background: var(--mapw-accent, #0070F3) !important;
   opacity: 0.3;
-  /* Cluster 9b — transition lives on the base `.react-flow__resize-control
-     .line` rule above (no duplicate here); see the comment there for the
-     rest-path-fade rationale. The `, #0070F3` fallback keeps the bar
-     accent-blue even if a future theme omits `--mapw-accent` (without the
-     fallback, `var(--mapw-accent)` resolves invalid-at-computed-value-time
-     and the declaration drops — the bar would inherit `background:
-     transparent !important` from the base rule, i.e. invisible). */
+  /* Cluster 9b */
 }
 .node-terminal-wrap:hover .react-flow__resize-control.line.left,
 .node-terminal-wrap:hover .react-flow__resize-control.line.right {
@@ -687,11 +539,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   height: 4px;
 }
 
-/* Direction arrow ON the hovered border — the cursor already flips to the
-   matching resize arrow; this surfaces the arrow on the border itself so the
-   user sees which way the resize will go. The glyph floats just inside the
-   card edge (React Flow translates each line -50% onto the edge, so 6–8px
-   lands in the card's padding margin, clear of the xterm content). */
+/* Direction arrow */
 .react-flow__resize-control.line::after {
   content: "";
   position: absolute;
@@ -709,11 +557,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 }
 .react-flow__resize-control.line.top::after {
   content: "↕";
-  /* Cluster 9b — push the top-edge arrow down past the taller 32px header
-     (was `top: 6px` which landed INSIDE the header's label row, colliding
-     with the pane-id text). 20px clears the taller header (header
-     z-index:6 lifts it over the resize line so the glyph reads against the
-     xterm surface, not the header strip). */
+  /* Cluster 9b */
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
@@ -737,19 +581,9 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   transform: translateY(-50%);
 }
 
-/* Corner dots — accent squares that appear on card hover so all four corners
-   are grabbable for diagonal resize (their cursors are the nwse/nesw arrows). */
+/* Corner dots */
 .react-flow__resize-control.handle {
-  /* Cluster 9b — both tokens carry fallbacks (`#0070F3` accent /
-     `#171717` ink) so the corner dots stay visible even if a future theme
-     omits the tokens entirely (a bare `var(--mapw-accent)` with no fallback
-     resolves invalid-at-computed-value-time -> declaration dropped on such
-     a theme, leaving the element borderless/transparent -> the dots pop
-     to invisible on a per-row click). The border flip from
-     --mapw-bg-elevated (paper-white, invisible against a paper card) to
-     --mapw-fg (ink-on-paper, reads against any card bg) is the same
-     visibility fix at the dot's outer edge that the accent background
-     gives the dot's fill. */
+  /* Cluster 9b */
   background-color: var(--mapw-accent, #0070F3) !important;
   border: 1px solid var(--mapw-fg, #171717) !important;
   border-radius: 2px !important;
@@ -763,19 +597,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   opacity: 1;
 }
 
-/* Cluster 14 (partial — CSS-only safe subset). React Flow's <NodeResizer>
-   renders the handle (corner dots) + line (edge bars) as focusable elements
-   a keyboard user Tab/arrow-keys into. The default `opacity: 0` above makes
-   KB focus completely invisible — a keyboard-only user can't tell which
-   handle has focus. `:focus-visible` pins a visible accent outline + forces
-   `opacity: 1` ONLY when the focus arrives via keyboard (mouse-drag focus
-   never trips `:focus-visible`, so pointer-based resize stays visually
-   unchanged — no opacity jank on hover click). The full keyboard-a11y
-   rewrite (Cluster 14's client-side arrow-key delta + Shift-micro-mode
-   handler) is deferred as too risky for this pass; this CSS portion is the
-   safe subset that gives the focus cue without touching the resizer's
-   pointer-event dispatch. `!important` is needed to beat the inline-style
-   opacity React Flow sets on the elements + the rule precedence above. */
+/* Cluster 14 */
 .react-flow__resize-control.handle:focus-visible,
 .react-flow__resize-control.line:focus-visible {
   opacity: 1 !important;
@@ -783,8 +605,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   outline-offset: 1px;
 }
 
-/* Pane — holds the xterm canvas + the corner exit-code chip. flex:1 1 auto
-   lets it fill the node body's cross axis. */
+/* Pane holds */
 .pane {
   position: relative;
   flex: 1 1 auto;
@@ -793,53 +614,16 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--mapw-bg-elevated);
 }
 
-/* Focus cue: RETIRED the inset-accent box-shadow on `.pane:focus-within`
-   because the 2 px ring sat just inside the pane body's edge — and when
-   codex's TUI ran, every codex repaint made the ring flicker against the
-   churn. The visual focus cue is now a header-attached pill tag — see
-   `.node-terminal__focus-tag` near the label rules below, gated on
-   `.node-terminal:focus-within` (xterm's helper textarea inside `.pane`
-   propagates focus to the whole `.node-terminal` wrapper, so the same
-   `:focus-within` pseudo fires on the wrapper that used to fire on the
-   pane). Click-to-focus + xterm focus flow are unchanged; only the cue
-   swapped from "body ring" to "header tag." */
+/* Focus cue */
 
 .pane__host {
   position: absolute;
   inset: 0;
-  /* Cluster 8 — moved the `padding: 6px 10px` OFF `.pane__host` onto the
-     `.pane__host .xterm` child below. FitAddon reads the host's border-box
-     width/height and subtracts ONLY the child `.xterm`'s own
-     padding/gutter (it does NOT subtract the host's own padding from the
-     host's border-box). With the host's `padding: 6px 10px` + the global
-     `* { box-sizing: border-box }` (line 7), the host's border-box
-     INCLUDED the 20px / 12px gutters → FitAddon counted cols/rows TOO
-     LARGE by ~2 cols and ~1 row → rightmost cols + bottom row clipped
-     past `.xterm`'s right/bottom edges into the 10px / 6px host padding
-     → visibly chopped off AND the ConPTY resize dispatched oversized
-     dims to the shell/TUI. Moving the padding onto the CHILD `.xterm`
-     makes FitAddon's existing child-padding-subtraction cover the inset
-     → col/row math aligns with the visible pane. */
+  /* Cluster 8 */
   box-sizing: border-box;
 }
 
-/* `.xterm` is `position: relative; contain: strict; display: inline-block`
-   by default, which collapses inside a flex host — pin it to block + 100%
-   so the terminal fills the pane. DO NOT touch `.xterm-helper-textarea`:
-   xterm relies on that hidden `<textarea>` to capture keyboard focus + IME
-   composition. The default xterm.css already positions it off-screen
-   (`opacity: 0; left: -9999em;`), which keeps it focusable-but-invisible.
-   A `display: none` rule here yanks it out of the focus tree entirely —
-   clicks/typing on the pane never focus the textarea, `terminal.onData`
-   never fires, and keystrokes never reach the PTY (the M2 "I see the prompt
-   but can't type" regression).
-   
-   Cluster 8 — this rule ALSO carries the `padding: 6px 10px` + `box-sizing:
-   border-box` that used to live on `.pane__host` (see the comment block on
-   `.pane__host` above for the FitAddon child-padding-subtraction
-   rationale). FitAddon.proposeDimensions measures `.xterm`'s own
-   border-box and subtracts `.xterm`'s OWN padding to derive cols/rows, so
-   the inset has to live HERE for the geometry math to count it. */
+/* xterm is */
 .pane__host .xterm {
   display: block;
   height: 100%;
@@ -848,28 +632,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   box-sizing: border-box;
 }
 
-/* xterm.css paints the under-canvas `.xterm-viewport` black by default.
-   Our override below targets `.pane__host .xterm-viewport` — specificity
-   (0,2,0) — which is the SAME specificity as xterm.css's `.xterm .xterm-
-   viewport { background-color: #000; }`. main.tsx imports xterm.css AFTER
-   styles.css (line 3 styles, line 6 xterm), so on equal specificity xterm's
-   #000 wins the cascade.
-
-   Before Cluster 8 the 6×10px gutter lived on `.pane__host`; FitAddon measured
-   the host's full border-box and read `.xterm`'s padding as 0 → cols/rows
-   were oversized by ~2 cols / ~1 row → the renderer's canvas overflowed past
-   `.xterm`'s content area into the host's padding strip, hiding the #000
-   viewport by repainting that strip white as part of the in-canvas
-   theme.background fill. No rim was visible.
-   
-   Cluster 8 moved the gutter onto `.xterm` (so FitAddon's child-padding
-   subtraction aligns cols/rows with the actual canvas size) → the canvas no
-   longer overflows → the #000 viewport was permanently exposed around the
-   canvas content as a black rim. The `!important` beats the same-
-   specificity #000 from xterm.css regardless of cascade order, pinning the
-   viewport to the pane-surface tone; any per-frame sliver the renderer ever
-   fails to repaint (high scroll velocity, full-screen TUI repaint churn)
-   now blends with the row background → invisible. */
+/* xterm css */
 .pane__host .xterm-viewport { background-color: var(--mapw-bg-elevated) !important; }
 
 .pane__host .xterm-viewport::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -882,10 +645,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 }
 .pane__host .xterm-viewport::-webkit-scrollbar-track { background: transparent; }
 
-/* Block chip — bottom-right corner per pane. Shows the last closed block's
-   exit code, READY before any block closes, or EXIT N once the pane dies.
-   Color is inked by outcome: muted ink at rest, ok green for zero, error red
-   for non-zero, deep ink for "dead". */
+/* Block chip */
 .pane__chip {
   position: absolute;
   right: 10px;
@@ -912,8 +672,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--mapw-bg-alt);
 }
 
-/* `+ New terminal` chip — primary recipe: black fill + white ink + 6px
-   square. Sits in a React Flow bottom-right <Panel>. */
+/* New terminal */
 .canvas__add-chip {
   appearance: none;
   display: inline-flex; align-items: center; justify-content: center;
@@ -977,12 +736,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   outline-offset: 2px;
 }
 
-/* Welcome / Returning — boot-time picker surfaces that replace the legacy
-   "first-ever-launch silently pops the native OS picker" with a fuller card
-   surface inside the workspace (TitleBar + StatusBar stay live above +
-   below). Value-step white cards on the sheet, no shadows, ASCII glyphs only
-   — same vocabulary as the live canvas; the primary-CTA recipe matches
-   .canvas__add-chip too, so the picker CTA reads as the same affordance. */
+/* Welcome Returning */
 
 .welcome,
 .returning {
@@ -1052,12 +806,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   text-wrap: balance;
 }
 
-/* Picker card — value-step white rectangle on the sheet (no shadow, no
-   hairline), mirroring the .node-terminal recipe. Flex column, left-aligned
-   content: small uppercase label, mono cwd path (truncated with ellipsis),
-   and a ghost button (Choose folder / Change). The shared-mode card uses
-   `.welcome__card--full` (540px wide); a per-pane grid card is narrower
-   (280px) so the 2x2 layout fits the centered stack. */
+/* Picker card */
 .welcome__card {
   background: var(--mapw-bg-elevated);
   border-radius: 6px;
@@ -1096,8 +845,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   text-overflow: ellipsis;
 }
 
-/* Per-pane grid — 2x2 layout for the picker slots, centered so the grid
-   never sits flush to the rail edge of the sheet. */
+/* Per pane */
 .welcome__grid {
   display: grid;
   grid-template-columns: repeat(2, 280px);
@@ -1105,9 +853,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   justify-content: center;
 }
 
-/* Folder picker file-chip — ghost recipe: transparent at rest, hairline +
-   --mapw-fg ink on hover, 120ms ease. Height matches the canvas__add-chip's
-   vertical reach (~22px). */
+/* Folder picker */
 .welcome__filechip {
   appearance: none;
   display: inline-flex; align-items: center; justify-content: center;
@@ -1141,9 +887,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 .welcome__filechip--primary { color: var(--mapw-fg); background: var(--mapw-bg-alt); border-color: var(--mapw-border); }
 .welcome__filechip--primary:hover { background: var(--mapw-bg-elevated); border-color: #d6d6d6; }
 
-/* Per-pane toggle — the "Use a different folder per pane" checkbox row.
-   The checkbox is a native UI control; tinted with `accent-color` so it sits
-   in the palette without drawing a custom marker. */
+/* Per pane */
 .welcome__toggle {
   display: flex;
   align-items: center;
@@ -1164,9 +908,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   color: var(--mapw-fg-muted);
 }
 
-/* Primary CTA — primary recipe (.canvas__add-chip). The
-   base pins bg + accent-fg + border to var(--mapw-fg); the :disabled state only
-   adds cursor + opacity. */
+/* Primary CTA */
 .welcome__cta {
   appearance: none;
   display: inline-flex; align-items: center; justify-content: center;
@@ -1205,21 +947,9 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   cursor: not-allowed;
 }
 
-/* — LayoutsScreen — the titlebar-launched panel for picking/applying/saving
-   named pane layouts. Same idiom as the .welcome / .returning surfaces:
-   centered column over the workspace sheet, value-step white cards, primary
-   CTA reads as the same affordance as the canvas's "+ New terminal" chip. */
+/* LayoutsScreen the */
 
-/* OVERLAY (not swap-replace). Workspace.tsx renders LayoutsScreen ON TOP
-   of whatever phase fragment is mounted (welcome / returning / ready) rather
-   than swapping it in via a sibling ternary — the previous ternary unmounted
-   TerminalCanvas whenever the panel opened, firing every TerminalPane's
-   cleanup (ptyKill + terminal.dispose) and wiping every PTY session + its
-   scrollback. Absolute-positioning over the `.workspace` (the row's
-   `position: relative` → positioning context) keeps the live canvas mounted
-   underneath while the opaque `.layouts` background covers it visually; the
-   canvas's PTYs survive the panel's open window. The grid-column span rule
-   above is now inert (out-of-flow), but kept harmless for any future re-wiring. */
+/* OVERLAY not */
 
 .layouts {
   position: absolute;
@@ -1892,11 +1622,8 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   outline-offset: 1px;
 }
 
-/* — Reduced motion: drop the dot heartbeat when the OS prefers no motion. */
-/* — micro-detailing pass — calm hover affordances for the previously static
-   surfaces. Each transition is short (≤160ms ease), restores on mouseout,
-   and carries only a colour / opacity lift, never a shadow — the hairline
-   chrome stays consistent across idle, hover, and focus. */
+/* Reduced motion */
+/* micro detailing */
 .welcome__card {
   transition: background 140ms ease, border-color 140ms ease;
 }
@@ -1921,9 +1648,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   background: var(--mapw-bg-alt);
 }
 
-/* Icon spacing — buttons that gained an inline `<svg>` sit it next to the
-   text with a 5px gap. Declared at the end so it wins against any earlier
-   display values from the original rules without specificity escalation. */
+/* Icon spacing */
 .canvas__add-chip,
 .welcome__cta,
 .welcome__filechip,
@@ -1943,7 +1668,7 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
   gap: 6px;
 }
 
-/* — Sidebar — calm paper, soft 1px hairline + paper grain, rounded outer edge — */
+/* Sidebar calm */
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -2012,14 +1737,14 @@ html[data-platform="win32"] .titlebar { padding-right: 160px; }
 .sidebar__user-sub { font-family: var(--mapw-font-body); font-size: 11px; color: var(--mapw-fg-muted); }
 .sidebar__user-meta { display: flex; flex-direction: column; line-height: 1.2; }
 
-/* — App main — warm outer holds titlebar + scrollable workspace/insights — */
+/* App main */
 .app-main { min-height: 0; overflow: hidden; display: flex; flex-direction: column; background: #F0F2F5; }
 .app-main > .workspace, .app-main > .insights { flex: 1; min-height: 0; }
 
 
 
 
-/* ── Z-code layout — paper-matched (light) + micro detailing ── */
+/* Z code */
 .z-insights {
   flex: 1; min-height: 0; overflow-y: auto;
   background: #F0F2F5; color: #0A0A0A;

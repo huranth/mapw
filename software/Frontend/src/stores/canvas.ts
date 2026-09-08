@@ -7,7 +7,7 @@ export const NODE_W = 420;
 export const NODE_H = 260;
 export const GRID_GAP = 28;
 
-/** Count-aware defaults — keeps single pane spacious, 100 panes still readable. */
+/* Count aware */
 export function defaultSizeForCount(count: number): { width: number; height: number; gap: number } {
   if (count <= 1) return { width: 520, height: 300, gap: 28 };
   if (count <= 4) return { width: 420, height: 260, gap: 28 };
@@ -24,7 +24,7 @@ export function seedGridSlots(rows: number, cols: number): Array<{ x: number; y:
 
 const SEED_SLOTS = seedGridSlots(2, 2);
 
-/** Professional tidy — packs nodes into a compact grid, never called automatically. */
+/* Professional tidy */
 export function tidyLayout(nodes: Node[]): Node[] {
   const n = nodes.length;
   if (n === 0) return nodes;

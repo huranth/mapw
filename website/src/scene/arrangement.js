@@ -1,13 +1,8 @@
-// The Arrangement — mapw's hero scene. Four terminal panes float on a canvas,
-// because that's literally the product: panes you arrange on a sheet.
-// Plain WebGL (no WebGPU dependency), ink outlines on paper, a slow group
-// drift, buttery cursor tilt (lerp — never drops), and per-pane hover lifts.
+// The Arrangement
 import * as THREE from "three";
 import { gsap } from "gsap";
 
-// Brutalist tokens — keeps hero panes in lockstep with site CSS vars
-// --paper #F0F2F5, --surface #FFFFFF, --ink #0A0A0A, --teal #0A0A0A (black)
-// --live #FF2E00 is the only accent left, used on hover.
+// Brutalist tokens
 const PAPER = 0xf0f2f5;
 const SURFACE = 0xffffff;
 const INK = 0x0a0a0a;
@@ -94,9 +89,7 @@ export function mountArrangement(hostEl) {
   const arrangement = new THREE.Group();
   arrangement.rotation.x = -0.32;
   arrangement.rotation.y = 0.38;
-  // Small nudge to clear the "like paper." period — just enough, not so much
-  // that the right column clips. 0.18 ≈ 24px, plus the CSS right offset does
-  // the rest. Keeps all 4 panes fully in frustum (camera 38deg/6.2).
+// Small nudge
   arrangement.position.x = 0.18;
   scene.add(arrangement);
 
