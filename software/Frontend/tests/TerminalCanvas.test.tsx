@@ -24,7 +24,7 @@ import {
   type PtySpawnOptions,
   type PtySpawnResponse,
   type Settings,
-} from "@bridgespace/backend/renderer";
+} from "@mapw/backend/renderer";
 import { ThemeProvider } from "@/themes";
 import { TerminalCanvas } from "@/components/TerminalCanvas";
 import {

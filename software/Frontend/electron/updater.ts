@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import type { UpdateProgress } from "@bridgespace/backend";
+import type { UpdateProgress } from "@mapw/backend";
 import {
   buildSwapScript,
   isNewerVersion,

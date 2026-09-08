@@ -19,7 +19,7 @@ import {
   type PtySpawnOptions,
   type Settings,
   type UpdateProgress,
-} from "@bridgespace/backend";
+} from "@mapw/backend";
 import { seedOpencodeTheme } from "./opencodeThemeSeeder";
 import { seedCodexTheme } from "./codexThemeSeeder";
 import { isSelfUpdatePossible, runUpdateCycle } from "./updater";

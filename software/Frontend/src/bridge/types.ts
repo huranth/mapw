@@ -1,5 +1,5 @@
-import type { Settings, UpdateProgress } from "@bridgespace/backend";
-import type { DetectCliToolsResult, PtyEvent, PtySpawnOptions, PtySpawnResponse } from "@bridgespace/backend/renderer";
+import type { Settings, UpdateProgress } from "@mapw/backend";
+import type { DetectCliToolsResult, PtyEvent, PtySpawnOptions, PtySpawnResponse } from "@mapw/backend/renderer";
 
 export interface GetSettingsResponse { settings: Settings; }
 export type PtyDataListener = (event: Extract<PtyEvent, { type: "data" }>) => void;

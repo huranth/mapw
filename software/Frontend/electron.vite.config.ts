@@ -4,8 +4,8 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   main: {
-    // Bundle @bridgespace/backend (TS-source) into the main bundle; externalize every other dep.
-    plugins: [externalizeDepsPlugin({ exclude: ["@bridgespace/backend"] })],
+    // Bundle @mapw/backend (TS-source) into the main bundle; externalize every other dep.
+    plugins: [externalizeDepsPlugin({ exclude: ["@mapw/backend"] })],
     build: {
       rollupOptions: {
         input: { index: fileURLToPath(new URL("electron/main.ts", import.meta.url)) },

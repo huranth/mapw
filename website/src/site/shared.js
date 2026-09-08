@@ -1,14 +1,8 @@
-// Shared page furniture + behaviours, carried over from the LingLing site and
-// rebranded for mapw. Same motion, same copy flashes, same CTA glow.
-// Real-data endpoints live here so both pages read identical values.
+// Shared UI
 import { createClient } from "@supabase/supabase-js";
 
 function supabaseOrigin() {
-  try {
-    const env = typeof import.meta !== "undefined" ? import.meta.env : null;
-    const fromEnv = env?.VITE_SUPABASE_URL;
-    if (typeof fromEnv === "string" && fromEnv.trim()) return fromEnv.trim().replace(/\/+$/, "");
-  } catch {}
+  try { const v = import.meta.env?.VITE_SUPABASE_URL?.trim(); if (v) return v.replace(/\/+$/, ""); } catch {}
   if (typeof process !== "undefined" && process.env?.SUPABASE_URL) return String(process.env.SUPABASE_URL).replace(/\/+$/, "");
   return "";
 }
@@ -16,16 +10,8 @@ const SUPABASE_URL = supabaseOrigin();
 export const RELEASES_INDEX_URL = SUPABASE_URL ? `${SUPABASE_URL}/storage/v1/object/public/releases/latest.json` : "";
 export const LIVE_STATS_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/live-stats` : "";
 
-// Realtime — anon key is public by design (RLS is the gate). No hardcoded fallback;
-// Vercel must provide VITE_SUPABASE_ANON_KEY. If missing, fleet falls back to polling.
-const SUPABASE_ANON_KEY = (() => {
-  try {
-    const e = typeof import.meta !== "undefined" ? import.meta.env : null;
-    const k = e?.VITE_SUPABASE_ANON_KEY;
-    if (typeof k === "string" && k.trim()) return k.trim();
-  } catch {}
-  return "";
-})();
+// anon public — RLS gates
+const SUPABASE_ANON_KEY = (() => { try { const k = import.meta.env?.VITE_SUPABASE_ANON_KEY?.trim(); if (k) return k; } catch {} return ""; })();
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { realtime: { params: { eventsPerSecond: 5 } } }) : null;
 
 export function topbarHTML(active) {
@@ -34,12 +20,12 @@ export function topbarHTML(active) {
   };
   return `
     <header class="topbar">
-      <div class="brand"><a href="index.html" aria-label="mapw — Terminals, like paper."><b>mapw</b></a></div>
+      <div class="brand"><a href="/" aria-label="mapw — Terminals, like paper."><b>mapw</b></a></div>
       <nav class="nav">
-        ${link("index.html#chips", "Chips", "chips")}
-        ${link("index.html#under-the-hood", "Under the hood", "hood")}
-        ${link("handbook.html", "Field notes", "handbook")}
-        <a class="cta" href="#download">Download</a>
+        ${link("/catalog", "Catalog", "chips")}
+        ${link("/how-it-works", "How it works", "hood")}
+        ${link("/handbook", "Field notes", "handbook")}
+        <a class="cta" href="/#download">Download</a>
       </nav>
     </header>`;
 }
@@ -49,12 +35,12 @@ export function footerHTML() {
     <footer class="foot">
       <div class="fl">© 2026 mapw</div>
       <div class="fr">
-        <a href="handbook.html">Field notes</a><a href="${RELEASES_INDEX_URL}" target="_blank" rel="noreferrer">Releases</a>
+        <a href="/handbook">Field notes</a><a href="${RELEASES_INDEX_URL}" target="_blank" rel="noreferrer">Releases</a>
       </div>
     </footer>`;
 }
 
-// Reveal blocks as they scroll into view; reset on exit so it replays.
+// Reveal
 export function setupReveal() {
   const items = document.querySelectorAll("[data-reveal]");
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -81,7 +67,7 @@ export function setupReveal() {
   items.forEach(function (el) { io.observe(el); });
 }
 
-// The primary CTA warms as the pointer nears it. The one place the accent glows.
+// CTA glow
 export function setupCtaGlow(root) {
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const cta = root.querySelector(".nav .cta");
@@ -97,7 +83,7 @@ export function setupCtaGlow(root) {
   }, { passive: true });
 }
 
-// Copy-to-clipboard for [data-copy] and [data-copy-code] within a root.
+// Copy
 export function wireCopy(root) {
   root.addEventListener("click", function (e) {
     const c = e.target.closest("[data-copy]");
@@ -120,36 +106,26 @@ export function wireCopy(root) {
   }
 }
 
-// ---- real data ------------------------------------------------------------
-
+// Data
 function isTrustedReleaseUrl(url) {
   try {
     const u = new URL(url);
     if (u.protocol !== "https:") return false;
-    const host = u.hostname.toLowerCase();
-    const path = u.pathname;
-    if (host === "pdynfowdtiulrllqetbl.supabase.co" && path.includes("/storage/v1/object/public/releases/")) return true;
-    if (host === "github.com" && (path.startsWith("/huranth/mapw/releases/") || path.startsWith("/huranth/mapw-releases/releases/"))) return true;
-    return false;
+    const h = u.hostname.toLowerCase(), p = u.pathname;
+    return (h === "pdynfowdtiulrllqetbl.supabase.co" && p.includes("/storage/v1/object/public/releases/")) ||
+           (h === "mapw.vercel.app" && p.startsWith("/download")) ||
+           (h === "github.com" && (p.startsWith("/huranth/mapw/releases/") || p.startsWith("/huranth/mapw-releases/releases/")));
   } catch { return false; }
 }
 
 async function fetchWithRetry(url, opts, retries = 2) {
   for (let i = 0; i <= retries; i++) {
     try {
-      const res = await fetch(url, opts);
-      if (!res.ok) {
-        if (res.status >= 500 && i < retries) {
-          await new Promise((r) => setTimeout(r, 300 * Math.pow(2, i)));
-          continue;
-        }
-        return null;
-      }
-      return res;
-    } catch (err) {
-      if (i === retries) return null;
-      await new Promise((r) => setTimeout(r, 300 * Math.pow(2, i) + Math.random() * 200));
-    }
+      const r = await fetch(url, opts);
+      if (r.ok) return r;
+      if (r.status < 500 || i === retries) return null;
+    } catch { if (i === retries) return null; }
+    await new Promise((x) => setTimeout(x, 300 * (2 ** i) + Math.random() * 200));
   }
   return null;
 }
@@ -180,14 +156,13 @@ export async function fetchLiveStats() {
   }
 }
 
-// Wire the download CTA to the real release feed. Until a release exists the
-// button says so honestly; once one exists it links straight to the exe.
+// Download CTA
 export async function wireDownloadControls() {
   const release = await fetchLatestRelease();
   document.querySelectorAll("[data-download]").forEach(function (el) {
     if (release && isTrustedReleaseUrl(release.url)) {
-      el.setAttribute("href", release.url);
-      el.setAttribute("download", "");
+      el.setAttribute("href", "/download");
+      el.removeAttribute("download");
       el.removeAttribute("data-disabled");
       const label = el.querySelector("[data-download-label]");
       if (label) label.textContent = "Download for Windows";
@@ -202,7 +177,7 @@ export async function wireDownloadControls() {
   });
   document.querySelectorAll("[data-download-gz]").forEach(function (el) {
     if (release && release.gzUrl && isTrustedReleaseUrl(release.gzUrl)) {
-      el.setAttribute("href", release.gzUrl);
+      el.setAttribute("href", "/download");
       el.style.display = "";
     } else {
       el.style.display = "none";
@@ -213,9 +188,7 @@ export async function wireDownloadControls() {
   });
 }
 
-// Live install/online counts from our edge function. Renders nothing until the
-// server answers — the site never shows fake numbers. Realtime broadcast makes it
-// lighting fast (fleet_update from device-heartbeat), polling is the fallback.
+// Live counters
 export async function wireLiveCounters() {
   async function render() {
     const stats = await fetchLiveStats();
@@ -229,22 +202,12 @@ export async function wireLiveCounters() {
     });
   }
   await render();
-
-  // Poll every 5s as fallback (cached 2s at edge) — cheap for 1000s, feels instant.
-  // Realtime does the lighting-fast push; polling catches any missed broadcast or cache.
-  // Skip poll when hidden to save edge hits for 1000s.
   const poll = setInterval(() => { if (!document.hidden) void render(); }, 5_000);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") void render();
-  });
-
-  // Realtime — up in ~1s (heartbeat broadcast), down in ~2s (offline beacon)
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") void render(); });
   if (supabase) {
     try {
       const ch = supabase.channel("fleet:live", { config: { broadcast: { ack: false } } });
       ch.on("broadcast", { event: "fleet_update" }, () => { void render(); });
-      // postgres_changes fallback requires RLS policy for anon; broadcast is primary.
-      // We keep a no-op fallback poll already, so no need for postgres_changes here.
       await ch.subscribe();
       window.addEventListener("beforeunload", () => { try { supabase.removeChannel(ch); } catch {} clearInterval(poll); });
     } catch {}

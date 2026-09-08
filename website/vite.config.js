@@ -13,15 +13,7 @@ export default defineConfig({
         main: "index.html",
         handbook: "handbook.html",
       },
-      output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            if (id.includes("three")) return "vendor-three";
-            if (id.includes("gsap")) return "vendor-gsap";
-            if (id.includes("@supabase")) return "vendor-supabase";
-          }
-        },
-      },
+      output: { manualChunks: (id) => { if (!id.includes("node_modules")) return; if (id.includes("three")) return "vendor-three"; if (id.includes("gsap")) return "vendor-gsap"; if (id.includes("@supabase")) return "vendor-supabase"; }, },
     },
   },
 });

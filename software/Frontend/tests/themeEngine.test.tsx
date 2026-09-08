@@ -12,7 +12,7 @@ import { THEME_TOKEN_NAMES } from "@/themes/tokens";
 
 afterEach(() => {
   cleanup();
-  document.documentElement.removeAttribute("data-bs-theme");
+  document.documentElement.removeAttribute("data-mapw-theme");
   document.documentElement.style.cssText = "";
 });
 
@@ -32,13 +32,13 @@ describe("theme registry", () => {
 });
 
 describe("applyThemeVars", () => {
-  it("writes every theme token as a --bs-* css variable on document root", () => {
+  it("writes every theme token as a --mapw-* css variable on document root", () => {
     applyThemeVars(getTheme("paper"));
     for (const name of THEME_TOKEN_NAMES) {
-      const v = document.documentElement.style.getPropertyValue(`--bs-${name}`);
-      expect(v, `--bs-${name} should be set`).not.toBe("");
+      const v = document.documentElement.style.getPropertyValue(`--mapw-${name}`);
+      expect(v, `--mapw-${name} should be set`).not.toBe("");
     }
-    expect(document.documentElement.dataset.bsTheme).toBe("paper");
+    expect(document.documentElement.dataset.mapwTheme).toBe("paper");
     expect(document.documentElement.style.colorScheme).toBe("light");
   });
 

@@ -46,7 +46,7 @@ function cardVisual(id) {
     case "data":
       return `<div class="field-viz field-viz--split" aria-hidden="true"><div class="field-viz__col"><b>LOCAL</b><span>settings</span><span>usage</span></div><div class="field-viz__sep"></div><div class="field-viz__col"><b>WIRE</b><span>installId</span><span>counts</span></div></div>`;
     case "reset":
-      return `<div class="field-viz field-viz--path" aria-hidden="true"><code>%APPDATA%\\@bridgespace\\frontend\\settings.json</code></div>`;
+      return `<div class="field-viz field-viz--path" aria-hidden="true"><code>%APPDATA%\\@mapw\\frontend\\settings.json</code></div>`;
     default:
       return `<div class="field-viz" aria-hidden="true"></div>`;
   }

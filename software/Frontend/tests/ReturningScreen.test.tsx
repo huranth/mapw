@@ -14,7 +14,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import type { WorkspacePersist } from "@bridgespace/backend/renderer";
+import type { WorkspacePersist } from "@mapw/backend/renderer";
 import { ReturningScreen } from "@/components/ReturningScreen";
 
 afterEach(() => {

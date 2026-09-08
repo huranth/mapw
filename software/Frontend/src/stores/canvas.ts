@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { applyNodeChanges, type Node, type OnNodesChange } from "@xyflow/react";
-import type { PaneNodePersist } from "@bridgespace/backend/renderer";
+import type { PaneNodePersist } from "@mapw/backend/renderer";
 import { useUsageStore } from "@/stores/usage";
 
 export const NODE_W = 420;

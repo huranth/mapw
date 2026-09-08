@@ -10,7 +10,7 @@ import {
   DEFAULT_SETTINGS,
   type SavedLayout,
   type Settings,
-} from "@bridgespace/backend/renderer";
+} from "@mapw/backend/renderer";
 import type { Bridge, GetSettingsResponse } from "@/bridge/types";
 import { makeTestBridge } from "../setupTests";
 import {

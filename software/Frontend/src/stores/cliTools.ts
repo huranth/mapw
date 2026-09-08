@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DetectedCliTool } from "@bridgespace/backend/renderer";
+import type { DetectedCliTool } from "@mapw/backend/renderer";
 
 interface CliToolsState { cliTools: DetectedCliTool[]; loaded: boolean; ensureLoaded: () => Promise<void>; reload: () => Promise<void>; }
 

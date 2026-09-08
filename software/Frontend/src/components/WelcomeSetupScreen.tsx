@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PaneNodePersist } from "@bridgespace/backend/renderer";
+import type { PaneNodePersist } from "@mapw/backend/renderer";
 import { ArrowRightIcon, CompassIcon, FolderIcon, FolderPlusIcon, GridIcon, RefreshIcon, TerminalIcon } from "@/components/Icons";
 import { seedNodes } from "@/stores/canvas";
 

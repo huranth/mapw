@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { PaneNodePersist, SavedLayout } from "@bridgespace/backend/renderer";
+import type { PaneNodePersist, SavedLayout } from "@mapw/backend/renderer";
 import { LayoutsScreen } from "@/components/LayoutsScreen";
 import { TerminalCanvas } from "@/components/TerminalCanvas";
 import { ReturningScreen } from "@/components/ReturningScreen";

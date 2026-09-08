@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { MiniMap, Panel, ReactFlow, type OnInit, type ReactFlowInstance } from "@xyflow/react";
-import type { PaneNodePersist } from "@bridgespace/backend/renderer";
+import type { PaneNodePersist } from "@mapw/backend/renderer";
 import { LayoutGridIcon, PlusIcon } from "@/components/Icons";
 import { TerminalNode } from "@/components/TerminalNode";
 import { NODE_H, NODE_W, useCanvasStore } from "@/stores/canvas";

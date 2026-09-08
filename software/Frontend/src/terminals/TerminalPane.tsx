@@ -4,7 +4,7 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
-import { parseOscPayload } from "@bridgespace/backend/renderer";
+import { parseOscPayload } from "@mapw/backend/renderer";
 import { useSettingsStore } from "@/stores/settings";
 import { useCliToolsStore } from "@/stores/cliTools";
 import { useTheme } from "@/themes";

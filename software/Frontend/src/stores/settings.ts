@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { DEFAULT_SETTINGS, type Settings } from "@bridgespace/backend/renderer";
+import { DEFAULT_SETTINGS, type Settings } from "@mapw/backend/renderer";
 
 interface SettingsState { settings: Settings; loaded: boolean; ensureLoaded: () => Promise<void>; reload: () => Promise<void>; update: (partial: Partial<Settings>) => Promise<void>; }
 

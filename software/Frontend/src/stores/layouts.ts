@@ -1,4 +1,4 @@
-import type { PaneNodePersist, SavedLayout } from "@bridgespace/backend/renderer";
+import type { PaneNodePersist, SavedLayout } from "@mapw/backend/renderer";
 import { seedGridSlots, useCanvasStore } from "@/stores/canvas";
 import { useSettingsStore } from "@/stores/settings";
 import { useUsageStore } from "@/stores/usage";

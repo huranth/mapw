@@ -42,14 +42,14 @@ export class PtyService {
     try {
       if (rcContents !== "") {
         if (shell === "zsh") {
-          zdotDir = join(this.tmpBase, `bs-zsh-${id}`);
+          zdotDir = join(this.tmpBase, `mapw-zsh-${id}`);
           await fs.mkdir(zdotDir, { recursive: true });
           rcPath = join(zdotDir, ".zshrc");
           await fs.writeFile(rcPath, rcContents, "utf8");
           args = spawnArgsFor(shell);
         } else {
           const ext = shell === "pwsh" || shell === "powershell" ? ".ps1" : "";
-          rcPath = join(this.tmpBase, `bs-${shell}-${id}${ext}`);
+          rcPath = join(this.tmpBase, `mapw-${shell}-${id}${ext}`);
           await fs.writeFile(rcPath, rcContents, "utf8");
           args = spawnArgsFor(shell, rcPath);
         }

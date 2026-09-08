@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { DEFAULT_SETTINGS, type Settings } from "@bridgespace/backend/renderer";
+import { DEFAULT_SETTINGS, type Settings } from "@mapw/backend/renderer";
 import type { Bridge, GetSettingsResponse } from "@/bridge/types";
 import { makeTestBridge } from "../setupTests";
 

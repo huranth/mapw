@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { SavedLayout } from "@bridgespace/backend/renderer";
+import type { SavedLayout } from "@mapw/backend/renderer";
 import { ArrowRightIcon, BookmarkIcon, CliIcon, GridIcon, InboxIcon, InfoIcon, LayersIcon, PencilIcon, SaveIcon, TrashIcon, XIcon } from "@/components/Icons";
 import { BUILTIN_LAYOUTS, deleteSavedLayout, renameSavedLayout, saveCurrentLayout, summarizeLayout } from "@/stores/layouts";
 import { useCanvasStore } from "@/stores/canvas";

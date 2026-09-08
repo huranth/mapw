@@ -8,7 +8,7 @@ import { DEFAULT_SETTINGS, type SavedLayout } from "../src/types.js";
 async function freshStorePath(): Promise<string> {
   const dir = join(
     tmpdir(),
-    `bs-test-${process.pid}-${Math.random().toString(36).slice(2)}`
+    `mapw-test-${process.pid}-${Math.random().toString(36).slice(2)}`
   );
   return join(dir, "settings.json");
 }

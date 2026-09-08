@@ -1,5 +1,5 @@
 import type { IMarker } from "@xterm/xterm";
-import type { OscEvent } from "@bridgespace/backend/renderer";
+import type { OscEvent } from "@mapw/backend/renderer";
 
 export type BlockStatus = "open" | "closed";
 export interface Block { readonly id: string; readonly promptMarker: IMarker | null; exitMarker: IMarker | null; exitCode: number | null; cwd: string | null; hostname: string | null; startedAt: number; closedAt: number | null; status: BlockStatus; }

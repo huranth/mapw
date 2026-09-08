@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { DEFAULT_SETTINGS } from "@bridgespace/backend/renderer";
+import { DEFAULT_SETTINGS } from "@mapw/backend/renderer";
 import type { Bridge } from "@/bridge/types";
 import { App } from "@/App";
 import { makeTestBridge } from "../setupTests";
@@ -15,7 +15,7 @@ function installBridge(overrides: Partial<Bridge> = {}): void {
 
 afterEach(() => {
   cleanup();
-  document.documentElement.removeAttribute("data-bs-theme");
+  document.documentElement.removeAttribute("data-mapw-theme");
   document.documentElement.style.cssText = "";
 });
 
@@ -34,10 +34,10 @@ describe("App", () => {
     installBridge({});
     render(<App />);
     // ThemeProvider's applyThemeVars writes `theme.id` (e.g. "paper") onto
-    // <html data-bs-theme>. The StatusBar that previously surfaced the
+    // <html data-mapw-theme>. The StatusBar that previously surfaced the
     // `active-theme-id` testid was removed, so the root attribute is now the
     // canonical theme cue.
-    expect(document.documentElement.dataset.bsTheme).toBe(
+    expect(document.documentElement.dataset.mapwTheme).toBe(
       DEFAULT_SETTINGS.theme,
     );
   });

@@ -40,6 +40,6 @@ First `npm install` triggers `electron`/`esbuild` postinstalls. If the window fa
 
 Repo is npm workspaces — `Frontend/` (Electron + Vite + React renderer, plus `electron/` for main) and `Backend/` (headless Node: `SettingsStore` + `PtyService` + `OscParser` + shared types via `backend/renderer` subpath so Vite doesn't choke on `node:fs`).
 
-Settings persist to `%APPDATA%\@bridgespace\frontend\settings.json` on Windows (`~/Library/Application Support/@bridgespace/frontend/settings.json` on macOS, `~/.config/@bridgespace/frontend/settings.json` on Linux). Delete that file to reset the welcome flow; otherwise you get Returning → Continue / Choose new folder.
+Settings persist to `%APPDATA%\@mapw\frontend\settings.json` on Windows (`~/Library/Application Support/@mapw/frontend/settings.json` on macOS, `~/.config/@mapw/frontend/settings.json` on Linux). Delete that file to reset the welcome flow; otherwise you get Returning → Continue / Choose new folder.
 
 Security: `sandbox:true`, `contextIsolation:true`, `nodeIntegration:false`, `PtyService` env allowlist, `shellIntegration` safe-path, `SettingsStore` prototype-pollution filter.

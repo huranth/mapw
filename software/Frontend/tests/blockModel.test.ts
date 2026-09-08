@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import {
   parseOscPayload,
   type OscEvent,
-} from "@bridgespace/backend/renderer";
+} from "@mapw/backend/renderer";
 import {
   createBlockModel,
   disposeBlockModel,

@@ -1,24 +1,9 @@
-// Landing page DOM — mapw's own voice. Fraunces display headlines, mono
-// eyebrows, the hero anchored by The Arrangement (four floating panes), the
-// chip console, and the canvas footer band. Every number on the page is
-// served, never invented.
-
+// Landing
 import { initPaneGrid } from "./paneGrid.js";
 import { initConsole } from "./chipsConsole.js";
-import {
-  topbarHTML, footerHTML, setupReveal, setupCtaGlow, wireCopy,
-  wireDownloadControls, wireLiveCounters,
-} from "./shared.js";
+import { topbarHTML, footerHTML, setupReveal, setupCtaGlow, wireCopy, wireDownloadControls, wireLiveCounters } from "./shared.js";
 
-// The curated CLIs mapw ships chips for (mirrors Backend CURATED_CLIS).
-const CHIPS = [
-  { name: "opencode", id: "opencode", lab: "terminal agent", meta: "auto-launched on chip click" },
-  { name: "claude",   id: "claude",   lab: "terminal agent", meta: "auto-launched on chip click" },
-  { name: "aider",    id: "aider",    lab: "pair editor",    meta: "auto-launched on chip click" },
-  { name: "codex",    id: "codex",    lab: "terminal agent", meta: "auto-launched on chip click" },
-  { name: "gemini",   id: "gemini",   lab: "terminal agent", meta: "auto-launched on chip click" },
-  { name: "amp",      id: "amp",      lab: "terminal agent", meta: "auto-launched on chip click" },
-];
+const CHIPS = ["opencode","claude","aider","codex","gemini","amp"].map((id) => ({ name: id, id, lab: id === "aider" ? "pair editor" : "terminal agent" }));
 
 export function initSite() {
   const app = document.getElementById("app");
@@ -33,9 +18,9 @@ export function initSite() {
           <h1 data-reveal data-reveal-delay="1">Arrange your terminals <em>like paper</em>.</h1>
           <p data-reveal data-reveal-delay="2">Four panes on a calm sheet. Drag to move. Resize to fit. Pin a CLI to each.</p>
           <div class="actions" data-reveal data-reveal-delay="3">
-            <a class="btn solid" href="#download" data-download><span data-download-label>Download for Windows</span></a>
-            <a class="btn" href="#download" data-download-gz style="display:none">.gz</a>
-            <a class="btn" href="#under-the-hood">How it works</a>
+            <a class="btn solid" href="/download" data-download><span data-download-label>Download for Windows</span></a>
+            <a class="btn" href="/download" data-download-gz style="display:none">.gz</a>
+            <a class="btn" href="/how-it-works">How it works</a>
           </div>
           <div class="hero-ledger" data-reveal data-reveal-delay="4">
             <div class="ledger-head">
@@ -78,11 +63,11 @@ export function initSite() {
           <div class="feature" data-reveal data-reveal-delay="4"><div class="ft"><b>Shell-aware</b><span>OSC 133 for prompts and exit codes.</span></div></div>
           <div class="feature" data-reveal data-reveal-delay="5"><div class="ft"><b>Local</b><span>On disk. No account.</span></div></div>
           <div class="feature" data-reveal data-reveal-delay="6"><div class="ft"><b>Updates</b><span>Checks on launch.</span></div></div>
-          <a class="btn ghost mt" href="handbook.html" data-reveal data-reveal-delay="7">Field notes</a>
+          <a class="btn ghost mt" href="/handbook" data-reveal data-reveal-delay="7">Field notes</a>
         </div>
         <div class="right" data-reveal data-reveal-delay="2">
           <div class="code-label"><span>settings.json</span><button class="copy-btn" data-copy-code="#code">Copy</button></div>
-          <pre class="code" id="code"><span class="c">// what mapw persists, %APPDATA%/@bridgespace/frontend</span>
+          <pre class="code" id="code"><span class="c">// what mapw persists, %APPDATA%/@mapw/frontend</span>
 {
   <span class="k">"theme"</span>: <span class="s">"paper"</span>,
   <span class="k">"fontFamily"</span>: <span class="s">"JetBrains Mono"</span>,
@@ -117,4 +102,20 @@ export function initSite() {
 
   void wireDownloadControls();
   void wireLiveCounters();
+  // Clean URLs
+  const ROUTE = { "/catalog":"chips","/chips":"chips","/how-it-works":"under-the-hood","/under-the-hood":"under-the-hood" };
+  const go = (id) => document.getElementById(id)?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  const route = () => {
+    const id = ROUTE[location.pathname.replace(/\/+$/, "") || "/"];
+    if (id) requestAnimationFrame(() => setTimeout(() => go(id), 80));
+    else if (location.hash) go(location.hash.slice(1));
+  };
+  app.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href="/catalog"],a[href="/chips"],a[href="/how-it-works"],a[href="/under-the-hood"]');
+    if (!a) return;
+    const id = ROUTE[new URL(a.href, location.origin).pathname];
+    if (!id) return;
+    e.preventDefault(); history.pushState(null, "", new URL(a.href).pathname); go(id);
+  });
+  addEventListener("popstate", route); route();
 }

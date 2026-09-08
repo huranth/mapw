@@ -6,7 +6,7 @@ import {
   type Settings,
   type PtySpawnOptions,
   type PtySpawnResponse,
-} from "@bridgespace/backend/renderer";
+} from "@mapw/backend/renderer";
 
 // ---------------------------------------------------------------------------
 // xterm + addons — global jsdom mock.

@@ -20,9 +20,9 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 export function applyThemeVars(theme: Theme): void {
   const root = document.documentElement;
   for (const name of THEME_TOKEN_NAMES) {
-    root.style.setProperty(`--bs-${name}`, theme.tokens[name]);
+    root.style.setProperty(`--mapw-${name}`, theme.tokens[name]);
   }
-  root.dataset.bsTheme = theme.id;
+  root.dataset.mapwTheme = theme.id;
   root.style.colorScheme = theme.appearance;
 }
 

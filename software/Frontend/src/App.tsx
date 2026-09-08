@@ -19,8 +19,8 @@ export function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty("--bs-font-mono", `${fontFamily}, ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace`);
-    root.style.setProperty("--bs-font-size", `${fontSize}px`);
+    root.style.setProperty("--mapw-font-mono", `${fontFamily}, ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace`);
+    root.style.setProperty("--mapw-font-size", `${fontSize}px`);
   }, [fontFamily, fontSize]);
 
   return (
@@ -30,7 +30,7 @@ export function App() {
         <div className="app-shell__main">
           <TitleBar />
           <div className="app-main">
-            <Suspense fallback={<div style={{ padding: 24, color: "var(--bs-fg-muted)" }}>Loading…</div>}>
+            <Suspense fallback={<div style={{ padding: 24, color: "var(--mapw-fg-muted)" }}>Loading…</div>}>
               {activeView === "insights" ? <InsightsScreen /> : <Workspace />}
             </Suspense>
           </div>

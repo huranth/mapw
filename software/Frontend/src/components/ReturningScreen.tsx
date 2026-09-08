@@ -1,5 +1,5 @@
 import { ArrowRightIcon, ClockIcon, FolderIcon, FolderPlusIcon, HistoryIcon, TerminalIcon } from "@/components/Icons";
-import type { WorkspacePersist } from "@bridgespace/backend/renderer";
+import type { WorkspacePersist } from "@mapw/backend/renderer";
 
 export interface ReturningScreenProps {
   readonly lastWorkspace: WorkspacePersist | null;

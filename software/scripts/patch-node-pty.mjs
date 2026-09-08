@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Re-applies the bridgespace-clone M1 patch to node-pty's ConPTY worker so it
+// Re-applies the mapw M1 patch to node-pty's ConPTY worker so it
 // survives `npm install`. The worker calls `GetConsoleProcessList(shellPid)`,
 // which under Electron's GUI-subsystem main process throws `AttachConsole
 // failed` because no console is attached. node-pty's parent already has a
@@ -37,7 +37,7 @@ const patched = src.replace(
     "try {",
     "  consoleProcessList = getConsoleProcessList(shellPid);",
     "} catch (e) {",
-    "  // Patched by bridgespace-clone: see scripts/patch-node-pty.mjs.",
+    "  // Patched by mapw: see scripts/patch-node-pty.mjs.",
     "  // AttachConsole throws under Electron's GUI-subsystem main; return the",
     "  // same [shellPid] fallback node-pty's parent already resolves to via",
     "  // its 5-second timeout.",

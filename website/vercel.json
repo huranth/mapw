@@ -1,4 +1,20 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/catalog", "destination": "/" },
+    { "source": "/chips", "destination": "/" },
+    { "source": "/how-it-works", "destination": "/" },
+    { "source": "/under-the-hood", "destination": "/" },
+    { "source": "/handbook", "destination": "/handbook.html" },
+    { "source": "/docs", "destination": "/handbook.html" },
+    { "source": "/field-notes", "destination": "/handbook.html" },
+    { "source": "/download", "destination": "/api/download" }
+  ],
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "statusCode": 308 },
+    { "source": "/handbook.html", "destination": "/handbook", "statusCode": 308 }
+  ],
   "headers": [
     {
       "source": "/assets/(.*)",

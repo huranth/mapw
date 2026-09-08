@@ -180,7 +180,7 @@ describe("PtyService shell resolution + rc filing", () => {
   });
 
   it("writes a temp rc file with OSC 133 / OSC 7 markers for bash", async () => {
-    const tmpBase = await fs.mkdtemp(join(tmpdir(), "bs-pty-test-"));
+    const tmpBase = await fs.mkdtemp(join(tmpdir(), "mapw-pty-test-"));
     try {
       const svc = new PtyService({ tmpBase });
       await svc.spawn({
@@ -190,7 +190,7 @@ describe("PtyService shell resolution + rc filing", () => {
         shellOverride: "/bin/bash",
       });
       const files = await fs.readdir(tmpBase);
-      const rcFile = files.find((f) => f.startsWith("bs-bash-"));
+      const rcFile = files.find((f) => f.startsWith("mapw-bash-"));
       expect(rcFile, "expected a temp bash rc file").toBeDefined();
       const rc = await fs.readFile(join(tmpBase, rcFile!), "utf8");
       // bash bonus: emits the 133;C (outputStart) marker too, alongside
@@ -212,7 +212,7 @@ describe("PtyService shell resolution + rc filing", () => {
   });
 
   it("writes a temp .zshrc under a fresh ZDOTDIR for zsh", async () => {
-    const tmpBase = await fs.mkdtemp(join(tmpdir(), "bs-pty-test-"));
+    const tmpBase = await fs.mkdtemp(join(tmpdir(), "mapw-pty-test-"));
     try {
       const svc = new PtyService({ tmpBase });
       await svc.spawn({
@@ -223,7 +223,7 @@ describe("PtyService shell resolution + rc filing", () => {
       });
       const entries = await fs.readdir(tmpBase, { withFileTypes: true });
       const zshDir = entries.find(
-        (e) => e.isDirectory() && e.name.startsWith("bs-zsh-"),
+        (e) => e.isDirectory() && e.name.startsWith("mapw-zsh-"),
       );
       expect(zshDir, "expected a temp zsh ZDOTDIR").toBeDefined();
       const rc = await fs.readFile(join(tmpBase, zshDir!.name, ".zshrc"), "utf8");
@@ -239,7 +239,7 @@ describe("PtyService shell resolution + rc filing", () => {
   });
 
   it("writes a temp .ps1 with the prompt override for powershell", async () => {
-    const tmpBase = await fs.mkdtemp(join(tmpdir(), "bs-pty-test-"));
+    const tmpBase = await fs.mkdtemp(join(tmpdir(), "mapw-pty-test-"));
     try {
       const svc = new PtyService({ tmpBase });
       const shellOverride =
@@ -252,7 +252,7 @@ describe("PtyService shell resolution + rc filing", () => {
       });
       const files = await fs.readdir(tmpBase);
       const rcFile = files.find(
-        (f) => f.startsWith("bs-pwsh-") || f.startsWith("bs-powershell-"),
+        (f) => f.startsWith("mapw-pwsh-") || f.startsWith("mapw-powershell-"),
       );
       expect(rcFile, "expected a temp powershell rc file").toBeDefined();
       const rc = await fs.readFile(join(tmpBase, rcFile!), "utf8");
@@ -278,7 +278,7 @@ describe("PtyService shell resolution + rc filing", () => {
   });
 
   it("ships no integration rc (empty string) for cmd shells", async () => {
-    const tmpBase = await fs.mkdtemp(join(tmpdir(), "bs-pty-test-"));
+    const tmpBase = await fs.mkdtemp(join(tmpdir(), "mapw-pty-test-"));
     try {
       const svc = new PtyService({ tmpBase });
       await svc.spawn({
@@ -290,7 +290,7 @@ describe("PtyService shell resolution + rc filing", () => {
         shellOverride: process.platform === "win32" ? "cmd.exe" : "cmd",
       });
       const files = await fs.readdir(tmpBase);
-      expect(files.find((f) => f.startsWith("bs-cmd-"))).toBeUndefined();
+      expect(files.find((f) => f.startsWith("mapw-cmd-"))).toBeUndefined();
       const fake = hoisted.fakes.at(-1)!;
       expect(fake.args).toEqual([]);
     } finally {

@@ -23,7 +23,7 @@ import * as Xterm from "@xterm/xterm";
 import { ThemeProvider } from "@/themes";
 import { TerminalPane } from "@/terminals/TerminalPane";
 import { useCliToolsStore } from "@/stores/cliTools";
-import type { DetectedCliTool } from "@bridgespace/backend/renderer";
+import type { DetectedCliTool } from "@mapw/backend/renderer";
 
 const sampleDetected: DetectedCliTool[] = [
   {

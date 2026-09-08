@@ -23,7 +23,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { ReactFlowProvider, type NodeProps } from "@xyflow/react";
-import type { DetectedCliTool } from "@bridgespace/backend/renderer";
+import type { DetectedCliTool } from "@mapw/backend/renderer";
 import { makeTestBridge } from "../setupTests";
 import { ThemeProvider } from "@/themes";
 import { TerminalNode } from "@/components/TerminalNode";

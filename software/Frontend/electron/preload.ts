@@ -2,8 +2,8 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
 import type {
   PtyEvent,
   PtySpawnOptions,
-} from "@bridgespace/backend/renderer";
-import type { Settings, UpdateProgress } from "@bridgespace/backend";
+} from "@mapw/backend/renderer";
+import type { Settings, UpdateProgress } from "@mapw/backend";
 import type { Bridge } from "../src/bridge/types";
 
 type PtyDataEvent = Extract<PtyEvent, { type: "data" }>;

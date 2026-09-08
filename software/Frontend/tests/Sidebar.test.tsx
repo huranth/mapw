@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { DEFAULT_SETTINGS } from "@bridgespace/backend/renderer";
+import { DEFAULT_SETTINGS } from "@mapw/backend/renderer";
 import type { Bridge } from "@/bridge/types";
 import { Sidebar } from "@/components/Sidebar";
 import { useSettingsStore } from "@/stores/settings";
