@@ -79,11 +79,9 @@ function buildPane(width, height, depth) {
 export function mountArrangement(hostEl) {
   if (hostEl.dataset.mounted === "1") return function () {};
   hostEl.dataset.mounted = "1";
-  // Prevent flash — keep host invisible until first frame is ready
-  hostEl.style.background = "#F0F2F5";
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setClearColor(PAPER, 1);
+  renderer.setClearColor(PAPER, 0);
   renderer.domElement.style.opacity = "0";
   renderer.domElement.style.transition = "opacity 0.35s cubic-bezier(0.16,1,0.3,1)";
   hostEl.appendChild(renderer.domElement);

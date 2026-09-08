@@ -169,7 +169,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 	aspect-ratio: 1 / 1;
 	z-index: 0;
 	pointer-events: auto;
-  background: var(--paper);
+  background: transparent;
   opacity: 0;
   transition: opacity 0.45s var(--ease);
 	-webkit-mask-image: radial-gradient(circle at 50% 50%, #000 68%, transparent 84%);
@@ -177,10 +177,13 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
   will-change: opacity;
 }
 .arrangement-bg.is-ready { opacity: 1; }
-.arrangement-bg canvas { display: block; width: 100% !important; height: 100% !important; opacity: 1; }
+.arrangement-bg canvas { display: block; width: 100% !important; height: 100% !important; opacity: 1; background: transparent !important; }
 @media (max-width: 900px) {
 	.arrangement-bg { position: relative; top: auto; right: auto; transform: none; width: 100%; max-width: 420px; margin: 20px auto 0; aspect-ratio: 1.2 / 1; opacity: 0; -webkit-mask-image: none; mask-image: none; }
   .arrangement-bg.is-ready { opacity: 0.95; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrangement-bg { display: none !important; }
 }
 @media (max-width: 900px) { .hero { flex-direction: column; align-items: stretch; } }
 
