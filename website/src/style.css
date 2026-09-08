@@ -142,15 +142,15 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 @media (max-width: 720px) { .nav a:not(.cta) { display: none; } }
 
 /* N8 Terminal */
-.nav-term { padding: var(--space-sm, 12px) 32px; border-bottom: 3px solid var(--color-rule, var(--ink)); max-width: 1120px; margin: 0 auto; }
-.nav-term__line { font-family: var(--font-mono); font-size: 13px; margin: 0; overflow-wrap: anywhere; min-width: 0; white-space: pre-wrap; }
-.nav-term__line .prompt { color: var(--color-accent); padding-right: 0.4ch; }
-.nav-term__line a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
-.nav-term__line a:hover { background: var(--color-paper-2); }
-.caret { display: inline-block; width: 1ch; animation: blink 1.05s steps(2) infinite; color: var(--color-accent); }
+.nav-term { padding: 16px 32px; border-bottom: 3px solid var(--color-rule, var(--ink)); max-width: 1120px; margin: 0 auto; background: var(--paper); position: sticky; top: 0; z-index: 20; }
+.nav-term__line { font-family: var(--font-mono); font-size: 13px; margin: 0; overflow-wrap: anywhere; min-width: 0; white-space: pre-wrap; letter-spacing: -0.01em; }
+.nav-term__line .prompt { color: var(--color-accent); padding-right: 0.5ch; font-weight: 600; }
+.nav-term__line a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; padding: 2px 3px; border-radius: 0; transition: background .15s var(--ease), color .15s var(--ease); }
+.nav-term__line a:hover { background: var(--color-ink); color: var(--color-paper); text-decoration-color: var(--color-ink); }
+.caret { display: inline-block; width: 1ch; animation: blink 1.05s steps(2) infinite; color: var(--color-accent); font-weight: 600; }
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .caret { animation: none; opacity: 1; } }
-@media (max-width: 720px) { .nav-term { padding: 12px 20px; } }
+@media (max-width: 720px) { .nav-term { padding: 14px 20px; } }
 
 /* HERO */
 /* The Arrangement */

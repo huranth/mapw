@@ -8,9 +8,8 @@ const CHIPS = ["opencode","claude","aider","codex","gemini","amp"].map((id) => (
 export function initSite() {
   const app = document.getElementById("app");
   app.innerHTML = `
+    ${topbarHTML("")}
     <div class="page">
-      ${topbarHTML("")}
-
       <section class="hero">
         <div id="arrangement" class="arrangement-bg"></div>
         <div class="hero-inner">

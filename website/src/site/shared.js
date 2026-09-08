@@ -56,6 +56,16 @@ export function setupReveal() {
   }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
   items.forEach(function (el) { io.observe(el); });
+  // Fallback — if observer never fires (e.g. hero already in view but not intersecting), force visible
+  setTimeout(function () {
+    items.forEach(function (el) {
+      if (!el.classList.contains("is-in")) {
+        const step = parseInt(el.getAttribute("data-reveal-delay") || "0", 10);
+        el.style.transitionDelay = (step * 60) + "ms";
+        el.classList.add("is-in");
+      }
+    });
+  }, 400);
 }
 
 // CTA glow
